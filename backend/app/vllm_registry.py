@@ -56,9 +56,16 @@ def all_configured_models() -> list[tuple[dict[str, Any], str]]:
     return out
 
 
-def model_entry(name: str, *, available: bool, endpoint_id: str, endpoint_label: str) -> dict[str, Any]:
+def model_entry(
+    name: str,
+    *,
+    available: bool,
+    endpoint_id: str,
+    endpoint_label: str,
+    speed_tier: str | None = None,
+) -> dict[str, Any]:
     tier = classify_model_by_name(name)
-    return {
+    entry: dict[str, Any] = {
         "name": name,
         "size": None,
         "modified_at": None,
@@ -71,3 +78,6 @@ def model_entry(name: str, *, available: bool, endpoint_id: str, endpoint_label:
         "vllm_endpoint": endpoint_id,
         "vllm_endpoint_label": endpoint_label,
     }
+    if speed_tier:
+        entry["speed_tier"] = speed_tier
+    return entry

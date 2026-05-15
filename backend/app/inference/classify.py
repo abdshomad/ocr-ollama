@@ -11,7 +11,7 @@ class ModelTier(str, Enum):
     TEXT_ONLY = "text_only"
 
 
-_OCR_NAME_RE = re.compile(r"ocr|paddleocr|glm-ocr", re.IGNORECASE)
+_OCR_NAME_RE = re.compile(r"ocr|paddleocr|glm-ocr|lighton", re.IGNORECASE)
 
 
 def classify_model_by_name(name: str) -> ModelTier:

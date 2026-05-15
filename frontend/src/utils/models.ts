@@ -1,8 +1,7 @@
 import type { OllamaModel } from "../types";
+import { isModelAvailable } from "../components/ModelPicker";
 
-export function isModelAvailable(m: OllamaModel): boolean {
-  return m.available !== false;
-}
+export { isModelAvailable };
 
 /** Prefer standalone OCR models that are online. */
 export function pickDefaultOcrModel(models: OllamaModel[]): string | undefined {
@@ -12,6 +11,7 @@ export function pickDefaultOcrModel(models: OllamaModel[]): string | undefined {
   const dedicated = (list: OllamaModel[]) =>
     list.filter((m) => m.tier === "dedicated_ocr");
   const prefer = (list: OllamaModel[]) =>
+    list.find((m) => /lightonai\/LightOnOCR/i.test(m.name)) ??
     list.find((m) => /deepseek-ai\/DeepSeek-OCR/i.test(m.name)) ??
     list.find((m) => /zai-org\/GLM-OCR/i.test(m.name)) ??
     list.find((m) => /glm-ocr/i.test(m.name)) ??
@@ -29,6 +29,10 @@ export function pickDefaultOcrModel(models: OllamaModel[]): string | undefined {
 /** Default arena pair: both vLLM OCR models when up, else any two online OCR models. */
 export function pickDefaultArenaModels(models: OllamaModel[]): string[] {
   const ocr = models.filter((m) => m.ocr_capable && isModelAvailable(m));
+  const lightonDeepseek = ["lightonai/LightOnOCR-2-1B", "deepseek-ai/DeepSeek-OCR"].filter((id) =>
+    ocr.some((m) => m.name === id)
+  );
+  if (lightonDeepseek.length >= 2) return lightonDeepseek;
   const vllmPair = ["deepseek-ai/DeepSeek-OCR", "zai-org/GLM-OCR"].filter((id) =>
     ocr.some((m) => m.name === id)
   );

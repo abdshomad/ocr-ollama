@@ -18,13 +18,25 @@ export function HomePage() {
   const [result, setResult] = useState<SingleResult | null>(null);
 
   useEffect(() => {
-    getModels()
-      .then((r) => {
-        setModels(r.models);
-        const defaultModel = pickDefaultOcrModel(r.models);
-        if (defaultModel && selected.length === 0) setSelected([defaultModel]);
-      })
-      .catch((e) => setError(e instanceof Error ? e.message : "Failed to load models"));
+    const load = () => {
+      getModels()
+        .then((r) => {
+          setModels(r.models);
+          const defaultModel = pickDefaultOcrModel(r.models);
+          if (defaultModel) {
+            setSelected((prev) => {
+              if (prev.length === 0) return [defaultModel];
+              const cur = prev[0];
+              if (r.models.some((m) => m.name === cur && m.available !== false)) return prev;
+              return [defaultModel];
+            });
+          }
+        })
+        .catch((e) => setError(e instanceof Error ? e.message : "Failed to load models"));
+    };
+    load();
+    const t = setInterval(load, 5000);
+    return () => clearInterval(t);
   }, []);
 
   useEffect(() => {

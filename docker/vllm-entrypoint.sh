@@ -30,6 +30,13 @@ elif [[ "$model_lower" == *"deepseek-ocr"* ]]; then
     --logits-processors vllm.model_executor.models.deepseek_ocr:NGramPerReqLogitsProcessor \
     --no-enable-prefix-caching \
     --mm-processor-cache-gb 0
+elif [[ "$model_lower" == *"lightonocr"* ]]; then
+  # https://huggingface.co/lightonai/LightOnOCR-2-1B
+  exec vllm serve "$MODEL" \
+    "${COMMON[@]}" \
+    --limit-mm-per-prompt '{"image": 1}' \
+    --mm-processor-cache-gb 0 \
+    --no-enable-prefix-caching
 else
   exec vllm serve "$MODEL" "${COMMON[@]}"
 fi

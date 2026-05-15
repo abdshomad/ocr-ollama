@@ -204,8 +204,38 @@ nav a.active {
 }
 
 .model-row-disabled {
-  opacity: 0.55;
+  opacity: 0.75;
   cursor: not-allowed;
+}
+
+.model-picker-group {
+  margin-bottom: 0.75rem;
+}
+
+.model-picker-group:last-child {
+  margin-bottom: 0;
+}
+
+.model-picker-heading {
+  margin: 0 0 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.model-picker-offline {
+  padding-top: 0.5rem;
+  border-top: 1px dashed var(--border);
+}
+
+.model-row-name {
+  flex: 1;
+  min-width: 0;
+  word-break: break-word;
+}
+
+.badge-offline {
+  background: color-mix(in srgb, var(--muted) 25%, transparent);
 }
 
 .arena-grid {

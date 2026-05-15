@@ -76,12 +76,14 @@ async def list_models_with_classification() -> list[dict[str, Any]]:
                     available = model_id in live_ids
                 except httpx.HTTPError:
                     available = False
+            speed = ep.get("speed_tier")
             result.append(
                 model_entry(
                     model_id,
                     available=available,
                     endpoint_id=str(ep.get("id", "")),
                     endpoint_label=str(ep.get("label") or ep.get("id") or ""),
+                    speed_tier=str(speed) if speed else None,
                 )
             )
     return result

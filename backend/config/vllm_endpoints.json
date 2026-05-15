@@ -19,6 +19,18 @@
       "compose_service": "vllm-glm",
       "gpu_device": 1,
       "port": 8101
+    },
+    {
+      "id": "lighton",
+      "label": "LightOnOCR",
+      "models": ["lightonai/LightOnOCR-2-1B"],
+      "host_env": "VLLM_LIGHTON_HOST",
+      "default_host": "http://vllm-lighton:8102",
+      "compose_service": "vllm-lighton",
+      "compose_profile": "lighton",
+      "gpu_device": 1,
+      "port": 8102,
+      "speed_tier": "fast"
     }
   ]
 }

@@ -1,0 +1,3 @@
+# LightOnOCR / Chandra need transformers >= 5.x (see HF LightOnOCR-2-1B card).
+FROM vllm/vllm-openai:latest
+RUN pip install --no-cache-dir "transformers>=5.4.0"

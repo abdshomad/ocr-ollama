@@ -56,12 +56,33 @@ def endpoint_by_id(service_id: str) -> dict[str, Any] | None:
     return None
 
 
+def _profiles_for_endpoint(ep: dict[str, Any]) -> list[str]:
+    raw = ep.get("compose_profile")
+    if not raw:
+        return []
+    if isinstance(raw, list):
+        return [str(p) for p in raw if p]
+    return [str(raw)]
+
+
+def _compose_profile_args(*, endpoints: list[dict[str, Any]] | None = None) -> list[str]:
+    profiles: set[str] = set()
+    for ep in endpoints if endpoints is not None else load_endpoints():
+        profiles.update(_profiles_for_endpoint(ep))
+    args: list[str] = []
+    for name in sorted(profiles):
+        args.extend(["--profile", name])
+    return args
+
+
 def gpu_device_for_endpoint(ep: dict[str, Any]) -> int:
     ep_id = str(ep.get("id", ""))
     if ep_id == "deepseek":
         return int(os.getenv("VLLM_DEEPSEEK_CUDA_DEVICE", str(ep.get("gpu_device", 0))))
     if ep_id == "glm":
         return int(os.getenv("VLLM_GLM_CUDA_DEVICE", str(ep.get("gpu_device", 1))))
+    if ep_id == "lighton":
+        return int(os.getenv("VLLM_LIGHTON_CUDA_DEVICE", str(ep.get("gpu_device", 1))))
     return int(ep.get("gpu_device", 0))
 
 
@@ -85,10 +106,15 @@ async def run_docker(args: list[str], *, timeout: float = 60.0) -> tuple[int, st
     )
 
 
-async def _run_compose(*args: str, timeout: float = _COMPOSE_TIMEOUT) -> tuple[int, str, str]:
+async def _run_compose(
+    *args: str,
+    timeout: float = _COMPOSE_TIMEOUT,
+    profile_args: list[str] | None = None,
+) -> tuple[int, str, str]:
     if not compose_manage_enabled():
         raise RuntimeError("Docker Compose management is not configured")
-    cmd = [*_compose_base_cmd(), *args]
+    profiles = profile_args if profile_args is not None else _compose_profile_args()
+    cmd = [*_compose_base_cmd(), *profiles, *args]
     proc = await asyncio.create_subprocess_exec(
         *cmd,
         stdout=asyncio.subprocess.PIPE,
@@ -179,7 +205,8 @@ async def start_service(service_id: str) -> dict[str, Any]:
     if not compose_name:
         raise ValueError(f"No compose service for {service_id}")
 
-    code, out, err = await _run_compose("up", "-d", compose_name)
+    profile_args = _compose_profile_args(endpoints=[ep])
+    code, out, err = await _run_compose("up", "-d", compose_name, profile_args=profile_args)
     if code != 0:
         raise RuntimeError((err or out or "docker compose up failed").strip())
 
@@ -202,7 +229,8 @@ async def stop_service(service_id: str) -> dict[str, Any]:
     if not compose_name:
         raise ValueError(f"No compose service for {service_id}")
 
-    code, out, err = await _run_compose("stop", compose_name, timeout=120.0)
+    profile_args = _compose_profile_args(endpoints=[ep])
+    code, out, err = await _run_compose("stop", compose_name, timeout=120.0, profile_args=profile_args)
     if code != 0:
         raise RuntimeError((err or out or "docker compose stop failed").strip())
 

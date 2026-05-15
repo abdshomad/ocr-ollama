@@ -14,6 +14,7 @@ export interface OllamaModel {
   available?: boolean;
   vllm_endpoint?: string;
   vllm_endpoint_label?: string;
+  speed_tier?: string;
 }
 
 export interface PromptsConfig {

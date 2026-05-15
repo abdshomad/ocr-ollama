@@ -6,7 +6,56 @@ Guidance for AI agents working in this repository.
 
 Monorepo: **Vite + React** frontend and **FastAPI** backend for OCR via **vLLM + DeepSeek-OCR** (default) or **Ollama**. Docker Compose runs `vllm`, `backend`, and `nginx` on one host port. Users upload or capture images, run OCR or **arena** compare, optional **browser scan**, and browse **history**. Inference backend and host URL are configurable in **Settings**.
 
-Spec: [plan/ocr-ollama-app.md](plan/ocr-ollama-app.md), [plan/vllm-deepseek-ocr-migration.md](plan/vllm-deepseek-ocr-migration.md), [plan/browser-ocr-pipeline.md](plan/browser-ocr-pipeline.md). **Working vLLM setup:** [issues/vllm-deepseek-ocr-integration.md](issues/vllm-deepseek-ocr-integration.md).
+Spec: [plan/ocr-ollama-app.md](plan/ocr-ollama-app.md), [plan/vllm-deepseek-ocr-migration.md](plan/vllm-deepseek-ocr-migration.md), [plan/browser-ocr-pipeline.md](plan/browser-ocr-pipeline.md), [plan/ocr-engines.md](plan/ocr-engines.md) (speed ranking), [plan/medium-four-ocr-models.md](plan/medium-four-ocr-models.md) (integration queue). **Working vLLM setup:** [issues/vllm-deepseek-ocr-integration.md](issues/vllm-deepseek-ocr-integration.md).
+
+## Plan documentation (`plan/`)
+
+**Always** create a plan in **`plan/`** before starting non-trivial work — do not leave design and approach only in chat.
+
+**When to write a file**
+
+- New features, refactors, integrations, or any change touching multiple areas (backend, frontend, Docker, config)
+- When the user asks for a plan (or says “plan this”)
+- Before implementing; update the same file as scope or approach changes
+
+**When to skip**
+
+- One-line fixes, typos, or trivial single-file tweaks
+- When the user explicitly says to skip planning
+
+**Filename:** `plan/<short-kebab-slug>.md` (e.g. `plan/vllm-glm-ocr.md`).
+
+**Each plan should include**
+
+1. **Status** — Draft | In progress | Implemented
+2. **Goals** — what to build and why
+3. **Approach** — architecture, key paths, API or config changes
+4. **Tasks** — ordered checklist (mark done during implementation)
+5. **Related** — links to other `plan/`, `issues/`, or spec docs
+
+Update the plan as work progresses; add a short **Date** or changelog line at the top when revisiting.
+
+## Next engine (`next` / `n`)
+
+When the user sends **`next`** or **`n`** alone (or clearly means “ship the next OCR engine”), implement **one** engine — the **fastest not yet in the repo** — end to end. Do not only plan or scaffold; finish Run/Arena/History (and browser path if the engine is browser-tier) for that engine.
+
+**How to pick the engine**
+
+1. Open [plan/ocr-engines.md](plan/ocr-engines.md) and use the **master speed ladder** for the active workload:
+   - **Default:** workload **B** (scanned page, server `/api/ocr` / Arena) — today the top **Planned** entry is **LightOnOCR**, then MinerU-Diffusion (batched), then Chandra, etc.
+   - **PDF / digital text focus** (user context or open PDF work): workload **A** — **LiteParse** when still unimplemented.
+   - **Browser `/scan` only** (user context): workload **C** — pick the fastest ladder row not marked **In repo**.
+2. Skip engines marked **In repo** or **Yes** in the ladder; skip **out of scope** in [plan/medium-four-ocr-models.md](plan/medium-four-ocr-models.md).
+3. If multiple workloads tie, prefer workload **B** (primary server path).
+
+**How to implement**
+
+1. Follow [plan/medium-four-ocr-models.md](plan/medium-four-ocr-models.md) for the matching **Phase** (Phase 0 registry/router first if `ocr_engines.json` / adapters are not in place yet — that unblocks the fastest pending model).
+2. Obey [Architecture rules](#architecture-rules) (FastAPI gateway, no browser → vLLM, sequential arena, uv-only backend).
+3. Smoke-test: `/api/health`, `/api/models`, one OCR run, update GPU/compose docs if a new service was added.
+4. On completion: set **In repo** / phase checkboxes in `plan/ocr-engines.md` and `plan/medium-four-ocr-models.md`; add `issues/<engine>-integration.md` if setup was non-trivial.
+
+**When all planned engines are done**, reply briefly that the queue is empty and point at [plan/ocr-engines.md](plan/ocr-engines.md).
 
 ## Issue documentation (`issues/`)
 
@@ -36,7 +85,7 @@ Index: [issues/README.md](issues/README.md). Primary vLLM reference: [issues/vll
 
 1. **Browser never calls vLLM/Ollama.** Server OCR traffic goes through FastAPI (`/api/ocr`, `/api/arena`). **Browser scan** (`/scan`) runs Transformers.js / Tesseract in a Web Worker; only structured results + images are posted via `POST /api/scan`.
 2. **Production traffic** enters only via **nginx** on `PORT` (from `.env`, default `3036`). Do not expose the backend port in Compose.
-3. **Persistence:** images → `upload/`; run JSON → `result/`; issue write-ups → `issues/`; prompts → `backend/config/prompts.json`; inference settings → `backend/config/settings.json` (gitignored).
+3. **Persistence:** images → `upload/`; run JSON → `result/`; plans → `plan/`; issue write-ups → `issues/`; prompts → `backend/config/prompts.json`; inference settings → `backend/config/settings.json` (gitignored).
 4. **Inference resolution:** `INFERENCE_BACKEND` (`vllm` default) + `settings.json` (`inference_backend`, `vllm_host` / `ollama_host`) → env → defaults (`http://vllm:8100` in Compose, `http://localhost:8100` local). Loopback in `settings.json` is overridden by non-loopback env in Docker. Use `get_inference_backend()`, `get_inference_host()`, `get_vllm_host()`, or `get_ollama_host()` from `settings_store.py`. OCR calls go through `app.inference.factory`. vLLM OCR uses `VLLM_MAX_TOKENS` default **2048** (model ctx 8192; image consumes input budget).
 
 ## Python backend (`backend/`)
@@ -89,7 +138,7 @@ Index: [issues/README.md](issues/README.md). Primary vLLM reference: [issues/vll
 ## Git and scope
 
 - Do **not** commit `.env`, `upload/*` (except `.gitkeep`), `result/*` (except `.gitkeep`), `backend/config/settings.json`, `node_modules`, `.venv`, `frontend/dist`.
-- Do **not** edit `plan/ocr-ollama-app.md` unless the user asks for plan updates.
+- **Always** add new plans under `plan/` (see [Plan documentation](#plan-documentation-plan)); do **not** edit `plan/ocr-ollama-app.md` (master spec) unless the user asks for plan updates.
 - Prefer focused diffs; match existing naming and patterns; no drive-by refactors.
 - Do not create git commits unless the user explicitly requests them.
 

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { getModels, runArena } from "../api/client";
 import { ArenaGrid } from "../components/ArenaGrid";
 import { ImageCapture } from "../components/ImageCapture";
@@ -17,12 +18,23 @@ export function ArenaPage() {
   const [result, setResult] = useState<ArenaResult | null>(null);
 
   useEffect(() => {
-    getModels()
-      .then((r) => {
-        setModels(r.models);
-        setSelected(pickDefaultArenaModels(r.models));
-      })
-      .catch((e) => setError(e instanceof Error ? e.message : "Failed to load models"));
+    const load = () => {
+      getModels()
+        .then((r) => {
+          setModels(r.models);
+          setSelected((prev) => {
+            const valid = prev.filter((id) =>
+              r.models.some((m) => m.name === id && m.available !== false)
+            );
+            if (valid.length >= 2) return valid;
+            return pickDefaultArenaModels(r.models);
+          });
+        })
+        .catch((e) => setError(e instanceof Error ? e.message : "Failed to load models"));
+    };
+    load();
+    const t = setInterval(load, 5000);
+    return () => clearInterval(t);
   }, []);
 
   const run = async () => {
@@ -52,6 +64,10 @@ export function ArenaPage() {
       <ImageCapture />
       <section className="card">
         <h2>Models (2+)</h2>
+        <p className="muted" style={{ marginTop: 0 }}>
+          All configured OCR models appear below. Offline entries (e.g. LightOnOCR) can be started on the{" "}
+          <Link to="/gpu">GPU</Link> page; this list refreshes every 5s.
+        </p>
         <ModelPicker
           models={models}
           selected={selected}
