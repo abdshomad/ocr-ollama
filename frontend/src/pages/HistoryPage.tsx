@@ -1,0 +1,118 @@
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import {
+  deleteHistoryItem,
+  getHistory,
+  getHistoryItem,
+  uploadImageUrl,
+} from "../api/client";
+import { ArenaGrid } from "../components/ArenaGrid";
+import type { ArenaResult, HistorySummary, RunResult, SingleResult } from "../types";
+
+export function HistoryPage() {
+  const [params] = useSearchParams();
+  const focusId = params.get("id");
+  const [items, setItems] = useState<HistorySummary[]>([]);
+  const [detail, setDetail] = useState<RunResult | null>(null);
+  const [filter, setFilter] = useState("");
+  const [error, setError] = useState<string | null>(null);
+
+  const loadList = () => {
+    getHistory()
+      .then((r) => setItems(r.items))
+      .catch((e) => setError(e instanceof Error ? e.message : "Failed to load history"));
+  };
+
+  useEffect(() => {
+    loadList();
+  }, []);
+
+  useEffect(() => {
+    if (focusId) openDetail(focusId);
+  }, [focusId]);
+
+  const openDetail = (id: string) => {
+    getHistoryItem(id)
+      .then(setDetail)
+      .catch((e) => setError(e instanceof Error ? e.message : "Not found"));
+  };
+
+  const onDelete = async (id: string) => {
+    await deleteHistoryItem(id);
+    if (detail?.id === id) setDetail(null);
+    loadList();
+  };
+
+  const filtered = filter
+    ? items.filter((i) => i.models.some((m) => m.toLowerCase().includes(filter.toLowerCase())))
+    : items;
+
+  const imageUrl = (filename: string) => (filename ? uploadImageUrl(filename) : "");
+
+  return (
+    <>
+      <section className="card">
+        <h2>History</h2>
+        <input
+          type="search"
+          placeholder="Filter by model name…"
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+          style={{ width: "100%", maxWidth: 320 }}
+        />
+        {error && <div className="error-banner">{error}</div>}
+        <ul className="history-list" style={{ marginTop: "1rem" }}>
+          {filtered.map((item) => (
+            <li key={item.id} className="history-item">
+              <div>
+                <strong>{item.kind === "arena" ? "Arena" : "Single"}</strong>
+                <span className="muted"> — {new Date(item.timestamp).toLocaleString()}</span>
+                <br />
+                <span className="muted">{item.models.join(", ")}</span>
+                <p className="muted" style={{ margin: "0.25rem 0 0" }}>
+                  {item.preview || "(no text)"}
+                </p>
+              </div>
+              <div className="row">
+                <button type="button" onClick={() => openDetail(item.id)}>
+                  Open
+                </button>
+                <button type="button" onClick={() => void onDelete(item.id)}>
+                  Delete
+                </button>
+              </div>
+            </li>
+          ))}
+          {filtered.length === 0 && <p className="muted">No history yet.</p>}
+        </ul>
+      </section>
+      {detail && (
+        <section className="card">
+          <h2>
+            {detail.kind === "arena" ? "Arena" : "Single"} — {detail.id.slice(0, 8)}…
+          </h2>
+          {detail.image_path && (
+            <img
+              src={imageUrl(detail.image_path.split("/").pop() ?? "")}
+              alt="Source"
+              className="preview-img"
+            />
+          )}
+          {detail.kind === "single" ? (
+            <>
+              <p className="muted">
+                {(detail as SingleResult).model} · {(detail as SingleResult).duration_ms} ms
+              </p>
+              <pre className="ocr-text">{(detail as SingleResult).text}</pre>
+            </>
+          ) : (
+            <ArenaGrid results={(detail as ArenaResult).results} />
+          )}
+          <button type="button" style={{ marginTop: "0.5rem" }} onClick={() => setDetail(null)}>
+            Close
+          </button>
+        </section>
+      )}
+    </>
+  );
+}

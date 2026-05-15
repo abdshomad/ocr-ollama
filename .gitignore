@@ -1,0 +1,12 @@
+upload/*
+!upload/.gitkeep
+result/*
+!result/.gitkeep
+frontend/node_modules/
+frontend/dist/
+backend/.venv/
+__pycache__/
+*.pyc
+.env
+backend/config/settings.json
+.DS_Store

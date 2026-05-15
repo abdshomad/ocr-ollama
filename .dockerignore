@@ -1,0 +1,15 @@
+.git
+.env
+frontend/node_modules
+frontend/dist
+backend/.venv
+backend/.venv/
+**/__pycache__
+**/*.pyc
+upload/*
+!upload/.gitkeep
+result/*
+!result/.gitkeep
+backend/config/settings.json
+*.md
+plan/

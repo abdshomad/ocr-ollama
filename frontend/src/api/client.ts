@@ -1,0 +1,107 @@
+import type {
+  AppSettings,
+  ArenaResult,
+  HealthResponse,
+  HistorySummary,
+  InferenceBackend,
+  OllamaModel,
+  PromptsConfig,
+  RunResult,
+  SettingsUpdateResponse,
+  SingleResult,
+} from "../types";
+
+async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(path, init);
+  if (!res.ok) {
+    let detail = res.statusText;
+    try {
+      const body = await res.json();
+      detail = typeof body.detail === "string" ? body.detail : JSON.stringify(body.detail ?? body);
+    } catch {
+      /* ignore */
+    }
+    throw new Error(detail);
+  }
+  return res.json() as Promise<T>;
+}
+
+export function getHealth() {
+  return request<HealthResponse>("/api/health");
+}
+
+export function getSettings() {
+  return request<AppSettings>("/api/settings");
+}
+
+export function updateSettings(inference_backend: InferenceBackend, inference_host: string) {
+  return request<SettingsUpdateResponse>("/api/settings", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ inference_backend, inference_host }),
+  });
+}
+
+export function getModels() {
+  return request<{ models: OllamaModel[]; inference_backend: InferenceBackend; inference_host: string }>(
+    "/api/models"
+  );
+}
+
+export function getPrompts() {
+  return request<PromptsConfig>("/api/prompts");
+}
+
+export function updatePrompts(data: Partial<PromptsConfig>) {
+  return request<PromptsConfig>("/api/prompts", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+}
+
+export function deleteModelPrompt(model: string) {
+  return request<PromptsConfig>(`/api/prompts/${encodeURIComponent(model)}`, {
+    method: "DELETE",
+  });
+}
+
+export function runOcr(image: File | Blob, model: string, prompt?: string) {
+  const form = new FormData();
+  form.append("image", image, image instanceof File ? image.name : "capture.jpg");
+  form.append("model", model);
+  if (prompt?.trim()) form.append("prompt", prompt.trim());
+  return request<SingleResult>("/api/ocr", { method: "POST", body: form });
+}
+
+export function runArena(
+  image: File | Blob,
+  models: string[],
+  promptOverrides?: Record<string, string>
+) {
+  const form = new FormData();
+  form.append("image", image, image instanceof File ? image.name : "capture.jpg");
+  form.append("models", JSON.stringify(models));
+  if (promptOverrides && Object.keys(promptOverrides).length > 0) {
+    form.append("prompt_overrides", JSON.stringify(promptOverrides));
+  }
+  return request<ArenaResult>("/api/arena", { method: "POST", body: form });
+}
+
+export function getHistory(offset = 0, limit = 50) {
+  return request<{ items: HistorySummary[]; total: number }>(
+    `/api/history?offset=${offset}&limit=${limit}`
+  );
+}
+
+export function getHistoryItem(id: string) {
+  return request<RunResult>(`/api/history/${id}`);
+}
+
+export function deleteHistoryItem(id: string) {
+  return request<{ deleted: string }>(`/api/history/${id}`, { method: "DELETE" });
+}
+
+export function uploadImageUrl(filename: string) {
+  return `/api/files/upload/${encodeURIComponent(filename)}`;
+}
