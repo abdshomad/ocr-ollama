@@ -7,6 +7,7 @@ DEFAULT_VLLM_HOST = os.getenv("VLLM_HOST", "http://localhost:8100").rstrip("/")
 DEFAULT_OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434").rstrip("/")
 UPLOAD_DIR = Path(os.getenv("UPLOAD_DIR", ROOT / "upload"))
 RESULT_DIR = Path(os.getenv("RESULT_DIR", ROOT / "result"))
+SAMPLE_IMAGES_DIR = Path(os.getenv("SAMPLE_IMAGES_DIR", ROOT / "SAMPLES" / "IMAGES"))
 PROMPTS_PATH = Path(__file__).resolve().parents[1] / "config" / "prompts.json"
 MAX_IMAGE_BYTES = int(os.getenv("MAX_IMAGE_BYTES", 10 * 1024 * 1024))
 ALLOWED_CONTENT_TYPES = {

@@ -1,0 +1,17 @@
+{
+  "engines": [
+    {
+      "id": "mineru-diffusion",
+      "type": "nano_dvlm",
+      "label": "MinerU-Diffusion",
+      "models": ["opendatalab/MinerU-Diffusion-V1-0320-2.5B"],
+      "host_env": "MINERU_DIFFUSION_HOST",
+      "default_host": "http://mineru-diffusion:8200",
+      "compose_service": "mineru-diffusion",
+      "compose_profile": "mineru",
+      "gpu_device": 0,
+      "port": 8200,
+      "speed_tier": "medium"
+    }
+  ]
+}

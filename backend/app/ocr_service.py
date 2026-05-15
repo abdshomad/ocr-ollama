@@ -20,7 +20,12 @@ async def _ensure_model_available(model: str) -> None:
     models = await list_models_with_classification()
     entry = next((m for m in models if m.get("name") == model), None)
     if entry is not None and entry.get("available") is False:
-        label = entry.get("vllm_endpoint_label") or entry.get("vllm_endpoint") or "vLLM"
+        label = (
+            entry.get("vllm_endpoint_label")
+            or entry.get("engine_label")
+            or entry.get("vllm_endpoint")
+            or "inference"
+        )
         raise HTTPException(
             status_code=503,
             detail=f"Model '{model}' is offline ({label} server not ready). Check docker compose logs.",

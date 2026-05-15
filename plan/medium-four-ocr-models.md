@@ -224,12 +224,12 @@ vllm serve lightonai/LightOnOCR-2-1B \
 
 **Tasks:**
 
-- [ ] Dockerfile `docker/Dockerfile.mineru-diffusion` from upstream instructions (Python 3.12 + dev headers if `@torch.compile` enabled; article recommends **batch mode only**, skip compile on 16GB).
-- [ ] Compose service `mineru-diffusion` exposing a **thin HTTP wrapper** (FastAPI or minimal OpenAPI) around `generate_messages()` batch API — internal only, `MINERU_DIFFUSION_HOST`.
-- [ ] Adapter translates image bytes → MinerU message format; returns markdown/text (+ optional OTSL table post-process later).
-- [ ] GPU: dedicated GPU or swap via GPU page; document 2.5B + layout VRAM.
+- [x] Dockerfile `docker/Dockerfile.mineru-diffusion` from upstream instructions (Python 3.12 + dev headers if `@torch.compile` enabled; article recommends **batch mode only**, skip compile on 16GB).
+- [x] Compose service `mineru-diffusion` exposing a **thin HTTP wrapper** (FastAPI or minimal OpenAPI) around `generate_messages()` batch API — internal only, `MINERU_DIFFUSION_HOST`.
+- [x] Adapter translates image bytes → MinerU message format; returns markdown/text (+ optional OTSL table post-process later).
+- [x] GPU: dedicated GPU or swap via GPU page; document 2.5B + layout VRAM.
 - [ ] Optional later: bbox/layout pipeline per article (MinerU layout + LightOn text) — **Phase 4b**, not blocking Phase 4 MVP.
-- [ ] Issue: `issues/mineru-diffusion-nano-dvlm-integration.md` (hallucinations, duplicate blocks, Russian glitch).
+- [x] Issue: `issues/mineru-diffusion-nano-dvlm-integration.md` (hallucinations, duplicate blocks, Russian glitch).
 
 ---
 
@@ -300,7 +300,7 @@ vllm serve lightonai/LightOnOCR-2-1B \
 - [x] **Phase 1** — LightOnOCR via vLLM (registry extension; full Phase 0 `ocr_engines.json` deferred)
 - [ ] **Phase 2** — Chandra via vLLM / Chandra sidecar
 - [ ] **Phase 3** — LiteParse custom engine
-- [ ] **Phase 4** — MinerU-Diffusion via nano_dvlm sidecar
+- [x] **Phase 4** — MinerU-Diffusion via nano_dvlm sidecar
 - [ ] **Phase 5** (optional) — Layout + OCR pipeline
 
 ---

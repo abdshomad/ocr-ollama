@@ -1,0 +1,80 @@
+# MinerU-Diffusion nano_dvlm sidecar — multi-stage for smaller runtime image.
+# See issues/mineru-diffusion-nano-dvlm-integration.md
+
+# -----------------------------------------------------------------------------
+# Builder: git/curl/pip only here; heavy wheels installed into /opt/venv
+# -----------------------------------------------------------------------------
+FROM nvidia/cuda:12.8.0-cudnn-runtime-ubuntu24.04 AS builder
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    VIRTUAL_ENV=/opt/venv \
+    PATH=/opt/venv/bin:$PATH
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        ca-certificates curl git python3 python3-venv \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN python3 -m venv /opt/venv
+
+WORKDIR /opt
+RUN git clone --depth 1 https://github.com/opendatalab/MinerU-Diffusion.git MinerU-Diffusion \
+    && rm -rf \
+        MinerU-Diffusion/.git \
+        MinerU-Diffusion/assets \
+        MinerU-Diffusion/docs \
+        MinerU-Diffusion/scripts \
+        MinerU-Diffusion/engines/hf \
+        MinerU-Diffusion/engines/sglang \
+    && rm -f MinerU-Diffusion/README.md MinerU-Diffusion/LICENSE
+
+WORKDIR /opt/MinerU-Diffusion
+
+# Split pip layers for rebuild cache; torch is the largest layer.
+RUN pip install \
+    torch==2.8.0 torchvision==0.23.0 torchaudio==2.8.0 \
+    --index-url https://download.pytorch.org/whl/cu128
+
+ARG FLASH_ATTN_WHL=flash_attn-2.8.3+cu12torch2.8cxx11abiFALSE-cp312-cp312-linux_x86_64.whl
+RUN curl -fsSL -o "/tmp/${FLASH_ATTN_WHL}" \
+        "https://github.com/Dao-AILab/flash-attention/releases/download/v2.8.3/${FLASH_ATTN_WHL}" \
+    && pip install "/tmp/${FLASH_ATTN_WHL}" \
+    && rm -f "/tmp/${FLASH_ATTN_WHL}"
+
+RUN pip install -r requirements.txt
+
+RUN pip install fastapi "uvicorn[standard]" python-multipart huggingface_hub
+
+RUN find /opt/venv /opt/MinerU-Diffusion -depth -type d -name __pycache__ -exec rm -rf {} + \
+    && find /opt/venv /opt/MinerU-Diffusion -name "*.pyc" -delete
+
+# -----------------------------------------------------------------------------
+# Runtime: cudnn-devel for triton/CUDA headers used on first inference
+# -----------------------------------------------------------------------------
+FROM nvidia/cuda:12.8.0-cudnn-devel-ubuntu24.04 AS runtime
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONUNBUFFERED=1 \
+    HF_HOME=/root/.cache/huggingface \
+    MINERU_REPO_DIR=/opt/MinerU-Diffusion \
+    VIRTUAL_ENV=/opt/venv \
+    PATH=/opt/venv/bin:$PATH
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        ca-certificates python3 libpython3.12 python3-dev \
+        build-essential \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+COPY --from=builder /opt/venv /opt/venv
+COPY --from=builder /opt/MinerU-Diffusion /opt/MinerU-Diffusion
+COPY docker/mineru-diffusion/serve.py /serve.py
+
+EXPOSE 8200
+
+HEALTHCHECK --interval=30s --timeout=15s --start-period=1800s --retries=60 \
+    CMD python3 -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8200/health')" || exit 1
+
+CMD ["python3", "/serve.py"]

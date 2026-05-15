@@ -188,6 +188,68 @@ nav a.active {
   margin: 0.75rem auto 0;
 }
 
+.sample-images {
+  margin-bottom: 1rem;
+}
+
+.sample-images-title {
+  margin: 0 0 0.5rem;
+  font-size: 0.875rem;
+}
+
+.sample-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+  gap: 0.5rem;
+}
+
+.sample-thumb {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 0.35rem;
+  border-radius: 8px;
+  border: 2px solid var(--border);
+  background: var(--bg);
+  overflow: hidden;
+}
+
+.sample-thumb:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+.sample-thumb-active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.sample-thumb img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 4px;
+  display: block;
+}
+
+.sample-thumb-label {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-top: 0.25rem;
+  text-align: center;
+}
+
+.sample-thumb-busy {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  background: rgba(15, 17, 23, 0.75);
+  color: var(--text);
+}
+
 .model-list {
   display: flex;
   flex-direction: column;

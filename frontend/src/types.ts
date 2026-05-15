@@ -14,7 +14,15 @@ export interface OllamaModel {
   available?: boolean;
   vllm_endpoint?: string;
   vllm_endpoint_label?: string;
+  engine_type?: string;
+  engine_label?: string;
   speed_tier?: string;
+}
+
+export interface SampleImage {
+  name: string;
+  label: string;
+  url: string;
 }
 
 export interface PromptsConfig {

@@ -4,6 +4,7 @@
     "deepseek-ai/DeepSeek-OCR": "Free OCR.",
     "zai-org/GLM-OCR": "Text Recognition:",
     "lightonai/LightOnOCR-2-1B": "",
+    "opendatalab/MinerU-Diffusion-V1-0320-2.5B": "Text Recognition:",
     "deepseek-ocr:latest": "Transcribe all text in this image. Output plain text only, preserving line breaks.",
     "glm-ocr:latest": "Text Recognition:",
     "MedAIBase/PaddleOCR-VL:0.9b": "Parse this document and extract all text, tables, and structured content. Output plain text preserving layout.",

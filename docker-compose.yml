@@ -72,6 +72,44 @@ services:
       retries: 60
       start_period: 1800s
 
+  mineru-diffusion:
+    profiles: ["mineru"]
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.mineru-diffusion
+    image: ${MINERU_DIFFUSION_IMAGE:-ocr-ollama-mineru-diffusion:latest}
+    restart: unless-stopped
+    ipc: host
+    shm_size: "16gb"
+    environment:
+      HF_HOME: /root/.cache/huggingface
+      HUGGING_FACE_HUB_TOKEN: ${HUGGING_FACE_HUB_TOKEN:-}
+      MODEL_PATH: ${MINERU_MODEL_PATH:-opendatalab/MinerU-Diffusion-V1-0320-2.5B}
+      MINERU_MODEL_ID: opendatalab/MinerU-Diffusion-V1-0320-2.5B
+      MINERU_PORT: "8200"
+      MINERU_GPU_MEMORY_UTILIZATION: ${MINERU_GPU_MEMORY_UTILIZATION:-0.8}
+      MINERU_GEN_LENGTH: ${MINERU_GEN_LENGTH:-1024}
+      MINERU_ENFORCE_EAGER: ${MINERU_ENFORCE_EAGER:-1}
+    volumes:
+      - vllm-hf-cache:/root/.cache/huggingface
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ["${MINERU_DIFFUSION_CUDA_DEVICE:-0}"]
+              capabilities: [gpu]
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "python3 -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8200/health')\"",
+        ]
+      interval: 30s
+      timeout: 15s
+      retries: 60
+      start_period: 1800s
+
   vllm-lighton:
     <<: [*vllm-service, *vllm-gpu]
     profiles: ["lighton"]
@@ -114,6 +152,7 @@ services:
       VLLM_DEEPSEEK_HOST: ${VLLM_DEEPSEEK_HOST:-http://vllm-deepseek:8100}
       VLLM_GLM_HOST: ${VLLM_GLM_HOST:-http://vllm-glm:8101}
       VLLM_LIGHTON_HOST: ${VLLM_LIGHTON_HOST:-http://vllm-lighton:8102}
+      MINERU_DIFFUSION_HOST: ${MINERU_DIFFUSION_HOST:-http://mineru-diffusion:8200}
       VLLM_HOST: ${VLLM_HOST:-http://vllm-deepseek:8100}
       VLLM_TIMEOUT: ${VLLM_TIMEOUT:-600}
       OLLAMA_HOST: ${OLLAMA_HOST:-http://host.docker.internal:11434}
@@ -128,6 +167,7 @@ services:
     volumes:
       - ./upload:/app/upload
       - ./result:/app/result
+      - ./SAMPLES/IMAGES:/app/SAMPLES/IMAGES:ro
       - ./backend/config:/app/backend/config
       - /var/run/docker.sock:/var/run/docker.sock
       - .:/workspace:ro

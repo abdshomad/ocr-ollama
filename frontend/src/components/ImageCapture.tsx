@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from "react";
 import { useImage } from "../context/ImageContext";
 import { useCamera } from "../hooks/useCamera";
+import { SampleImages } from "./SampleImages";
 
 const ACCEPT = "image/jpeg,image/png,image/webp,image/gif";
 
@@ -40,6 +41,7 @@ export function ImageCapture() {
   return (
     <section className="card">
       <h2>Image</h2>
+      <SampleImages />
       {!file ? (
         <>
           <div

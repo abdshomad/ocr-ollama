@@ -17,6 +17,7 @@ from app.ocr_service import (
     safe_upload_filename,
 )
 from app.product_scan import run_product_ocr
+from app.samples import list_sample_images, resolve_sample_path, sample_file_response
 from app.scan_service import run_browser_scan
 from app.prompts import get_prompts, remove_model_prompt, update_prompts
 from app.settings_store import get_inference_backend, get_inference_host, get_settings, update_settings
@@ -107,6 +108,17 @@ async def vllm_service_stop(service_id: str):
         raise HTTPException(status_code=404, detail=str(e)) from e
     except (RuntimeError, TimeoutError) as e:
         raise HTTPException(status_code=502, detail=str(e)) from e
+
+
+@app.get("/api/samples")
+async def samples_list():
+    return {"samples": list_sample_images()}
+
+
+@app.get("/api/samples/{filename}")
+async def samples_get(filename: str):
+    path = resolve_sample_path(filename)
+    return sample_file_response(path)
 
 
 @app.get("/api/models")

@@ -11,6 +11,7 @@ import type {
   PromptsConfig,
   RunResult,
   SettingsUpdateResponse,
+  SampleImage,
   SingleResult,
   VllmServiceActionResult,
 } from "../types";
@@ -126,6 +127,22 @@ export function deleteHistoryItem(id: string) {
 
 export function uploadImageUrl(filename: string) {
   return `/api/files/upload/${encodeURIComponent(filename)}`;
+}
+
+export function getSamples() {
+  return request<{ samples: SampleImage[] }>("/api/samples").then((r) => r.samples);
+}
+
+export function sampleImageUrl(name: string) {
+  return `/api/samples/${encodeURIComponent(name)}`;
+}
+
+export async function fetchSampleImage(name: string): Promise<Blob> {
+  const res = await fetch(sampleImageUrl(name));
+  if (!res.ok) {
+    throw new Error(`Sample ${name}: ${res.statusText}`);
+  }
+  return res.blob();
 }
 
 export function saveBrowserScan(

@@ -8,7 +8,8 @@ from typing import Any
 
 import httpx
 
-from app.vllm_registry import host_for_endpoint, load_endpoints
+from app.engine_registry import host_for_engine, load_all_endpoints
+from app.vllm_registry import host_for_endpoint
 
 _DOCKER = "docker"
 _SOCKET = Path("/var/run/docker.sock")
@@ -82,7 +83,7 @@ def _compose_base_cmd() -> list[str]:
 
 
 def endpoint_by_id(service_id: str) -> dict[str, Any] | None:
-    for ep in load_endpoints():
+    for ep in load_all_endpoints():
         if str(ep.get("id")) == service_id:
             return ep
     return None
@@ -99,7 +100,7 @@ def _profiles_for_endpoint(ep: dict[str, Any]) -> list[str]:
 
 def _compose_profile_args(*, endpoints: list[dict[str, Any]] | None = None) -> list[str]:
     profiles: set[str] = set()
-    for ep in endpoints if endpoints is not None else load_endpoints():
+    for ep in endpoints if endpoints is not None else load_all_endpoints():
         profiles.update(_profiles_for_endpoint(ep))
     args: list[str] = []
     for name in sorted(profiles):
@@ -115,6 +116,8 @@ def gpu_device_for_endpoint(ep: dict[str, Any]) -> int:
         return int(os.getenv("VLLM_GLM_CUDA_DEVICE", str(ep.get("gpu_device", 1))))
     if ep_id == "lighton":
         return int(os.getenv("VLLM_LIGHTON_CUDA_DEVICE", str(ep.get("gpu_device", 1))))
+    if ep_id == "mineru-diffusion":
+        return int(os.getenv("MINERU_DIFFUSION_CUDA_DEVICE", str(ep.get("gpu_device", 0))))
     return int(ep.get("gpu_device", 0))
 
 
@@ -187,27 +190,43 @@ async def _compose_ps_map() -> dict[str, dict[str, str]]:
     return by_service
 
 
-async def _api_ready(host: str) -> bool:
+async def _api_ready(host: str, *, engine_type: str | None = None) -> bool:
     if not host:
         return False
+    base = host.rstrip("/")
+    path = "/health" if engine_type == "nano_dvlm" else "/v1/models"
     try:
         async with httpx.AsyncClient(timeout=5.0) as client:
-            r = await client.get(f"{host.rstrip('/')}/v1/models")
-            return r.status_code == 200
+            r = await client.get(f"{base}{path}")
+            if r.status_code != 200:
+                return False
+            if engine_type == "nano_dvlm":
+                return bool(r.json().get("model_loaded"))
+            return True
     except httpx.HTTPError:
         return False
+
+
+def _host_for_service(ep: dict[str, Any]) -> str:
+    if ep.get("type") == "nano_dvlm":
+        return host_for_engine(ep)
+    return host_for_endpoint(ep)
 
 
 async def list_service_statuses() -> list[dict[str, Any]]:
     ps_map = await _compose_ps_map()
     out: list[dict[str, Any]] = []
-    for ep in load_endpoints():
+    for ep in load_all_endpoints():
         service = str(ep.get("compose_service") or "")
         row = ps_map.get(service, {})
         state = str(row.get("State") or "not_created").lower()
         health = str(row.get("Health") or "")
-        host = host_for_endpoint(ep)
-        api_ready = await _api_ready(host) if state == "running" else False
+        host = _host_for_service(ep)
+        api_ready = (
+            await _api_ready(host, engine_type=str(ep.get("type") or ""))
+            if state == "running"
+            else False
+        )
         docker_state = state
         if state == "running" and health and health.lower() not in ("healthy", ""):
             if not api_ready:
@@ -312,9 +331,9 @@ async def gpu_dashboard() -> dict[str, Any]:
 async def _services_without_compose() -> list[dict[str, Any]]:
     """Status from HTTP only when compose control is unavailable."""
     out: list[dict[str, Any]] = []
-    for ep in load_endpoints():
-        host = host_for_endpoint(ep)
-        api_ready = await _api_ready(host)
+    for ep in load_all_endpoints():
+        host = _host_for_service(ep)
+        api_ready = await _api_ready(host, engine_type=str(ep.get("type") or ""))
         out.append(
             {
                 "id": str(ep.get("id", "")),
