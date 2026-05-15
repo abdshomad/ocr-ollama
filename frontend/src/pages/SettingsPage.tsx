@@ -9,6 +9,7 @@ import {
   updateSettings,
 } from "../api/client";
 import type { InferenceBackend, OllamaModel, PromptsConfig } from "../types";
+import { clearBrowserModelCache, getCacheClearedAt } from "../browser-ocr/modelCache";
 import { pickDefaultOcrModel } from "../utils/models";
 
 const HOST_PLACEHOLDER: Record<InferenceBackend, string> = {
@@ -29,6 +30,8 @@ export function SettingsPage() {
   const [modelPrompt, setModelPrompt] = useState("");
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [cacheClearedAt, setCacheClearedAt] = useState<string | null>(() => getCacheClearedAt());
+  const [cacheClearing, setCacheClearing] = useState(false);
 
   const formatHealth = (h: { inference_reachable?: boolean; model_count?: number; error?: string }) =>
     h.inference_reachable
@@ -164,6 +167,39 @@ export function SettingsPage() {
             Save & test
           </button>
         </div>
+      </section>
+      <section className="card">
+        <h2>Browser OCR models</h2>
+        <p className="muted">
+          Offline scan models are cached in the browser (Cache API / IndexedDB). Clear if downloads are
+          corrupt or you need disk space.
+        </p>
+        {cacheClearedAt && (
+          <p className="muted" style={{ marginTop: "0.5rem" }}>
+            Last cleared: {new Date(cacheClearedAt).toLocaleString()}
+          </p>
+        )}
+        <button
+          type="button"
+          style={{ marginTop: "0.5rem" }}
+          disabled={cacheClearing}
+          onClick={async () => {
+            setCacheClearing(true);
+            setError(null);
+            try {
+              await clearBrowserModelCache();
+              setCacheClearedAt(getCacheClearedAt());
+              setSaved(true);
+              setTimeout(() => setSaved(false), 2000);
+            } catch (e) {
+              setError(e instanceof Error ? e.message : "Failed to clear cache");
+            } finally {
+              setCacheClearing(false);
+            }
+          }}
+        >
+          {cacheClearing ? "Clearing…" : "Clear browser model cache"}
+        </button>
       </section>
       <section className="card">
         <h2>General prompt</h2>

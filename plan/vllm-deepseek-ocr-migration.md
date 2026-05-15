@@ -1,6 +1,6 @@
 # vLLM inference migration plan (DeepSeek-OCR pilot)
 
-**Status:** Implemented (v1: factory + vLLM client; default backend `vllm`)  
+**Status:** Implemented and verified — see [issues/vllm-deepseek-ocr-integration.md](../issues/vllm-deepseek-ocr-integration.md)  
 **Pilot model:** [deepseek-ai/DeepSeek-OCR](https://huggingface.co/deepseek-ai/DeepSeek-OCR) via [vLLM DeepSeek-OCR recipe](https://docs.vllm.ai/projects/recipes/en/latest/DeepSeek/DeepSeek-OCR.html)  
 **Related:** [ocr-ollama-app.md](./ocr-ollama-app.md) (current Ollama stack), [issues/paddleocr-vl-ollama-load-failure.md](../issues/paddleocr-vl-ollama-load-failure.md)
 

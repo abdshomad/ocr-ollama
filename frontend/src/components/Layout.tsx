@@ -41,6 +41,7 @@ export function Layout() {
           Run
         </NavLink>
         <NavLink to="/arena">Arena</NavLink>
+        <NavLink to="/scan">Scan</NavLink>
         <NavLink to="/history">History</NavLink>
         <NavLink to="/settings">Settings</NavLink>
         {health && (

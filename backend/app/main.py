@@ -16,6 +16,7 @@ from app.ocr_service import (
     run_ocr,
     safe_upload_filename,
 )
+from app.scan_service import run_browser_scan
 from app.prompts import get_prompts, remove_model_prompt, update_prompts
 from app.settings_store import get_inference_backend, get_inference_host, get_settings, update_settings
 
@@ -102,6 +103,21 @@ async def ocr_endpoint(
 ):
     image_bytes, ext = await read_and_validate_image(image)
     return await run_ocr(image_bytes, ext, model, prompt)
+
+
+@app.post("/api/scan")
+async def scan_endpoint(
+    image: UploadFile = File(...),
+    sku: str = Form(...),
+    expiry_date: str | None = Form(None),
+    confidence: float = Form(...),
+    raw_text: str | None = Form(None),
+    engine: str = Form(...),
+    duration_ms: int = Form(...),
+):
+    return await run_browser_scan(
+        image, sku, expiry_date, confidence, raw_text, engine, duration_ms
+    )
 
 
 @app.post("/api/arena")

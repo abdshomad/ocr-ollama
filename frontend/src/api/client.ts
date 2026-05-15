@@ -1,6 +1,8 @@
+import type { ScanExtraction } from "../browser-ocr/types";
 import type {
   AppSettings,
   ArenaResult,
+  BrowserScanResult,
   HealthResponse,
   HistorySummary,
   InferenceBackend,
@@ -104,4 +106,20 @@ export function deleteHistoryItem(id: string) {
 
 export function uploadImageUrl(filename: string) {
   return `/api/files/upload/${encodeURIComponent(filename)}`;
+}
+
+export function saveBrowserScan(
+  image: File | Blob,
+  extraction: ScanExtraction,
+  durationMs: number
+) {
+  const form = new FormData();
+  form.append("image", image, image instanceof File ? image.name : "scan.jpg");
+  form.append("sku", extraction.sku);
+  if (extraction.expiry_date) form.append("expiry_date", extraction.expiry_date);
+  form.append("confidence", String(extraction.confidence));
+  if (extraction.raw_text) form.append("raw_text", extraction.raw_text);
+  form.append("engine", extraction.engine);
+  form.append("duration_ms", String(durationMs));
+  return request<BrowserScanResult>("/api/scan", { method: "POST", body: form });
 }

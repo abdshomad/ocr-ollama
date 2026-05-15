@@ -4,9 +4,9 @@ Guidance for AI agents working in this repository.
 
 ## Project summary
 
-Monorepo: **Vite + React** frontend and **FastAPI** backend for OCR via **vLLM** (default) or **Ollama**. Users upload or capture images, run single-model OCR or an **arena** comparison (2+ models), and browse **history**. Inference backend and host URL are configurable in **Settings**.
+Monorepo: **Vite + React** frontend and **FastAPI** backend for OCR via **vLLM + DeepSeek-OCR** (default) or **Ollama**. Docker Compose runs `vllm`, `backend`, and `nginx` on one host port. Users upload or capture images, run OCR or **arena** compare, optional **browser scan**, and browse **history**. Inference backend and host URL are configurable in **Settings**.
 
-Spec: [plan/ocr-ollama-app.md](plan/ocr-ollama-app.md), [plan/vllm-deepseek-ocr-migration.md](plan/vllm-deepseek-ocr-migration.md)
+Spec: [plan/ocr-ollama-app.md](plan/ocr-ollama-app.md), [plan/vllm-deepseek-ocr-migration.md](plan/vllm-deepseek-ocr-migration.md), [plan/browser-ocr-pipeline.md](plan/browser-ocr-pipeline.md). **Working vLLM setup:** [issues/vllm-deepseek-ocr-integration.md](issues/vllm-deepseek-ocr-integration.md).
 
 ## Issue documentation (`issues/`)
 
@@ -30,14 +30,14 @@ Spec: [plan/ocr-ollama-app.md](plan/ocr-ollama-app.md), [plan/vllm-deepseek-ocr-
 
 Update the same file when the resolution changes; add a short **Date** or changelog line at the top when revisiting.
 
-Index: [issues/README.md](issues/README.md). Examples: [issues/docker-ollama-localhost-settings-override.md](issues/docker-ollama-localhost-settings-override.md), [issues/paddleocr-vl-ollama-load-failure.md](issues/paddleocr-vl-ollama-load-failure.md).
+Index: [issues/README.md](issues/README.md). Primary vLLM reference: [issues/vllm-deepseek-ocr-integration.md](issues/vllm-deepseek-ocr-integration.md).
 
 ## Architecture rules
 
-1. **Browser never calls vLLM/Ollama.** All model/OCR traffic goes through FastAPI (`/api/*`).
+1. **Browser never calls vLLM/Ollama.** Server OCR traffic goes through FastAPI (`/api/ocr`, `/api/arena`). **Browser scan** (`/scan`) runs Transformers.js / Tesseract in a Web Worker; only structured results + images are posted via `POST /api/scan`.
 2. **Production traffic** enters only via **nginx** on `PORT` (from `.env`, default `3036`). Do not expose the backend port in Compose.
 3. **Persistence:** images → `upload/`; run JSON → `result/`; issue write-ups → `issues/`; prompts → `backend/config/prompts.json`; inference settings → `backend/config/settings.json` (gitignored).
-4. **Inference resolution:** `INFERENCE_BACKEND` (`vllm` default) + `settings.json` → `VLLM_HOST` / `OLLAMA_HOST` env → defaults (`8100` / `11434`). Loopback in `settings.json` is overridden by non-loopback env in Docker. Use `get_inference_backend()`, `get_inference_host()`, `get_vllm_host()`, or `get_ollama_host()` from `settings_store.py`. OCR calls go through `app.inference.factory`.
+4. **Inference resolution:** `INFERENCE_BACKEND` (`vllm` default) + `settings.json` (`inference_backend`, `vllm_host` / `ollama_host`) → env → defaults (`http://vllm:8100` in Compose, `http://localhost:8100` local). Loopback in `settings.json` is overridden by non-loopback env in Docker. Use `get_inference_backend()`, `get_inference_host()`, `get_vllm_host()`, or `get_ollama_host()` from `settings_store.py`. OCR calls go through `app.inference.factory`. vLLM OCR uses `VLLM_MAX_TOKENS` default **2048** (model ctx 8192; image consumes input budget).
 
 ## Python backend (`backend/`)
 
@@ -63,25 +63,27 @@ Index: [issues/README.md](issues/README.md). Examples: [issues/docker-ollama-loc
 
 ## Docker
 
-- `docker compose up --build` — builds `backend` (uv) and `nginx` (frontend static + reverse proxy).
+- `docker compose up --build` — **`vllm`** (GPU, DeepSeek-OCR), **`backend`**, **`nginx`** on `${PORT:-3036}`.
 - Copy `backend/pyproject.toml` + **`uv.lock`** in Dockerfile before `uv sync --frozen --no-dev --no-install-project`.
-- Do not publish backend `8000` on the host; only `${PORT}:80` on nginx.
-- **Compose includes `vllm` service** (GPU, port 8100, volume `vllm-hf-cache`). Backend default `VLLM_HOST=http://vllm:8100`. Requires NVIDIA Container Toolkit. For Ollama-only: `INFERENCE_BACKEND=ollama` and `docker compose up backend nginx` (no `vllm`). Warn if `settings.json` has loopback while env uses `vllm` or `host.docker.internal`.
+- Do not publish backend `8000` or vLLM `8100` on the host by default (avoids port conflicts). Backend uses `http://vllm:8100` on the Compose network. Optional host publish: `docker-compose.vllm-publish.yml` (port **18100**).
+- **vLLM service:** `vllm/vllm-openai:latest`, `CUDA_VISIBLE_DEVICES` default **1**, `VLLM_GPU_MEMORY_UTILIZATION` **0.85**, volume `vllm-hf-cache`, healthcheck `start_period` 1800s. First start downloads model weights.
+- **Ollama-only:** `INFERENCE_BACKEND=ollama` and `docker compose up backend nginx` (skip `vllm`).
+- Troubleshooting: [issues/vllm-deepseek-ocr-integration.md](issues/vllm-deepseek-ocr-integration.md).
 
 ## Configuration files
 
 | File | Tracked | Purpose |
 |------|---------|---------|
-| `.env` | No | `PORT`, `INFERENCE_BACKEND`, `VLLM_HOST`, `OLLAMA_HOST` for Compose |
+| `.env` | No | `PORT`, `INFERENCE_BACKEND`, `VLLM_*`, `OLLAMA_HOST` for Compose |
 | `.env.example` | Yes | Template |
-| `backend/config/prompts.json` | Yes | Default + per-model prompts |
-| `backend/config/settings.json` | No | UI-saved Ollama URL |
+| `backend/config/prompts.json` | Yes | Default + per-model prompts (`Free OCR.` for DeepSeek) |
+| `backend/config/settings.json` | No | UI-saved inference backend + host URLs |
 
 ## API conventions
 
 - Prefix routes with `/api/`.
 - Multipart for OCR: `image`, `model`, optional `prompt`; arena adds `models` (JSON string) and optional `prompt_overrides`.
-- Return structured JSON; use `HTTPException` with clear `detail` for client errors and Ollama failures (502/503).
+- Return structured JSON; use `HTTPException` with clear `detail` for client errors and inference failures (502/503).
 - Model list includes `tier`, `ocr_capable` for UI filtering.
 
 ## Git and scope
@@ -101,7 +103,7 @@ Index: [issues/README.md](issues/README.md). Examples: [issues/docker-ollama-loc
 | Add Python dep | `cd backend && uv add <package>` |
 | Change exposed port | `.env` → `PORT=...` |
 | Change inference backend/URL | Settings UI or `PUT /api/settings` |
-| Run vLLM (DeepSeek-OCR) | See [plan/vllm-deepseek-ocr-migration.md](plan/vllm-deepseek-ocr-migration.md) |
+| Run vLLM (DeepSeek-OCR) | `docker compose up --build` or [issues/vllm-deepseek-ocr-integration.md](issues/vllm-deepseek-ocr-integration.md) |
 
 ## Testing expectations
 

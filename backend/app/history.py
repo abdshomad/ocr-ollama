@@ -50,7 +50,13 @@ def list_history(offset: int = 0, limit: int = 50) -> tuple[list[dict[str, Any]]
 
 def _to_summary(data: dict[str, Any]) -> dict[str, Any]:
     kind = data.get("kind", "single")
-    if kind == "arena":
+    if kind == "browser_scan":
+        engine = data.get("engine", "unknown")
+        models = [f"browser:{engine}"]
+        sku = data.get("sku", "")
+        expiry = data.get("expiry_date") or "—"
+        preview = f"SKU: {sku} | Exp: {expiry}"[:120]
+    elif kind == "arena":
         models = [r.get("model") for r in data.get("results", [])]
         preview = next((r.get("text", "")[:120] for r in data.get("results", []) if r.get("text")), "")
     else:

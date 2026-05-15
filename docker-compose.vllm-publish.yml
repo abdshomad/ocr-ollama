@@ -1,0 +1,6 @@
+# Optional: expose vLLM on the host for debugging (e.g. curl http://127.0.0.1:18100/v1/models).
+# Usage: docker compose -f docker-compose.yml -f docker-compose.vllm-publish.yml up -d
+services:
+  vllm:
+    ports:
+      - "127.0.0.1:${VLLM_PUBLISH_PORT:-18100}:8100"

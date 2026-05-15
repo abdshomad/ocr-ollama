@@ -8,17 +8,18 @@ services:
     environment:
       HF_HOME: /root/.cache/huggingface
       HUGGING_FACE_HUB_TOKEN: ${HUGGING_FACE_HUB_TOKEN:-}
+      # Default GPU 1 when GPU 0 is used by Ollama / another vLLM on the host
+      CUDA_VISIBLE_DEVICES: ${VLLM_CUDA_VISIBLE_DEVICES:-1}
     volumes:
       - vllm-hf-cache:/root/.cache/huggingface
-    ports:
-      - "${VLLM_PORT:-8100}:8100"
+    # No host port: backend uses http://vllm:8100 on the Compose network.
+    # To publish vLLM on the host, use docker-compose.vllm-publish.yml (see README).
     command:
-      - --model
       - ${VLLM_MODEL:-deepseek-ai/DeepSeek-OCR}
       - --logits-processors
       - vllm.model_executor.models.deepseek_ocr:NGramPerReqLogitsProcessor
-      - --chat-template
-      - vllm/transformers_utils/chat_templates/template_deepseek_ocr.jinja
+      - --gpu-memory-utilization
+      - ${VLLM_GPU_MEMORY_UTILIZATION:-0.85}
       - --no-enable-prefix-caching
       - --mm-processor-cache-gb
       - "0"
@@ -34,8 +35,8 @@ services:
         ]
       interval: 30s
       timeout: 15s
-      retries: 30
-      start_period: 600s
+      retries: 60
+      start_period: 1800s
 
   backend:
     build:

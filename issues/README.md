@@ -4,6 +4,8 @@ Write-ups for non-trivial bugs and integration problems. Format and when to add 
 
 | Issue | Summary |
 |-------|---------|
-| [docker-ollama-localhost-settings-override.md](docker-ollama-localhost-settings-override.md) | App shows Ollama offline in Docker while host Ollama works — `settings.json` loopback vs `OLLAMA_HOST` |
+| [vllm-deepseek-ocr-integration.md](vllm-deepseek-ocr-integration.md) | **vLLM default OCR** — Compose + DeepSeek-OCR working; GPU, ports, healthcheck, `max_tokens` fixes |
+| [vllm-compose-unhealthy.md](vllm-compose-unhealthy.md) | Compose `vllm` unhealthy — chat-template crash, GPU 0 OOM, slow first start |
+| [docker-ollama-localhost-settings-override.md](docker-ollama-localhost-settings-override.md) | App shows inference offline in Docker — `settings.json` loopback vs env host |
 | [paddleocr-vl-ollama-load-failure.md](paddleocr-vl-ollama-load-failure.md) | `MedAIBase/PaddleOCR-VL:0.9b` fails to load — unsupported `paddleocr` architecture on Ollama 0.23.x |
 | [glm-ocr-cuda-context-load-failure.md](glm-ocr-cuda-context-load-failure.md) | `glm-ocr:latest` fails on GPU — 131k default ctx triggers CUDA `INT_MAX` assert; fix with `num_ctx` |

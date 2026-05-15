@@ -7,7 +7,7 @@ import {
   uploadImageUrl,
 } from "../api/client";
 import { ArenaGrid } from "../components/ArenaGrid";
-import type { ArenaResult, HistorySummary, RunResult, SingleResult } from "../types";
+import type { ArenaResult, BrowserScanResult, HistorySummary, RunResult, SingleResult } from "../types";
 
 export function HistoryPage() {
   const [params] = useSearchParams();
@@ -65,7 +65,9 @@ export function HistoryPage() {
           {filtered.map((item) => (
             <li key={item.id} className="history-item">
               <div>
-                <strong>{item.kind === "arena" ? "Arena" : "Single"}</strong>
+                <strong>
+                  {item.kind === "arena" ? "Arena" : item.kind === "browser_scan" ? "Browser scan" : "Single"}
+                </strong>
                 <span className="muted"> — {new Date(item.timestamp).toLocaleString()}</span>
                 <br />
                 <span className="muted">{item.models.join(", ")}</span>
@@ -89,7 +91,12 @@ export function HistoryPage() {
       {detail && (
         <section className="card">
           <h2>
-            {detail.kind === "arena" ? "Arena" : "Single"} — {detail.id.slice(0, 8)}…
+            {detail.kind === "arena"
+              ? "Arena"
+              : detail.kind === "browser_scan"
+                ? "Browser scan"
+                : "Single"}{" "}
+            — {detail.id.slice(0, 8)}…
           </h2>
           {detail.image_path && (
             <img
@@ -98,7 +105,26 @@ export function HistoryPage() {
               className="preview-img"
             />
           )}
-          {detail.kind === "single" ? (
+          {detail.kind === "browser_scan" ? (
+            <>
+              <p className="muted">
+                {(detail as BrowserScanResult).engine} · {(detail as BrowserScanResult).duration_ms} ms
+                {" · "}
+                {Math.round((detail as BrowserScanResult).confidence * 100)}% confidence
+              </p>
+              <dl className="scan-fields">
+                <dt>SKU / Product</dt>
+                <dd>{(detail as BrowserScanResult).sku}</dd>
+                <dt>Expiry date</dt>
+                <dd>{(detail as BrowserScanResult).expiry_date ?? "—"}</dd>
+              </dl>
+              {(detail as BrowserScanResult).raw_text && (
+                <pre className="ocr-text" style={{ marginTop: "0.75rem" }}>
+                  {(detail as BrowserScanResult).raw_text}
+                </pre>
+              )}
+            </>
+          ) : detail.kind === "single" ? (
             <>
               <p className="muted">
                 {(detail as SingleResult).model} · {(detail as SingleResult).duration_ms} ms

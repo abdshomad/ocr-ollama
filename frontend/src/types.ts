@@ -49,11 +49,24 @@ export interface ArenaResult {
   results: ArenaResultEntry[];
 }
 
-export type RunResult = SingleResult | ArenaResult;
+export interface BrowserScanResult {
+  id: string;
+  kind: "browser_scan";
+  timestamp: string;
+  image_path: string;
+  sku: string;
+  expiry_date: string | null;
+  confidence: number;
+  raw_text: string;
+  engine: string;
+  duration_ms: number;
+}
+
+export type RunResult = SingleResult | ArenaResult | BrowserScanResult;
 
 export interface HistorySummary {
   id: string;
-  kind: "single" | "arena";
+  kind: "single" | "arena" | "browser_scan";
   timestamp: string;
   models: string[];
   image_filename: string;
