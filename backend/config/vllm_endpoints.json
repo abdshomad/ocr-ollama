@@ -43,6 +43,18 @@
       "gpu_device": 1,
       "port": 8103,
       "speed_tier": "slow"
+    },
+    {
+      "id": "gemma4",
+      "label": "Gemma 4",
+      "models": ["google/gemma-4-E4B-it"],
+      "host_env": "VLLM_GEMMA4_HOST",
+      "default_host": "http://vllm-gemma4:8104",
+      "compose_service": "vllm-gemma4",
+      "compose_profile": "gemma4",
+      "gpu_device": 1,
+      "port": 8104,
+      "speed_tier": "very_slow"
     }
   ]
 }

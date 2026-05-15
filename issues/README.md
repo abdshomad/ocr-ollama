@@ -10,6 +10,7 @@ Write-ups for non-trivial bugs and integration problems. Format and when to add 
 | [mineru-diffusion-nano-dvlm-integration.md](mineru-diffusion-nano-dvlm-integration.md) | **MinerU-Diffusion** — `nano_dvlm` sidecar, profile `mineru`, port 8200, `POST /v1/ocr` |
 | [liteparse-cli-integration.md](liteparse-cli-integration.md) | **LiteParse** — `lit` CLI subprocess, PDF + documents, `model=litparse`, Docker image installs `@llamaindex/liteparse` |
 | [chandra-vllm-integration.md](chandra-vllm-integration.md) | **Chandra OCR 2** — `datalab-to/chandra-ocr-2`, profile `chandra`, port 8103 |
+| [gemma4-vllm-integration.md](gemma4-vllm-integration.md) | **Gemma 4** — `google/gemma-4-E4B-it`, profile `gemma4`, port 8104, vision-tier OCR |
 | [vllm-lighton-gpu-compose-entrypoint-directory.md](vllm-lighton-gpu-compose-entrypoint-directory.md) | LightOn restart loop after GPU start — `/workspace` compose path created entrypoint as directory (exit 126) |
 | [vllm-compose-unhealthy.md](vllm-compose-unhealthy.md) | Compose `vllm` unhealthy — chat-template crash, GPU 0 OOM, slow first start |
 | [docker-ollama-localhost-settings-override.md](docker-ollama-localhost-settings-override.md) | App shows inference offline in Docker — `settings.json` loopback vs env host |

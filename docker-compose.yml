@@ -173,6 +173,37 @@ services:
       retries: 60
       start_period: 1800s
 
+  vllm-gemma4:
+    <<: [*vllm-service, *vllm-gpu]
+    profiles: ["gemma4"]
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.vllm-ocr
+    image: ${VLLM_OCR_IMAGE:-ocr-ollama-vllm-ocr:latest}
+    volumes:
+      - vllm-hf-cache:/root/.cache/huggingface
+    environment:
+      <<: *vllm-env
+      VLLM_MODEL: google/gemma-4-E4B-it
+      VLLM_PORT: "8104"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ["${VLLM_GEMMA4_CUDA_DEVICE:-1}"]
+              capabilities: [gpu]
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "python3 -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8104/v1/models')\"",
+        ]
+      interval: 30s
+      timeout: 15s
+      retries: 60
+      start_period: 1800s
+
   backend:
     build:
       context: .
@@ -184,6 +215,7 @@ services:
       VLLM_GLM_HOST: ${VLLM_GLM_HOST:-http://vllm-glm:8101}
       VLLM_LIGHTON_HOST: ${VLLM_LIGHTON_HOST:-http://vllm-lighton:8102}
       VLLM_CHANDRA_HOST: ${VLLM_CHANDRA_HOST:-http://vllm-chandra:8103}
+      VLLM_GEMMA4_HOST: ${VLLM_GEMMA4_HOST:-http://vllm-gemma4:8104}
       MINERU_DIFFUSION_HOST: ${MINERU_DIFFUSION_HOST:-http://mineru-diffusion:8200}
       VLLM_HOST: ${VLLM_HOST:-http://vllm-deepseek:8100}
       VLLM_TIMEOUT: ${VLLM_TIMEOUT:-600}

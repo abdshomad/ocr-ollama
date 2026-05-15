@@ -8,6 +8,7 @@ PORT="${VLLM_PORT:-8100}"
 MTP_TOKENS="${VLLM_MTP_SPECULATIVE_TOKENS:-1}"
 GLM_MAX_LEN="${VLLM_GLM_MAX_MODEL_LEN:-8192}"
 CHANDRA_MAX_LEN="${VLLM_CHANDRA_MAX_MODEL_LEN:-8192}"
+GEMMA4_MAX_LEN="${VLLM_GEMMA4_MAX_MODEL_LEN:-8192}"
 
 COMMON=(
   --host "0.0.0.0"
@@ -46,6 +47,15 @@ elif [[ "$model_lower" == *"chandra"* ]]; then
     --max-model-len "$CHANDRA_MAX_LEN" \
     --limit-mm-per-prompt '{"image": 1}' \
     --mm-processor-kwargs '{"min_pixels": 3136, "max_pixels": 6291456}' \
+    --mm-processor-cache-gb 0 \
+    --no-enable-prefix-caching
+elif [[ "$model_lower" == *"gemma-4"* ]]; then
+  # https://docs.vllm.ai/projects/recipes/en/latest/Google/Gemma4.html
+  exec vllm serve "$MODEL" \
+    "${COMMON[@]}" \
+    --max-model-len "$GEMMA4_MAX_LEN" \
+    --limit-mm-per-prompt '{"image": 1, "audio": 0}' \
+    --mm-processor-kwargs '{"max_soft_tokens": 560}' \
     --mm-processor-cache-gb 0 \
     --no-enable-prefix-caching
 else

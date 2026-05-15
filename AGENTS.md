@@ -63,11 +63,12 @@ When the user sends **`next`** or **`n`** alone (or clearly means “ship the ne
 
 ## Issue documentation (`issues/`)
 
-**Always** persist non-trivial problems, investigations, and fixes under **`issues/`** — do not leave analysis only in chat.
+**Always** persist non-trivial problems, investigations, **and their solutions** under **`issues/`** — do not leave diagnosis or fixes only in chat. If you resolved something, the **`issues/*.md` file must record how** (commands, env vars, compose/service actions), not only what went wrong.
 
-**When to write a file**
+**When to write or update a file**
 
 - After diagnosing bugs, Ollama/model failures, Docker/network misconfig, or integration errors
+- **Whenever you land a fix or workaround** — update the existing issue for that topic or add `issues/<slug>.md` so the next run (human or agent) can repeat the solution
 - When the user asks to save analysis (or says “document this issue”)
 - Before closing a debugging session that took more than a quick one-liner fix
 
@@ -78,7 +79,7 @@ When the user sends **`next`** or **`n`** alone (or clearly means “ship the ne
 1. **Summary** — one paragraph: what failed and the actual root cause (not guesses)
 2. **Symptoms** — user-visible errors, HTTP status, log lines
 3. **Analysis / evidence** — commands run, paths, versions, repro steps
-4. **Resolution** — what fixed it (or explicit workarounds if unresolved)
+4. **Resolution** — what fixed it: **concrete steps** (shell/compose/API), config keys, or explicit “unresolved” + next experiments. Do not leave this section vague once solved.
 5. **Repo impact** — code/config changes in this project, if any
 
 Update the same file when the resolution changes; add a short **Date** or changelog line at the top when revisiting.
@@ -158,6 +159,7 @@ Index: [issues/README.md](issues/README.md). Primary vLLM reference: [issues/vll
 | Change inference backend/URL | Settings UI or `PUT /api/settings` |
 | Run vLLM (DeepSeek-OCR) | `docker compose up --build` or [issues/vllm-deepseek-ocr-integration.md](issues/vllm-deepseek-ocr-integration.md) |
 | Run vLLM (GLM-OCR) | `docker compose -f docker-compose.yml -f docker-compose.glm-ocr.yml up -d` — [issues/vllm-glm-ocr.md](issues/vllm-glm-ocr.md) |
+| Run vLLM (Gemma 4) | `docker compose --profile gemma4 up -d vllm-gemma4` — [issues/gemma4-vllm-integration.md](issues/gemma4-vllm-integration.md) |
 | Load/unload vLLM per GPU | **GPU** page or `POST /api/vllm/services/{deepseek\|glm}/start\|stop` |
 | GPU metrics + compose control | `GET /api/gpu` (backend needs Docker socket; `COMPOSE_PROJECT_NAME` must match stack) |
 
