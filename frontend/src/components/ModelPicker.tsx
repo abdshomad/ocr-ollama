@@ -12,6 +12,19 @@ function SpeedBadge({ tier }: { tier?: string }) {
   return <span className="badge badge-text">{tier}</span>;
 }
 
+function rowTitle(m: OllamaModel, up: boolean): string | undefined {
+  if (!up) {
+    if (m.engine_type === "litparse") {
+      return "Install the lit CLI (npm i -g @llamaindex/liteparse) or set LITEPARSE_BIN on the backend host.";
+    }
+    return undefined;
+  }
+  if (m.input_modes?.length) {
+    return `Supported inputs: ${m.input_modes.join(", ")}`;
+  }
+  return undefined;
+}
+
 export function isModelAvailable(m: OllamaModel): boolean {
   return m.available !== false;
 }
@@ -43,10 +56,13 @@ function ModelRow({
   onToggle: (name: string, available: boolean) => void;
 }) {
   const up = isModelAvailable(m);
+  const hint = rowTitle(m, up);
   return (
     <label
       className={`model-row${up ? "" : " model-row-disabled"}`}
-      title={up ? undefined : "Start this model on the GPU page, then refresh"}
+      title={
+        hint ?? (up ? undefined : "Start this model on the GPU page, then refresh")
+      }
     >
       <input
         type={multiple ? "checkbox" : "radio"}

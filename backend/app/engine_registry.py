@@ -46,10 +46,25 @@ def is_mineru_model(model: str) -> bool:
     return ep is not None and str(ep.get("type")) == "nano_dvlm"
 
 
+def is_litparse_model(model: str) -> bool:
+    ep = ocr_engine_for_model(model)
+    return ep is not None and str(ep.get("type")) == "litparse"
+
+
 def all_mineru_models() -> list[tuple[dict[str, Any], str]]:
     out: list[tuple[dict[str, Any], str]] = []
     for ep in load_ocr_engines():
         if str(ep.get("type")) != "nano_dvlm":
+            continue
+        for name in ep.get("models") or []:
+            out.append((ep, str(name)))
+    return out
+
+
+def all_litparse_models() -> list[tuple[dict[str, Any], str]]:
+    out: list[tuple[dict[str, Any], str]] = []
+    for ep in load_ocr_engines():
+        if str(ep.get("type")) != "litparse":
             continue
         for name in ep.get("models") or []:
             out.append((ep, str(name)))
@@ -64,6 +79,7 @@ def model_entry(
     endpoint_label: str,
     engine_type: str,
     speed_tier: str | None = None,
+    input_modes: list[str] | None = None,
 ) -> dict[str, Any]:
     tier = classify_model_by_name(name)
     entry: dict[str, Any] = {
@@ -83,4 +99,6 @@ def model_entry(
     }
     if speed_tier:
         entry["speed_tier"] = speed_tier
+    if input_modes:
+        entry["input_modes"] = input_modes
     return entry

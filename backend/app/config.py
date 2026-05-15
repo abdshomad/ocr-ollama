@@ -16,6 +16,7 @@ ALLOWED_CONTENT_TYPES = {
     "image/webp",
     "image/gif",
 }
+ALLOWED_OCR_UPLOAD_TYPES = ALLOWED_CONTENT_TYPES | {"application/pdf"}
 OLLAMA_TIMEOUT = float(os.getenv("OLLAMA_TIMEOUT", "300"))
 VLLM_TIMEOUT = float(os.getenv("VLLM_TIMEOUT", "600"))
 # Output cap only; model ctx is 8192 and the image consumes most of it.

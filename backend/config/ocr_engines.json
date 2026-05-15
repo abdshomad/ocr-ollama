@@ -1,6 +1,15 @@
 {
   "engines": [
     {
+      "id": "litparse",
+      "type": "litparse",
+      "label": "LiteParse",
+      "models": ["litparse"],
+      "input_modes": ["pdf", "image"],
+      "gpu_device": -1,
+      "speed_tier": "instant"
+    },
+    {
       "id": "mineru-diffusion",
       "type": "nano_dvlm",
       "label": "MinerU-Diffusion",

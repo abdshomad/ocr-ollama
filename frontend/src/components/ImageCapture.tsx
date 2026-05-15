@@ -3,7 +3,7 @@ import { useImage } from "../context/ImageContext";
 import { useCamera } from "../hooks/useCamera";
 import { SampleImages } from "./SampleImages";
 
-const ACCEPT = "image/jpeg,image/png,image/webp,image/gif";
+const ACCEPT = "image/jpeg,image/png,image/webp,image/gif,application/pdf";
 
 export function ImageCapture() {
   const { file, previewUrl, setImage, clearImage } = useImage();
@@ -25,7 +25,7 @@ export function ImageCapture() {
       e.preventDefault();
       setDrag(false);
       const f = e.dataTransfer.files[0];
-      if (f?.type.startsWith("image/")) onFile(f);
+      if (f?.type.startsWith("image/") || f?.type === "application/pdf") onFile(f);
     },
     [onFile]
   );
@@ -57,8 +57,8 @@ export function ImageCapture() {
             tabIndex={0}
             onKeyDown={(e) => e.key === "Enter" && inputRef.current?.click()}
           >
-            <p>Drop an image here or click to upload</p>
-            <p className="muted">JPEG, PNG, WebP, GIF — max 10 MB</p>
+            <p>Drop an image or PDF here or click to upload</p>
+            <p className="muted">JPEG, PNG, WebP, GIF, PDF — max 10 MB</p>
           </div>
           <input
             ref={inputRef}
@@ -90,7 +90,16 @@ export function ImageCapture() {
         </>
       ) : (
         <>
-          <img src={previewUrl ?? ""} alt="Selected" className="preview-img" />
+          {file.type === "application/pdf" ? (
+            <div className="preview-img" style={{ padding: "1.5rem", background: "var(--panel-2, #1a1d24)" }}>
+              <p style={{ margin: 0 }}>PDF selected</p>
+              <p className="muted" style={{ margin: "0.5rem 0 0", fontSize: "0.9rem" }}>
+                Run OCR with model <strong>litparse</strong> for embedded text; GPU models expect images.
+              </p>
+            </div>
+          ) : (
+            <img src={previewUrl ?? ""} alt="Selected" className="preview-img" />
+          )}
           <p className="muted">{file.name}</p>
           <div className="row" style={{ marginTop: "0.5rem" }}>
             <button type="button" onClick={() => inputRef.current?.click()}>

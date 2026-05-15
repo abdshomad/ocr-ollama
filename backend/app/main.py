@@ -12,6 +12,7 @@ from app.history import delete_result, list_history, load_result
 from app.inference.factory import check_health, list_models_with_classification
 from app.ocr_service import (
     read_and_validate_image,
+    read_and_validate_ocr_upload,
     run_arena,
     run_ocr,
     safe_upload_filename,
@@ -155,8 +156,8 @@ async def ocr_endpoint(
     model: str = Form(...),
     prompt: str | None = Form(None),
 ):
-    image_bytes, ext = await read_and_validate_image(image)
-    return await run_ocr(image_bytes, ext, model, prompt)
+    image_bytes, ext, content_type = await read_and_validate_ocr_upload(image)
+    return await run_ocr(image_bytes, ext, model, prompt, content_type=content_type)
 
 
 @app.post("/api/ocr/product")
@@ -190,7 +191,7 @@ async def arena_endpoint(
     prompt_overrides: str | None = Form(None),
     extraction_mode: str = Form("text"),
 ):
-    image_bytes, ext = await read_and_validate_image(image)
+    image_bytes, ext, content_type = await read_and_validate_ocr_upload(image)
     try:
         model_list = json.loads(models)
     except json.JSONDecodeError as e:
@@ -204,7 +205,12 @@ async def arena_endpoint(
         except json.JSONDecodeError as e:
             raise HTTPException(status_code=400, detail="prompt_overrides must be JSON object") from e
     return await run_arena(
-        image_bytes, ext, model_list, overrides, extraction_mode=extraction_mode.strip().lower()
+        image_bytes,
+        ext,
+        model_list,
+        overrides,
+        content_type=content_type,
+        extraction_mode=extraction_mode.strip().lower(),
     )
 
 

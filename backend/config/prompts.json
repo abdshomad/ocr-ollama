@@ -10,6 +10,7 @@
     "glm-ocr:latest": "Text Recognition:",
     "MedAIBase/PaddleOCR-VL:0.9b": "Parse this document and extract all text, tables, and structured content. Output plain text preserving layout.",
     "mistral-medium-3.5:latest": "Perform OCR on this image. Extract all visible text preserving reading order and layout. Output only the transcribed text.",
-    "qwen3.6:latest": "Perform OCR on this image. Extract all visible text preserving reading order and layout. Output only the transcribed text."
+    "qwen3.6:latest": "Perform OCR on this image. Extract all visible text preserving reading order and layout. Output only the transcribed text.",
+    "litparse": ""
   }
 }

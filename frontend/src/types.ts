@@ -17,6 +17,7 @@ export interface OllamaModel {
   engine_type?: string;
   engine_label?: string;
   speed_tier?: string;
+  input_modes?: string[];
 }
 
 export interface SampleImage {

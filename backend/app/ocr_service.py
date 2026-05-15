@@ -7,7 +7,8 @@ from typing import Any
 import httpx
 from fastapi import HTTPException, UploadFile
 
-from app.config import ALLOWED_CONTENT_TYPES, MAX_IMAGE_BYTES, UPLOAD_DIR
+from app.config import ALLOWED_CONTENT_TYPES, ALLOWED_OCR_UPLOAD_TYPES, MAX_IMAGE_BYTES, UPLOAD_DIR
+from app.engine_registry import is_litparse_model
 from app.history import new_timestamp, save_result
 from app.inference.factory import list_models_with_classification, ocr_chat
 from app.prompts import resolve_prompt
@@ -15,8 +16,6 @@ from app.settings_store import get_inference_backend
 
 
 async def _ensure_model_available(model: str) -> None:
-    if get_inference_backend() != "vllm":
-        return
     models = await list_models_with_classification()
     entry = next((m for m in models if m.get("name") == model), None)
     if entry is not None and entry.get("available") is False:
@@ -36,7 +35,40 @@ EXT_BY_TYPE = {
     "image/png": ".png",
     "image/webp": ".webp",
     "image/gif": ".gif",
+    "application/pdf": ".pdf",
 }
+
+
+def _validate_ocr_content_type(model: str, content_type: str) -> None:
+    if content_type == "application/pdf":
+        if not is_litparse_model(model):
+            raise HTTPException(
+                status_code=400,
+                detail="PDF uploads require model litparse.",
+            )
+        return
+    if is_litparse_model(model) and content_type not in ALLOWED_CONTENT_TYPES:
+        raise HTTPException(
+            status_code=400,
+            detail="LiteParse requires a PDF or a supported image type (JPEG, PNG, WebP, GIF).",
+        )
+
+
+async def read_and_validate_ocr_upload(file: UploadFile) -> tuple[bytes, str, str]:
+    content_type = file.content_type or ""
+    if content_type not in ALLOWED_OCR_UPLOAD_TYPES:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported file type: {content_type}. Allowed: "
+            f"{', '.join(sorted(ALLOWED_OCR_UPLOAD_TYPES))}",
+        )
+    data = await file.read()
+    if len(data) > MAX_IMAGE_BYTES:
+        raise HTTPException(status_code=400, detail=f"File exceeds {MAX_IMAGE_BYTES} bytes")
+    if len(data) == 0:
+        raise HTTPException(status_code=400, detail="Empty file")
+    ext = EXT_BY_TYPE.get(content_type, ".bin")
+    return data, ext, content_type
 
 
 async def read_and_validate_image(file: UploadFile) -> tuple[bytes, str]:
@@ -69,8 +101,10 @@ async def run_ocr(
     model: str,
     prompt_override: str | None = None,
     *,
+    content_type: str,
     reuse_image_path: str | None = None,
 ) -> dict[str, Any]:
+    _validate_ocr_content_type(model, content_type)
     image_path = reuse_image_path or save_upload(image_bytes, ext)
     prompt = resolve_prompt(model, prompt_override)
     run_id = str(uuid.uuid4())
@@ -83,6 +117,8 @@ async def run_ocr(
     except httpx.HTTPError as e:
         backend = get_inference_backend()
         raise HTTPException(status_code=503, detail=f"{backend} unreachable: {e}") from e
+    except RuntimeError as e:
+        raise HTTPException(status_code=502, detail=str(e)) from e
 
     record = {
         "id": run_id,
@@ -107,12 +143,16 @@ async def run_arena(
     models: list[str],
     prompt_overrides: dict[str, str] | None = None,
     *,
+    content_type: str,
     extraction_mode: str = "text",
 ) -> dict[str, Any]:
     if len(models) < 2:
         raise HTTPException(status_code=400, detail="Arena requires at least 2 models")
     if extraction_mode not in ("text", "product"):
         raise HTTPException(status_code=400, detail="extraction_mode must be 'text' or 'product'")
+
+    for m in models:
+        _validate_ocr_content_type(m, content_type)
 
     image_path = save_upload(image_bytes, ext)
     arena_id = str(uuid.uuid4())
@@ -141,6 +181,10 @@ async def run_arena(
             entry["text"] = ""
             entry["duration_ms"] = 0
         except httpx.HTTPError as e:
+            entry["error"] = str(e)
+            entry["text"] = ""
+            entry["duration_ms"] = 0
+        except RuntimeError as e:
             entry["error"] = str(e)
             entry["text"] = ""
             entry["duration_ms"] = 0

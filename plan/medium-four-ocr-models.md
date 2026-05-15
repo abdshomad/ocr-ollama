@@ -203,16 +203,16 @@ vllm serve lightonai/LightOnOCR-2-1B \
 
 ### Phase 3 — LiteParse (custom engine, no vLLM)
 
-**Packages:** `npm install -g @llamaindex/liteparse`, `uv add liteparse` (evaluate license/stack fit).
+**Packages:** `npm install -g @llamaindex/liteparse` (backend image installs globally; optional `LITEPARSE_BIN` on host).
 
 **Tasks:**
 
-- [ ] `litparse` engine adapter: subprocess with timeout, parse JSON/text output to plain string for History.
-- [ ] Backend image: install Node 22 + global CLI **or** mount host `lit` binary via `LITEPARSE_BIN`.
-- [ ] **PDF path:** accept PDF on `/api/ocr` when `model=litparse` (or content-type routing).
-- [ ] UI: show “PDF-native extractor” badge; disable for camera capture if only PDF supported initially.
-- [ ] Do **not** add GPU compose service.
-- [ ] Issue: `issues/litparse-node-subprocess-integration.md` (PATH, Node in Docker).
+- [x] `litparse` engine adapter: subprocess with timeout, plain text for History.
+- [x] Backend image: Node + global CLI in `backend/Dockerfile`.
+- [x] **PDF path:** `POST /api/ocr` and `/api/arena` accept `application/pdf` when `model=litparse` (other models rejected for PDF).
+- [x] UI: PDF in file picker; tooltip for inputs; GPU page shows local CLI (no compose actions).
+- [x] Do **not** add GPU compose service for LiteParse.
+- [x] Issue: `issues/liteparse-cli-integration.md` (PATH, Docker image).
 
 **Expectation:** Strong on digital PDFs, weak on scanned medical pages (article) — label in UI tooltips.
 
@@ -299,7 +299,7 @@ vllm serve lightonai/LightOnOCR-2-1B \
 - [ ] **Phase 0b** — PDF upload + page render + normalize (recommended)
 - [x] **Phase 1** — LightOnOCR via vLLM (registry extension; full Phase 0 `ocr_engines.json` deferred)
 - [x] **Phase 2** — Chandra via vLLM (`vllm-chandra`)
-- [ ] **Phase 3** — LiteParse custom engine
+- [x] **Phase 3** — LiteParse custom engine
 - [x] **Phase 4** — MinerU-Diffusion via nano_dvlm sidecar
 - [ ] **Phase 5** (optional) — Layout + OCR pipeline
 

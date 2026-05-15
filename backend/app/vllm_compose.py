@@ -216,9 +216,28 @@ def _host_for_service(ep: dict[str, Any]) -> str:
 
 
 async def list_service_statuses() -> list[dict[str, Any]]:
+    from app import liteparse_client
+
     ps_map = await _compose_ps_map()
     out: list[dict[str, Any]] = []
     for ep in load_all_endpoints():
+        if str(ep.get("type") or "") == "litparse":
+            ready = await asyncio.to_thread(liteparse_client.lit_cli_available)
+            out.append(
+                {
+                    "id": str(ep.get("id", "")),
+                    "label": str(ep.get("label") or ep.get("id") or ""),
+                    "compose_service": "",
+                    "gpu_device": int(ep.get("gpu_device", -1)),
+                    "port": int(ep.get("port") or 0),
+                    "models": list(ep.get("models") or []),
+                    "docker_state": "local_cli",
+                    "health": None,
+                    "api_ready": ready,
+                    "container_id": None,
+                }
+            )
+            continue
         service = str(ep.get("compose_service") or "")
         row = ps_map.get(service, {})
         state = str(row.get("State") or "not_created").lower()
@@ -331,9 +350,27 @@ async def gpu_dashboard() -> dict[str, Any]:
 
 
 async def _services_without_compose() -> list[dict[str, Any]]:
-    """Status from HTTP only when compose control is unavailable."""
+    from app import liteparse_client
+
     out: list[dict[str, Any]] = []
     for ep in load_all_endpoints():
+        if str(ep.get("type") or "") == "litparse":
+            ready = await asyncio.to_thread(liteparse_client.lit_cli_available)
+            out.append(
+                {
+                    "id": str(ep.get("id", "")),
+                    "label": str(ep.get("label") or ep.get("id") or ""),
+                    "compose_service": "",
+                    "gpu_device": int(ep.get("gpu_device", -1)),
+                    "port": int(ep.get("port") or 0),
+                    "models": list(ep.get("models") or []),
+                    "docker_state": "local_cli",
+                    "health": None,
+                    "api_ready": ready,
+                    "container_id": None,
+                }
+            )
+            continue
         host = _host_for_service(ep)
         api_ready = await _api_ready(host, engine_type=str(ep.get("type") or ""))
         out.append(

@@ -52,8 +52,12 @@ When the user sends **`next`** or **`n`** alone (or clearly means “ship the ne
 
 1. Follow [plan/medium-four-ocr-models.md](plan/medium-four-ocr-models.md) for the matching **Phase** (Phase 0 registry/router first if `ocr_engines.json` / adapters are not in place yet — that unblocks the fastest pending model).
 2. Obey [Architecture rules](#architecture-rules) (FastAPI gateway, no browser → vLLM, sequential arena, uv-only backend).
-3. Smoke-test: `/api/health`, `/api/models`, one OCR run, update GPU/compose docs if a new service was added.
-4. On completion: set **In repo** / phase checkboxes in `plan/ocr-engines.md` and `plan/medium-four-ocr-models.md`; add `issues/<engine>-integration.md` if setup was non-trivial.
+3. Smoke-test: `/api/health`, `/api/models`, one OCR run (e.g. `curl` or Python client), update GPU/compose docs if a new service was added.
+4. **Browser verification (required):** Use the **Cursor IDE browser** MCP — navigate to the running app (`http://localhost:${PORT}` from `.env`, default **3036**), open **Run** (`/`), pick the **new model** in the picker, upload **at least one sample** with readable content (add tiny tracked fixtures under `fixtures/ocr/` if the repo has none), run OCR / extraction, and confirm **non-empty plausible output** in the UI (fresh **snapshot**; screenshot optional). For **Arena**, include the new model in a compare if that is the primary workflow. For **browser-tier** engines (`/scan`), repeat on **Scan** with the same samples. If the stack is not running locally, start `docker compose up` (or dev frontend + backend) first; if browser automation is blocked (login, GPU unavailable), say so and attach API/smoke evidence instead.
+
+   **LiteParse (`litparse`) — VERY IMPORTANT:** When this `next` cycle ships **LiteParse**, treating browser proof as optional is **not allowed**. After coding, you **must** use Cursor IDE browser tools on **Run** with **`litparse`** selected and verify extraction using **all applicable samples** under `fixtures/ocr/` — at minimum a small **digital PDF** with embedded text (LiteParse’s primary workload A path), **plus any PNG/JPEG samples** the app accepts for LiteParse in that build. Expected text must appear in the result panel (snapshot). Add or extend fixtures if none exist; do not close the task without this check.
+
+5. On completion: set **In repo** / phase checkboxes in `plan/ocr-engines.md` and `plan/medium-four-ocr-models.md`; add `issues/<engine>-integration.md` if setup was non-trivial.
 
 **When all planned engines are done**, reply briefly that the queue is empty and point at [plan/ocr-engines.md](plan/ocr-engines.md).
 

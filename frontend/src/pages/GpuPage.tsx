@@ -8,6 +8,11 @@ function memPct(g: GpuInfo): number {
 }
 
 function stateLabel(s: VllmServiceStatus): { text: string; className: string } {
+  if (s.docker_state === "local_cli") {
+    return s.api_ready
+      ? { text: "CLI ready", className: "gpu-state-ready" }
+      : { text: "CLI missing", className: "gpu-state-stopped" };
+  }
   if (s.api_ready) return { text: "Ready", className: "gpu-state-ready" };
   if (s.docker_state === "running" || s.docker_state === "starting")
     return { text: "Loading…", className: "gpu-state-loading" };
@@ -154,7 +159,8 @@ export function GpuPage() {
                   <p className="muted" style={{ margin: "0 0 0.75rem", fontSize: "0.8rem" }}>
                     {svc.models.join(", ")}
                     <br />
-                    Port {svc.port} · {svc.compose_service}
+                    Port {svc.port}
+                    {svc.compose_service ? ` · ${svc.compose_service}` : " · (local CLI)"}
                   </p>
                   <div className="row">
                     {svc.api_ready || svc.docker_state === "running" || svc.docker_state === "starting" ? (
@@ -206,7 +212,7 @@ export function GpuPage() {
 
       {services.length > 0 && (
         <div className="card" style={{ marginTop: "1rem" }}>
-          <h2>All vLLM services</h2>
+          <h2>All OCR services</h2>
           <ul className="gpu-service-list">
             {services.map((s) => {
               const st = stateLabel(s);
@@ -216,26 +222,30 @@ export function GpuPage() {
                     {s.label} (GPU {s.gpu_device})
                   </span>
                   <span className={`badge gpu-badge ${st.className}`}>{st.text}</span>
-                  <span className="row">
-                    {s.api_ready || s.docker_state === "running" || s.docker_state === "starting" ? (
-                      <button
-                        type="button"
-                        disabled={!data?.manage_enabled || busyId !== null}
-                        onClick={() => handleStop(s.id)}
-                      >
-                        Unload
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        className="primary"
-                        disabled={!data?.manage_enabled || busyId !== null}
-                        onClick={() => handleStart(s.id)}
-                      >
-                        Load
-                      </button>
-                    )}
-                  </span>
+                  {s.compose_service ? (
+                    <span className="row">
+                      {s.api_ready || s.docker_state === "running" || s.docker_state === "starting" ? (
+                        <button
+                          type="button"
+                          disabled={!data?.manage_enabled || busyId !== null}
+                          onClick={() => handleStop(s.id)}
+                        >
+                          Unload
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          className="primary"
+                          disabled={!data?.manage_enabled || busyId !== null}
+                          onClick={() => handleStart(s.id)}
+                        >
+                          Load
+                        </button>
+                      )}
+                    </span>
+                  ) : (
+                    <span className="muted">Local CLI — not managed here</span>
+                  )}
                 </li>
               );
             })}

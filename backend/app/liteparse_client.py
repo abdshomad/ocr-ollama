@@ -1,0 +1,145 @@
+from __future__ import annotations
+
+import asyncio
+import os
+import shutil
+import subprocess
+import tempfile
+import time
+from pathlib import Path
+from typing import Any
+
+from app.engine_registry import all_litparse_models, model_entry
+
+
+def liteparse_bin() -> str:
+    return (os.getenv("LITEPARSE_BIN") or "lit").strip() or "lit"
+
+
+def liteparse_timeout() -> float:
+    return float(os.getenv("LITEPARSE_TIMEOUT", "600"))
+
+
+def lit_cli_available() -> bool:
+    exe = liteparse_bin()
+    path = Path(exe)
+    if path.is_file():
+        candidates = [str(path)]
+    else:
+        found = shutil.which(exe)
+        if not found:
+            return False
+        candidates = [found]
+    try:
+        r = subprocess.run(
+            [*candidates, "--version"],
+            capture_output=True,
+            text=True,
+            timeout=8.0,
+        )
+        return r.returncode == 0
+    except (OSError, subprocess.TimeoutExpired):
+        return False
+
+
+def _suffix_for_bytes(data: bytes) -> str:
+    if len(data) >= 4 and data[:4] == b"%PDF":
+        return ".pdf"
+    if data[:3] == b"\xff\xd8\xff":
+        return ".jpg"
+    if data[:8] == b"\x89PNG\r\n\x1a\n":
+        return ".png"
+    if data[:6] in (b"GIF87a", b"GIF89a"):
+        return ".gif"
+    if len(data) >= 12 and data[:4] == b"RIFF" and data[8:12] == b"WEBP":
+        return ".webp"
+    return ".bin"
+
+
+def _run_lit_parse(file_path: Path, timeout: float) -> str:
+    cmd = [liteparse_bin(), "parse", str(file_path), "-q", "--format", "text"]
+    r = subprocess.run(
+        cmd,
+        capture_output=True,
+        text=True,
+        timeout=timeout,
+        env=os.environ.copy(),
+    )
+    if r.returncode != 0:
+        err = (r.stderr or r.stdout or "").strip() or f"exit {r.returncode}"
+        raise RuntimeError(f"lit parse failed: {err}")
+    return (r.stdout or "").strip()
+
+
+async def list_models_with_classification() -> list[dict[str, Any]]:
+    ready = await asyncio.to_thread(lit_cli_available)
+    out: list[dict[str, Any]] = []
+    for ep, model_id in all_litparse_models():
+        modes = ep.get("input_modes")
+        imodes = [str(x) for x in modes] if isinstance(modes, list) else None
+        out.append(
+            model_entry(
+                model_id,
+                available=ready,
+                endpoint_id=str(ep.get("id", "litparse")),
+                endpoint_label=str(ep.get("label") or "LiteParse"),
+                engine_type=str(ep.get("type", "litparse")),
+                speed_tier=str(ep["speed_tier"]) if ep.get("speed_tier") else None,
+                input_modes=imodes,
+            )
+        )
+    return out
+
+
+async def check_health_slice() -> tuple[list[dict[str, Any]], bool, list[str]]:
+    endpoint_status: list[dict[str, Any]] = []
+    errors: list[str] = []
+    try:
+        ready = await asyncio.to_thread(lit_cli_available)
+    except Exception as e:
+        ready = False
+        errors.append(f"litparse: {e}")
+    for ep, _mid in all_litparse_models():
+        endpoint_status.append(
+            {
+                "id": str(ep.get("id", "litparse")),
+                "label": ep.get("label"),
+                "reachable": ready,
+                "host": liteparse_bin(),
+                "model_count": len(ep.get("models") or []) if ready else 0,
+                "engine_type": "litparse",
+            }
+        )
+    return endpoint_status, ready, errors
+
+
+async def ocr_chat(model: str, prompt: str, image_bytes: bytes) -> tuple[str, dict[str, Any], int]:
+    from app.engine_registry import ocr_engine_for_model
+
+    ep = ocr_engine_for_model(model)
+    if not ep or str(ep.get("type")) != "litparse":
+        raise RuntimeError(f"No LiteParse engine for model '{model}'")
+
+    if not await asyncio.to_thread(lit_cli_available):
+        raise RuntimeError("lit CLI not found; set LITEPARSE_BIN or install @llamaindex/liteparse")
+
+    suffix = _suffix_for_bytes(image_bytes)
+    start = time.perf_counter()
+    with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
+        tmp.write(image_bytes)
+        tmp_path = Path(tmp.name)
+    try:
+        text = await asyncio.to_thread(_run_lit_parse, tmp_path, liteparse_timeout())
+    finally:
+        try:
+            tmp_path.unlink(missing_ok=True)
+        except OSError:
+            pass
+
+    duration_ms = int((time.perf_counter() - start) * 1000)
+    meta: dict[str, Any] = {
+        "engine_type": "litparse",
+        "engine_label": str(ep.get("label") or "LiteParse"),
+        "lit_binary": liteparse_bin(),
+    }
+    return text, meta, duration_ms

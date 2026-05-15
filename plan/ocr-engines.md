@@ -121,7 +121,8 @@ Server GPU models are usually faster and better than browser VLMs for full pages
 | Bucket | Engines |
 |--------|---------|
 | **In repo today** | DeepSeek-OCR, GLM-OCR (vLLM); TrOCR, Tesseract, PaliGemma (browser); Ollama catalog |
-| **Planned (Medium four)** | LiteParse |
+| **Planned (Medium four)** | — (LiteParse shipped) |
+| **In repo (LiteParse)** | LiteParse (`litparse`, local `lit` CLI, PDF + multi-format) |
 | **In repo (Chandra)** | Chandra OCR 2 (`vllm-chandra`) |
 | **In repo (Medium four)** | LightOnOCR (`vllm-lighton`); MinerU-Diffusion (`mineru-diffusion`, profile `mineru`) |
 | **Article rejected (out of scope)** | Marker, Surya, MinerU 2.5 AGPL, PaddleOCR-only, GOT-OCR2, Docling, GLM cloud API |
@@ -180,4 +181,4 @@ For the **same model**, Ollama is typically **~1.2–1.5× slower** than vLLM, w
 |------|--------|
 | 2026-05-15 | Initial speed ladders and categorization |
 | 2026-05-16 | MinerU-Diffusion in repo (`mineru-diffusion` nano_dvlm sidecar) |
-| 2026-05-16 | Chandra OCR 2 in repo (`vllm-chandra` vLLM profile `chandra`) |
+| 2026-05-16 | LiteParse in repo (`litparse`, `lit` CLI in backend, PDF uploads) |
