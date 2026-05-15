@@ -30,7 +30,7 @@ Fastest at top. Compare only within this workload.
 | 3 | **GLM-OCR** (`zai-org/GLM-OCR`) | **~6–20 s** | Estimated | Yes (vLLM) |
 | 4 | **MinerU-Diffusion** (batched, `nano_dvlm`) | **~10.5 s/page** avg | Measured | Yes (`mineru-diffusion` sidecar) |
 | 5 | **MinerU-Diffusion** (sequential / no batch) | **~15.6 s/page** | Measured | Same service (single-page requests) |
-| 6 | **Chandra** (vLLM / `chandra_vllm`) | **~20–40 s** | Partial (article) | Planned |
+| 6 | **Chandra** (vLLM / `chandra_vllm`) | **~20–40 s** | Partial (article) | Yes (`vllm-chandra`, profile `chandra`) |
 | 7 | **Chandra** (HuggingFace local) | **~66 s/page** | Measured | Fallback only |
 | 8 | **General VLMs** (Qwen, Mistral, etc. via Ollama) | **~30–120+ s** | Estimated | Prompts only |
 | 9 | **Hybrid** MinerU layout → LightOn text | **~15–35 s+** | Sum of stages | Optional (Phase 5) |
@@ -121,7 +121,8 @@ Server GPU models are usually faster and better than browser VLMs for full pages
 | Bucket | Engines |
 |--------|---------|
 | **In repo today** | DeepSeek-OCR, GLM-OCR (vLLM); TrOCR, Tesseract, PaliGemma (browser); Ollama catalog |
-| **Planned (Medium four)** | Chandra, LiteParse |
+| **Planned (Medium four)** | LiteParse |
+| **In repo (Chandra)** | Chandra OCR 2 (`vllm-chandra`) |
 | **In repo (Medium four)** | LightOnOCR (`vllm-lighton`); MinerU-Diffusion (`mineru-diffusion`, profile `mineru`) |
 | **Article rejected (out of scope)** | Marker, Surya, MinerU 2.5 AGPL, PaddleOCR-only, GOT-OCR2, Docling, GLM cloud API |
 
@@ -179,3 +180,4 @@ For the **same model**, Ollama is typically **~1.2–1.5× slower** than vLLM, w
 |------|--------|
 | 2026-05-15 | Initial speed ladders and categorization |
 | 2026-05-16 | MinerU-Diffusion in repo (`mineru-diffusion` nano_dvlm sidecar) |
+| 2026-05-16 | Chandra OCR 2 in repo (`vllm-chandra` vLLM profile `chandra`) |

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+import os
 import re
 import time
 from typing import Any
@@ -17,6 +18,7 @@ from app.vllm_registry import (
 )
 
 _DEEPSEEK_OCR_RE = re.compile(r"deepseek-ocr", re.IGNORECASE)
+_CHANDRA_RE = re.compile(r"chandra", re.IGNORECASE)
 
 
 def _mime_for_image(image_bytes: bytes) -> str:
@@ -42,6 +44,18 @@ def _deepseek_extra_body(model: str) -> dict[str, Any] | None:
         "skip_special_tokens": False,
         "vllm_xargs": dict(VLLM_XARGS),
     }
+
+
+def _max_tokens_for_model(model: str) -> int:
+    if _CHANDRA_RE.search(model):
+        return int(os.getenv("VLLM_CHANDRA_MAX_TOKENS", "4096"))
+    return VLLM_MAX_TOKENS
+
+
+def _sampling_for_model(model: str) -> dict[str, float]:
+    if _CHANDRA_RE.search(model):
+        return {"top_p": float(os.getenv("VLLM_CHANDRA_TOP_P", "0.1"))}
+    return {}
 
 
 def format_vllm_error(status_code: int, detail: Any, model: str) -> str:
@@ -161,10 +175,11 @@ async def ocr_chat(model: str, prompt: str, image_bytes: bytes) -> tuple[str, di
                 ],
             }
         ],
-        "max_tokens": VLLM_MAX_TOKENS,
+        "max_tokens": _max_tokens_for_model(model),
         "temperature": 0.0,
         "stream": False,
     }
+    payload.update(_sampling_for_model(model))
     extra = _deepseek_extra_body(model)
     if extra:
         payload.update(extra)

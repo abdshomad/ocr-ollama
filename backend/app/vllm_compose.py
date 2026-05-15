@@ -116,6 +116,8 @@ def gpu_device_for_endpoint(ep: dict[str, Any]) -> int:
         return int(os.getenv("VLLM_GLM_CUDA_DEVICE", str(ep.get("gpu_device", 1))))
     if ep_id == "lighton":
         return int(os.getenv("VLLM_LIGHTON_CUDA_DEVICE", str(ep.get("gpu_device", 1))))
+    if ep_id == "chandra":
+        return int(os.getenv("VLLM_CHANDRA_CUDA_DEVICE", str(ep.get("gpu_device", 1))))
     if ep_id == "mineru-diffusion":
         return int(os.getenv("MINERU_DIFFUSION_CUDA_DEVICE", str(ep.get("gpu_device", 0))))
     return int(ep.get("gpu_device", 0))

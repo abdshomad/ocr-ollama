@@ -196,10 +196,10 @@ vllm serve lightonai/LightOnOCR-2-1B \
 
 **Tasks:**
 
-- [ ] Service `vllm-chandra` (port **8103**) or documented host-only `chandra_vllm`.
-- [ ] Prompt: follow `chandra-ocr` CLI defaults (layout markdown).
-- [ ] Arena: expect slower runs; keep sequential arena (no parallel).
-- [ ] Issue: `issues/chandra-vllm-integration.md` (latency, half-page failures from article).
+- [x] Service `vllm-chandra` (port **8103**) with profile `chandra`.
+- [x] Prompt: layout HTML (`ocr_layout`-style) in `prompts.json`.
+- [x] Arena: slower runs; sequential arena unchanged.
+- [x] Issue: `issues/chandra-vllm-integration.md` (VRAM, max_tokens, serve flags).
 
 ### Phase 3 — LiteParse (custom engine, no vLLM)
 
@@ -298,7 +298,7 @@ vllm serve lightonai/LightOnOCR-2-1B \
 - [ ] **Phase 0** — Engine registry + factory router
 - [ ] **Phase 0b** — PDF upload + page render + normalize (recommended)
 - [x] **Phase 1** — LightOnOCR via vLLM (registry extension; full Phase 0 `ocr_engines.json` deferred)
-- [ ] **Phase 2** — Chandra via vLLM / Chandra sidecar
+- [x] **Phase 2** — Chandra via vLLM (`vllm-chandra`)
 - [ ] **Phase 3** — LiteParse custom engine
 - [x] **Phase 4** — MinerU-Diffusion via nano_dvlm sidecar
 - [ ] **Phase 5** (optional) — Layout + OCR pipeline

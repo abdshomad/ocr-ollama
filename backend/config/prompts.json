@@ -4,6 +4,7 @@
     "deepseek-ai/DeepSeek-OCR": "Free OCR.",
     "zai-org/GLM-OCR": "Text Recognition:",
     "lightonai/LightOnOCR-2-1B": "",
+    "datalab-to/chandra-ocr-2": "OCR this image to HTML, arranged as layout blocks. Each layout block should be a div with the data-bbox attribute (x0 y0 x1 y1, normalized 0-1000) and a data-label. Preserve tables, math, forms, lists, and reading order. Output HTML only.",
     "opendatalab/MinerU-Diffusion-V1-0320-2.5B": "Text Recognition:",
     "deepseek-ocr:latest": "Transcribe all text in this image. Output plain text only, preserving line breaks.",
     "glm-ocr:latest": "Text Recognition:",

@@ -31,6 +31,18 @@
       "gpu_device": 1,
       "port": 8102,
       "speed_tier": "fast"
+    },
+    {
+      "id": "chandra",
+      "label": "Chandra OCR 2",
+      "models": ["datalab-to/chandra-ocr-2"],
+      "host_env": "VLLM_CHANDRA_HOST",
+      "default_host": "http://vllm-chandra:8103",
+      "compose_service": "vllm-chandra",
+      "compose_profile": "chandra",
+      "gpu_device": 1,
+      "port": 8103,
+      "speed_tier": "slow"
     }
   ]
 }
