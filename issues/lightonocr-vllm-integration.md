@@ -56,6 +56,10 @@ LightOnOCR-2 needs **transformers ≥ 5** (v5 release). If load fails on stock `
 
 ~1B weights — fits on one L40 with another service only if total utilization allows. **One heavy OCR model per GPU** is the safe default; use GPU page stop/start.
 
+## Troubleshooting
+
+GPU-page restart loop (`entrypoint.sh: Is a directory`, exit 126): see [vllm-lighton-gpu-compose-entrypoint-directory.md](vllm-lighton-gpu-compose-entrypoint-directory.md).
+
 ## Repo impact
 
 | File | Change |

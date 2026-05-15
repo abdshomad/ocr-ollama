@@ -13,6 +13,8 @@ from app.vllm_registry import host_for_endpoint, load_endpoints
 _DOCKER = "docker"
 _SOCKET = Path("/var/run/docker.sock")
 _COMPOSE_TIMEOUT = 180.0
+# Repo bind-mount inside backend (host paths from env are not visible in this container).
+_WORKSPACE_COMPOSE = Path("/workspace/docker-compose.yml")
 
 
 def docker_socket_available() -> bool:
@@ -20,22 +22,52 @@ def docker_socket_available() -> bool:
 
 
 def compose_manage_enabled() -> bool:
-    project_dir = _project_dir()
+    if not docker_socket_available():
+        return False
+    if not _project_dir():
+        return False
+    # docker compose uses host paths; validate repo via /workspace mount, not COMPOSE_FILE on disk here.
+    if _WORKSPACE_COMPOSE.is_file():
+        return True
     compose_file = _compose_file()
-    return docker_socket_available() and bool(project_dir and compose_file and Path(compose_file).is_file())
+    return bool(compose_file and Path(compose_file).is_file())
+
+
+def _infer_host_workspace_mount() -> str:
+    """Host repo path when backend sees the repo at /workspace (GPU page compose)."""
+    try:
+        for line in Path("/proc/mounts").read_text(encoding="utf-8").splitlines():
+            parts = line.split()
+            if len(parts) >= 2 and parts[1] == "/workspace":
+                host_src = parts[0]
+                if host_src and host_src != "overlay" and Path(host_src).is_dir():
+                    return host_src
+    except OSError:
+        pass
+    return ""
 
 
 def _project_dir() -> str:
-    return os.getenv("COMPOSE_PROJECT_DIR", "").strip()
+    host = os.getenv("COMPOSE_HOST_PROJECT_DIR", "").strip()
+    if host:
+        return host
+    env = os.getenv("COMPOSE_PROJECT_DIR", "").strip()
+    if env in ("", "/workspace"):
+        inferred = _infer_host_workspace_mount()
+        if inferred:
+            return inferred
+    return env
 
 
 def _compose_file() -> str:
-    explicit = os.getenv("COMPOSE_FILE", "").strip()
-    if explicit:
-        return explicit
     root = _project_dir()
     if root:
-        return str(Path(root) / "docker-compose.yml")
+        host_compose = Path(root) / "docker-compose.yml"
+        if host_compose.is_file():
+            return str(host_compose)
+    explicit = os.getenv("COMPOSE_FILE", "").strip()
+    if explicit and Path(explicit).is_file():
+        return explicit
     return ""
 
 
@@ -252,9 +284,17 @@ async def gpu_dashboard() -> dict[str, Any]:
     message = None
     if not manage:
         if not docker_socket_available():
-            message = "Mount /var/run/docker.sock and set COMPOSE_PROJECT_DIR to manage models from the UI."
+            message = (
+                "Mount /var/run/docker.sock and set COMPOSE_HOST_PROJECT_DIR in .env "
+                "to manage models from the UI."
+            )
+        elif not _project_dir():
+            message = (
+                "Set COMPOSE_HOST_PROJECT_DIR in .env to the host repo root "
+                "(absolute path, e.g. /home/you/ocr-ollama), then recreate the backend container."
+            )
         else:
-            message = "Set COMPOSE_PROJECT_DIR to the repo root (see docker-compose.yml backend service)."
+            message = "Repo mount missing at /workspace — rebuild stack from this repository."
 
     gpus, gpu_err = await query_gpus() if manage else ([], None)
     services = await list_service_statuses() if manage else await _services_without_compose()

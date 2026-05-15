@@ -79,6 +79,9 @@ services:
       context: .
       dockerfile: docker/Dockerfile.vllm-ocr
     image: ${VLLM_OCR_IMAGE:-ocr-ollama-vllm-ocr:latest}
+    # Entrypoint baked into image — avoids bad host bind when started via GPU page (/workspace path).
+    volumes:
+      - vllm-hf-cache:/root/.cache/huggingface
     environment:
       <<: *vllm-env
       VLLM_MODEL: lightonai/LightOnOCR-2-1B
@@ -116,8 +119,10 @@ services:
       OLLAMA_HOST: ${OLLAMA_HOST:-http://host.docker.internal:11434}
       OLLAMA_TIMEOUT: ${OLLAMA_TIMEOUT:-300}
       MAX_IMAGE_BYTES: ${MAX_IMAGE_BYTES:-10485760}
-      COMPOSE_PROJECT_DIR: /workspace
-      COMPOSE_FILE: /workspace/docker-compose.yml
+      # Host repo path for `docker compose` via socket (see COMPOSE_HOST_PROJECT_DIR in .env)
+      COMPOSE_HOST_PROJECT_DIR: ${COMPOSE_HOST_PROJECT_DIR:-}
+      COMPOSE_PROJECT_DIR: ${COMPOSE_HOST_PROJECT_DIR:-}
+      COMPOSE_FILE: ${COMPOSE_HOST_PROJECT_DIR:-}/docker-compose.yml
       # Must match `docker compose` project when started from this repo (default: directory name)
       COMPOSE_PROJECT_NAME: ${COMPOSE_PROJECT_NAME:-ocr-ollama}
     volumes:
