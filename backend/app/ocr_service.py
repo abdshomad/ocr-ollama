@@ -101,9 +101,13 @@ async def run_arena(
     ext: str,
     models: list[str],
     prompt_overrides: dict[str, str] | None = None,
+    *,
+    extraction_mode: str = "text",
 ) -> dict[str, Any]:
     if len(models) < 2:
         raise HTTPException(status_code=400, detail="Arena requires at least 2 models")
+    if extraction_mode not in ("text", "product"):
+        raise HTTPException(status_code=400, detail="extraction_mode must be 'text' or 'product'")
 
     image_path = save_upload(image_bytes, ext)
     arena_id = str(uuid.uuid4())
@@ -111,6 +115,12 @@ async def run_arena(
     results: list[dict[str, Any]] = []
 
     for model in models:
+        if extraction_mode == "product":
+            from app.product_scan import arena_product_entry
+
+            results.append(await arena_product_entry(model, image_bytes))
+            continue
+
         override = overrides.get(model)
         prompt = resolve_prompt(model, override)
         entry: dict[str, Any] = {"model": model, "prompt": prompt}
@@ -134,6 +144,7 @@ async def run_arena(
     record = {
         "id": arena_id,
         "kind": "arena",
+        "extraction_mode": extraction_mode,
         "timestamp": new_timestamp(),
         "image_path": image_path,
         "results": results,

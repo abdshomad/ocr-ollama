@@ -37,3 +37,7 @@ def classify_ollama_model(name: str, show: dict[str, Any]) -> ModelTier:
 
 def is_ocr_capable(tier: ModelTier) -> bool:
     return tier in (ModelTier.DEDICATED_OCR, ModelTier.VISION)
+
+
+def is_vision_tier(tier: ModelTier) -> bool:
+    return tier in (ModelTier.DEDICATED_OCR, ModelTier.VISION)

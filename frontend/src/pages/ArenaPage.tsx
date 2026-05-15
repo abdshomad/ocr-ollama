@@ -16,6 +16,7 @@ export function ArenaPage() {
   const [progress, setProgress] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<ArenaResult | null>(null);
+  const [productMode, setProductMode] = useState(false);
 
   useEffect(() => {
     const load = () => {
@@ -44,7 +45,7 @@ export function ArenaPage() {
     setResult(null);
     setProgress(`Running 0 / ${selected.length}…`);
     try {
-      const res = await runArena(file, selected);
+      const res = await runArena(file, selected, undefined, productMode ? "product" : "text");
       setResult(res);
       setProgress(null);
     } catch (e) {
@@ -63,6 +64,14 @@ export function ArenaPage() {
       </p>
       <ImageCapture />
       <section className="card">
+        <label className="row" style={{ alignItems: "center", gap: "0.5rem", marginBottom: "1rem" }}>
+          <input
+            type="checkbox"
+            checked={productMode}
+            onChange={(e) => setProductMode(e.target.checked)}
+          />
+          <span>Extract SKU and expiry date (structured, Pydantic-validated)</span>
+        </label>
         <h2>Models (2+)</h2>
         <p className="muted" style={{ marginTop: 0 }}>
           All configured OCR models appear below. Offline entries (e.g. LightOnOCR) can be started on the{" "}
@@ -97,7 +106,7 @@ export function ArenaPage() {
       {result && (
         <section className="card">
           <h2>Arena results</h2>
-          <ArenaGrid results={result.results} />
+          <ArenaGrid results={result.results} extractionMode={result.extraction_mode} />
         </section>
       )}
     </>

@@ -20,6 +20,8 @@ VLLM_TIMEOUT = float(os.getenv("VLLM_TIMEOUT", "600"))
 # Output cap only; model ctx is 8192 and the image consumes most of it.
 VLLM_MAX_TOKENS = int(os.getenv("VLLM_MAX_TOKENS", "2048"))
 VLLM_MODEL = os.getenv("VLLM_MODEL", "deepseek-ai/DeepSeek-OCR")
+# OCR model for text-only tier product extraction (two-step pipeline)
+DEFAULT_OCR_MODEL = os.getenv("DEFAULT_OCR_MODEL", VLLM_MODEL).strip()
 # glm-ocr defaults to 131072 ctx; Ollama 0.23.x CUDA load can abort (ggml_nbytes > INT_MAX).
 OCR_NUM_CTX = int(os.getenv("OCR_NUM_CTX", "8192"))
 VLLM_XARGS = {

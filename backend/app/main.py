@@ -16,6 +16,7 @@ from app.ocr_service import (
     run_ocr,
     safe_upload_filename,
 )
+from app.product_scan import run_product_ocr
 from app.scan_service import run_browser_scan
 from app.prompts import get_prompts, remove_model_prompt, update_prompts
 from app.settings_store import get_inference_backend, get_inference_host, get_settings, update_settings
@@ -146,6 +147,15 @@ async def ocr_endpoint(
     return await run_ocr(image_bytes, ext, model, prompt)
 
 
+@app.post("/api/ocr/product")
+async def ocr_product_endpoint(
+    image: UploadFile = File(...),
+    model: str = Form(...),
+):
+    image_bytes, ext = await read_and_validate_image(image)
+    return await run_product_ocr(image_bytes, ext, model)
+
+
 @app.post("/api/scan")
 async def scan_endpoint(
     image: UploadFile = File(...),
@@ -166,6 +176,7 @@ async def arena_endpoint(
     image: UploadFile = File(...),
     models: str = Form(...),
     prompt_overrides: str | None = Form(None),
+    extraction_mode: str = Form("text"),
 ):
     image_bytes, ext = await read_and_validate_image(image)
     try:
@@ -180,7 +191,9 @@ async def arena_endpoint(
             overrides = json.loads(prompt_overrides)
         except json.JSONDecodeError as e:
             raise HTTPException(status_code=400, detail="prompt_overrides must be JSON object") from e
-    return await run_arena(image_bytes, ext, model_list, overrides)
+    return await run_arena(
+        image_bytes, ext, model_list, overrides, extraction_mode=extraction_mode.strip().lower()
+    )
 
 
 @app.get("/api/history")

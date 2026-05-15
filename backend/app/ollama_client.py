@@ -221,3 +221,37 @@ async def ocr_chat(model: str, prompt: str, image_bytes: bytes) -> tuple[str, di
         "total_duration": data.get("total_duration"),
     }
     return text, meta, duration_ms
+
+
+async def text_chat(model: str, prompt: str) -> tuple[str, dict[str, Any], int]:
+    payload = {
+        "model": model,
+        "messages": [{"role": "user", "content": prompt}],
+        "stream": False,
+        "format": "json",
+        "options": {"num_ctx": OCR_NUM_CTX},
+    }
+    host = get_ollama_host()
+    start = time.perf_counter()
+    async with httpx.AsyncClient(timeout=OLLAMA_TIMEOUT) as client:
+        r = await client.post(f"{host}/api/chat", json=payload)
+        duration_ms = int((time.perf_counter() - start) * 1000)
+        if r.status_code >= 400:
+            detail: Any = r.text
+            try:
+                detail = r.json()
+            except Exception:
+                pass
+            raise httpx.HTTPStatusError(
+                format_ollama_error(r.status_code, detail, model),
+                request=r.request,
+                response=r,
+            )
+        data = r.json()
+    text = (data.get("message") or {}).get("content", "")
+    meta = {
+        "eval_count": data.get("eval_count"),
+        "eval_duration": data.get("eval_duration"),
+        "total_duration": data.get("total_duration"),
+    }
+    return text, meta, duration_ms

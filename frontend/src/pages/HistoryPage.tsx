@@ -132,7 +132,10 @@ export function HistoryPage() {
               <pre className="ocr-text">{(detail as SingleResult).text}</pre>
             </>
           ) : (
-            <ArenaGrid results={(detail as ArenaResult).results} />
+            <ArenaGrid
+              results={(detail as ArenaResult).results}
+              extractionMode={(detail as ArenaResult).extraction_mode}
+            />
           )}
           <button type="button" style={{ marginTop: "0.5rem" }} onClick={() => setDetail(null)}>
             Close

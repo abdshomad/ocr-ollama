@@ -97,11 +97,13 @@ export function runOcr(image: File | Blob, model: string, prompt?: string) {
 export function runArena(
   image: File | Blob,
   models: string[],
-  promptOverrides?: Record<string, string>
+  promptOverrides?: Record<string, string>,
+  extractionMode: "text" | "product" = "text"
 ) {
   const form = new FormData();
   form.append("image", image, image instanceof File ? image.name : "capture.jpg");
   form.append("models", JSON.stringify(models));
+  form.append("extraction_mode", extractionMode);
   if (promptOverrides && Object.keys(promptOverrides).length > 0) {
     form.append("prompt_overrides", JSON.stringify(promptOverrides));
   }

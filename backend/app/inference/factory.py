@@ -32,6 +32,12 @@ async def ocr_chat(model: str, prompt: str, image_bytes: bytes) -> tuple[str, di
     return await vllm_client.ocr_chat(model, prompt, image_bytes)
 
 
+async def text_chat(model: str, prompt: str) -> tuple[str, dict[str, Any], int]:
+    if _backend() == "ollama":
+        return await ollama_client.text_chat(model, prompt)
+    return await vllm_client.text_chat(model, prompt)
+
+
 def _normalize_health(raw: dict[str, Any], backend: str) -> dict[str, Any]:
     reachable = bool(raw.get("inference_reachable") or raw.get("ollama_reachable") or raw.get("vllm_reachable"))
     host = raw.get("inference_host") or raw.get("ollama_host") or raw.get("vllm_host") or ""

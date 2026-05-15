@@ -196,3 +196,48 @@ async def ocr_chat(model: str, prompt: str, image_bytes: bytes) -> tuple[str, di
         "vllm_host": host,
     }
     return text, meta, duration_ms
+
+
+async def text_chat(model: str, prompt: str) -> tuple[str, dict[str, Any], int]:
+    host = resolve_host_for_model(model)
+    if not host:
+        raise httpx.HTTPError(f"No vLLM endpoint configured for model '{model}'")
+
+    payload: dict[str, Any] = {
+        "model": model,
+        "messages": [{"role": "user", "content": prompt}],
+        "max_tokens": VLLM_MAX_TOKENS,
+        "temperature": 0.0,
+        "stream": False,
+    }
+    extra = _deepseek_extra_body(model)
+    if extra:
+        payload.update(extra)
+
+    start = time.perf_counter()
+    async with httpx.AsyncClient(timeout=VLLM_TIMEOUT) as client:
+        r = await client.post(f"{_v1_base(host)}/chat/completions", json=payload)
+        duration_ms = int((time.perf_counter() - start) * 1000)
+        if r.status_code >= 400:
+            detail: Any = r.text
+            try:
+                detail = r.json()
+            except Exception:
+                pass
+            raise httpx.HTTPStatusError(
+                format_vllm_error(r.status_code, detail, model),
+                request=r.request,
+                response=r,
+            )
+        data = r.json()
+
+    choice = (data.get("choices") or [{}])[0]
+    text = (choice.get("message") or {}).get("content", "") or ""
+    usage = data.get("usage") or {}
+    meta = {
+        "completion_tokens": usage.get("completion_tokens"),
+        "prompt_tokens": usage.get("prompt_tokens"),
+        "total_tokens": usage.get("total_tokens"),
+        "vllm_host": host,
+    }
+    return text, meta, duration_ms

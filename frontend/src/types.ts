@@ -38,8 +38,13 @@ export interface SingleResult {
 
 export interface ArenaResultEntry {
   model: string;
-  prompt: string;
+  prompt?: string;
   text?: string;
+  sku?: string;
+  expiry_date?: string | null;
+  pipeline?: "vision" | "ocr_then_text";
+  ocr_model?: string | null;
+  raw_text?: string | null;
   duration_ms?: number;
   error?: string;
   inference_meta?: Record<string, unknown>;
@@ -49,6 +54,7 @@ export interface ArenaResultEntry {
 export interface ArenaResult {
   id: string;
   kind: "arena";
+  extraction_mode?: "text" | "product";
   timestamp: string;
   image_path: string;
   results: ArenaResultEntry[];

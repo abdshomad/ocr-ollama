@@ -56,9 +56,20 @@ def _to_summary(data: dict[str, Any]) -> dict[str, Any]:
         sku = data.get("sku", "")
         expiry = data.get("expiry_date") or "—"
         preview = f"SKU: {sku} | Exp: {expiry}"[:120]
+    elif kind == "product_scan":
+        models = [data.get("model", "unknown")]
+        sku = data.get("sku", "")
+        expiry = data.get("expiry_date") or "—"
+        preview = f"SKU: {sku} | Exp: {expiry}"[:120]
     elif kind == "arena":
         models = [r.get("model") for r in data.get("results", [])]
-        preview = next((r.get("text", "")[:120] for r in data.get("results", []) if r.get("text")), "")
+        if data.get("extraction_mode") == "product":
+            first = next((r for r in data.get("results", []) if r.get("sku")), {})
+            sku = first.get("sku", "")
+            expiry = first.get("expiry_date") or "—"
+            preview = f"SKU: {sku} | Exp: {expiry}"[:120]
+        else:
+            preview = next((r.get("text", "")[:120] for r in data.get("results", []) if r.get("text")), "")
     else:
         models = [data.get("model")]
         preview = (data.get("text") or "")[:120]
