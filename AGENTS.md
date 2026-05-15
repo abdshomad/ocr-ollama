@@ -55,7 +55,7 @@ Index: [issues/README.md](issues/README.md). Primary vLLM reference: [issues/vll
 
 ## Frontend (`frontend/`)
 
-- **TypeScript + React Router** (`/`, `/arena`, `/history`, `/settings`).
+- **TypeScript + React Router** (`/`, `/arena`, `/history`, `/gpu`, `/settings`).
 - API client: `frontend/src/api/client.ts` — use relative `/api/...` paths (works with Vite proxy and nginx).
 - Shared image for Run/Arena: `ImageContext` — do not duplicate file state per page.
 - Local dev: `npm run dev` (port 5173); proxy in `vite.config.ts` → backend `:8000`.
@@ -66,7 +66,7 @@ Index: [issues/README.md](issues/README.md). Primary vLLM reference: [issues/vll
 - `docker compose up --build` — **`vllm`** (GPU, DeepSeek-OCR), **`backend`**, **`nginx`** on `${PORT:-3036}`.
 - Copy `backend/pyproject.toml` + **`uv.lock`** in Dockerfile before `uv sync --frozen --no-dev --no-install-project`.
 - Do not publish backend `8000` or vLLM `8100` on the host by default (avoids port conflicts). Backend uses `http://vllm:8100` on the Compose network. Optional host publish: `docker-compose.vllm-publish.yml` (port **18100**).
-- **vLLM service:** `vllm/vllm-openai:latest`, `CUDA_VISIBLE_DEVICES` default **1**, `VLLM_GPU_MEMORY_UTILIZATION` **0.85**, volume `vllm-hf-cache`, healthcheck `start_period` 1800s. First start downloads model weights.
+- **vLLM services:** `vllm-deepseek` + `vllm-glm` (dual GPU). Routing: `backend/config/vllm_endpoints.json` + `vllm_registry.py`. `/api/models` lists both with `available` + `vllm_endpoint_label`; frontend `ModelPicker` radio/checkbox. `docker/vllm-entrypoint.sh` sets per-model serve flags.
 - **Ollama-only:** `INFERENCE_BACKEND=ollama` and `docker compose up backend nginx` (skip `vllm`).
 - Troubleshooting: [issues/vllm-deepseek-ocr-integration.md](issues/vllm-deepseek-ocr-integration.md).
 
@@ -104,6 +104,9 @@ Index: [issues/README.md](issues/README.md). Primary vLLM reference: [issues/vll
 | Change exposed port | `.env` → `PORT=...` |
 | Change inference backend/URL | Settings UI or `PUT /api/settings` |
 | Run vLLM (DeepSeek-OCR) | `docker compose up --build` or [issues/vllm-deepseek-ocr-integration.md](issues/vllm-deepseek-ocr-integration.md) |
+| Run vLLM (GLM-OCR) | `docker compose -f docker-compose.yml -f docker-compose.glm-ocr.yml up -d` — [issues/vllm-glm-ocr.md](issues/vllm-glm-ocr.md) |
+| Load/unload vLLM per GPU | **GPU** page or `POST /api/vllm/services/{deepseek\|glm}/start\|stop` |
+| GPU metrics + compose control | `GET /api/gpu` (backend needs Docker socket; `COMPOSE_PROJECT_NAME` must match stack) |
 
 ## Testing expectations
 

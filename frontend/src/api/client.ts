@@ -3,6 +3,7 @@ import type {
   AppSettings,
   ArenaResult,
   BrowserScanResult,
+  GpuDashboard,
   HealthResponse,
   HistorySummary,
   InferenceBackend,
@@ -11,6 +12,7 @@ import type {
   RunResult,
   SettingsUpdateResponse,
   SingleResult,
+  VllmServiceActionResult,
 } from "../types";
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -30,6 +32,22 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 export function getHealth() {
   return request<HealthResponse>("/api/health");
+}
+
+export function getGpuDashboard() {
+  return request<GpuDashboard>("/api/gpu");
+}
+
+export function startVllmService(serviceId: string) {
+  return request<VllmServiceActionResult>(`/api/vllm/services/${encodeURIComponent(serviceId)}/start`, {
+    method: "POST",
+  });
+}
+
+export function stopVllmService(serviceId: string) {
+  return request<VllmServiceActionResult>(`/api/vllm/services/${encodeURIComponent(serviceId)}/stop`, {
+    method: "POST",
+  });
 }
 
 export function getSettings() {

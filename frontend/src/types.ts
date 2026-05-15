@@ -10,6 +10,10 @@ export interface OllamaModel {
   has_parent_blob?: boolean;
   capabilities: string[];
   families: string[];
+  /** vLLM endpoint reachable (dual-model Compose). Omitted = available. */
+  available?: boolean;
+  vllm_endpoint?: string;
+  vllm_endpoint_label?: string;
 }
 
 export interface PromptsConfig {
@@ -90,3 +94,41 @@ export interface AppSettings {
 }
 
 export interface SettingsUpdateResponse extends AppSettings, HealthResponse {}
+
+export interface GpuInfo {
+  index: number;
+  name: string;
+  memory_used_mib: number;
+  memory_total_mib: number;
+  utilization_pct: number | null;
+}
+
+export interface VllmServiceStatus {
+  id: string;
+  label: string;
+  compose_service: string;
+  gpu_device: number;
+  port: number;
+  models: string[];
+  docker_state: string;
+  health?: string | null;
+  api_ready: boolean;
+  container_id?: string | null;
+}
+
+export interface GpuDashboard {
+  manage_enabled: boolean;
+  manage_message?: string | null;
+  gpus: GpuInfo[];
+  gpu_query_error?: string | null;
+  services: VllmServiceStatus[];
+  gpu_memory_utilization: number;
+}
+
+export interface VllmServiceActionResult {
+  ok: boolean;
+  action: "start" | "stop";
+  service_id: string;
+  message: string;
+  service?: VllmServiceStatus | null;
+}

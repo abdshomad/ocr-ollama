@@ -1,0 +1,24 @@
+{
+  "endpoints": [
+    {
+      "id": "deepseek",
+      "label": "DeepSeek-OCR",
+      "models": ["deepseek-ai/DeepSeek-OCR"],
+      "host_env": "VLLM_DEEPSEEK_HOST",
+      "default_host": "http://vllm-deepseek:8100",
+      "compose_service": "vllm-deepseek",
+      "gpu_device": 0,
+      "port": 8100
+    },
+    {
+      "id": "glm",
+      "label": "GLM-OCR",
+      "models": ["zai-org/GLM-OCR"],
+      "host_env": "VLLM_GLM_HOST",
+      "default_host": "http://vllm-glm:8101",
+      "compose_service": "vllm-glm",
+      "gpu_device": 1,
+      "port": 8101
+    }
+  ]
+}

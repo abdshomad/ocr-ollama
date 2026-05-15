@@ -8,8 +8,13 @@ from typing import Any
 import httpx
 
 from app.config import VLLM_MAX_TOKENS, VLLM_TIMEOUT, VLLM_XARGS
-from app.inference.classify import ModelTier, classify_model_by_name, is_ocr_capable
-from app.settings_store import get_vllm_host
+from app.vllm_registry import (
+    all_configured_models,
+    host_for_endpoint,
+    load_endpoints,
+    model_entry,
+    resolve_host_for_model,
+)
 
 _DEEPSEEK_OCR_RE = re.compile(r"deepseek-ocr", re.IGNORECASE)
 
@@ -52,59 +57,94 @@ def format_vllm_error(status_code: int, detail: Any, model: str) -> str:
     return f"vLLM error ({status_code}) for model '{model}': {err_msg}"
 
 
-async def fetch_models(client: httpx.AsyncClient, host: str | None = None) -> list[dict[str, Any]]:
-    base = _v1_base(host or get_vllm_host())
-    r = await client.get(f"{base}/models")
+async def fetch_models(client: httpx.AsyncClient, host: str) -> list[dict[str, Any]]:
+    r = await client.get(f"{_v1_base(host)}/models")
     r.raise_for_status()
     return r.json().get("data", [])
 
 
 async def list_models_with_classification() -> list[dict[str, Any]]:
+    result: list[dict[str, Any]] = []
     async with httpx.AsyncClient(timeout=30.0) as client:
-        entries = await fetch_models(client)
-        result = []
-        for m in entries:
-            name = m.get("id", "")
-            tier = classify_model_by_name(name)
+        for ep, model_id in all_configured_models():
+            host = host_for_endpoint(ep)
+            available = False
+            if host:
+                try:
+                    live = await fetch_models(client, host)
+                    live_ids = {str(m.get("id", "")) for m in live}
+                    available = model_id in live_ids
+                except httpx.HTTPError:
+                    available = False
             result.append(
-                {
-                    "name": name,
-                    "size": None,
-                    "modified_at": None,
-                    "tier": tier.value,
-                    "ocr_capable": is_ocr_capable(tier),
-                    "has_parent_blob": False,
-                    "capabilities": [],
-                    "families": [],
-                }
+                model_entry(
+                    model_id,
+                    available=available,
+                    endpoint_id=str(ep.get("id", "")),
+                    endpoint_label=str(ep.get("label") or ep.get("id") or ""),
+                )
             )
-        return result
+    return result
 
 
 async def check_health() -> dict[str, Any]:
-    host = get_vllm_host()
-    try:
-        async with httpx.AsyncClient(timeout=10.0) as client:
-            models = await fetch_models(client, host)
-            return {
-                "inference_reachable": True,
-                "inference_host": host,
-                "vllm_reachable": True,
-                "vllm_host": host,
-                "model_count": len(models),
-            }
-    except Exception as e:
-        return {
-            "inference_reachable": False,
-            "inference_host": host,
-            "vllm_reachable": False,
-            "vllm_host": host,
-            "model_count": 0,
-            "error": str(e),
-        }
+    endpoint_status: list[dict[str, Any]] = []
+    any_up = False
+    total = 0
+    errors: list[str] = []
+
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        for ep in load_endpoints():
+            host = host_for_endpoint(ep)
+            ep_id = str(ep.get("id", ""))
+            if not host:
+                endpoint_status.append(
+                    {"id": ep_id, "label": ep.get("label"), "reachable": False, "error": "no host configured"}
+                )
+                continue
+            try:
+                models = await fetch_models(client, host)
+                count = len(models)
+                any_up = True
+                total += count
+                endpoint_status.append(
+                    {
+                        "id": ep_id,
+                        "label": ep.get("label"),
+                        "reachable": True,
+                        "host": host,
+                        "model_count": count,
+                    }
+                )
+            except Exception as e:
+                errors.append(f"{ep_id}: {e}")
+                endpoint_status.append(
+                    {
+                        "id": ep_id,
+                        "label": ep.get("label"),
+                        "reachable": False,
+                        "host": host,
+                        "error": str(e),
+                    }
+                )
+
+    primary_host = host_for_endpoint(load_endpoints()[0]) if load_endpoints() else ""
+    return {
+        "inference_reachable": any_up,
+        "inference_host": primary_host,
+        "vllm_reachable": any_up,
+        "vllm_host": primary_host,
+        "model_count": total,
+        "vllm_endpoints": endpoint_status,
+        "error": "; ".join(errors) if errors and not any_up else None,
+    }
 
 
 async def ocr_chat(model: str, prompt: str, image_bytes: bytes) -> tuple[str, dict[str, Any], int]:
+    host = resolve_host_for_model(model)
+    if not host:
+        raise httpx.HTTPError(f"No vLLM endpoint configured for model '{model}'")
+
     mime = _mime_for_image(image_bytes)
     b64 = base64.b64encode(image_bytes).decode("ascii")
     data_url = f"data:{mime};base64,{b64}"
@@ -127,7 +167,6 @@ async def ocr_chat(model: str, prompt: str, image_bytes: bytes) -> tuple[str, di
     if extra:
         payload.update(extra)
 
-    host = get_vllm_host()
     start = time.perf_counter()
     async with httpx.AsyncClient(timeout=VLLM_TIMEOUT) as client:
         r = await client.post(f"{_v1_base(host)}/chat/completions", json=payload)
@@ -152,5 +191,6 @@ async def ocr_chat(model: str, prompt: str, image_bytes: bytes) -> tuple[str, di
         "completion_tokens": usage.get("completion_tokens"),
         "prompt_tokens": usage.get("prompt_tokens"),
         "total_tokens": usage.get("total_tokens"),
+        "vllm_host": host,
     }
     return text, meta, duration_ms

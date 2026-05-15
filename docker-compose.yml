@@ -1,37 +1,71 @@
+x-vllm-service: &vllm-service
+  image: ${VLLM_IMAGE:-vllm/vllm-openai:latest}
+  restart: unless-stopped
+  ipc: host
+  shm_size: "16gb"
+  entrypoint: ["/bin/bash", "/docker/vllm-entrypoint.sh"]
+  environment: &vllm-env
+    HF_HOME: /root/.cache/huggingface
+    HUGGING_FACE_HUB_TOKEN: ${HUGGING_FACE_HUB_TOKEN:-}
+    # One model per L40; raise if a single model runs alone on a GPU
+    VLLM_GPU_MEMORY_UTILIZATION: ${VLLM_GPU_MEMORY_UTILIZATION:-0.92}
+    VLLM_MTP_SPECULATIVE_TOKENS: ${VLLM_MTP_SPECULATIVE_TOKENS:-1}
+    VLLM_GLM_MAX_MODEL_LEN: ${VLLM_GLM_MAX_MODEL_LEN:-8192}
+  volumes:
+    - vllm-hf-cache:/root/.cache/huggingface
+    - ./docker/vllm-entrypoint.sh:/docker/vllm-entrypoint.sh:ro
+
+x-vllm-gpu: &vllm-gpu
+  deploy:
+    resources:
+      reservations:
+        devices:
+          - driver: nvidia
+            capabilities: [gpu]
+
 services:
-  vllm:
-    image: ${VLLM_IMAGE:-vllm/vllm-openai:latest}
-    restart: unless-stopped
-    ipc: host
-    shm_size: "16gb"
-    gpus: all
+  vllm-deepseek:
+    <<: [*vllm-service, *vllm-gpu]
     environment:
-      HF_HOME: /root/.cache/huggingface
-      HUGGING_FACE_HUB_TOKEN: ${HUGGING_FACE_HUB_TOKEN:-}
-      # Default GPU 1 when GPU 0 is used by Ollama / another vLLM on the host
-      CUDA_VISIBLE_DEVICES: ${VLLM_CUDA_VISIBLE_DEVICES:-1}
-    volumes:
-      - vllm-hf-cache:/root/.cache/huggingface
-    # No host port: backend uses http://vllm:8100 on the Compose network.
-    # To publish vLLM on the host, use docker-compose.vllm-publish.yml (see README).
-    command:
-      - ${VLLM_MODEL:-deepseek-ai/DeepSeek-OCR}
-      - --logits-processors
-      - vllm.model_executor.models.deepseek_ocr:NGramPerReqLogitsProcessor
-      - --gpu-memory-utilization
-      - ${VLLM_GPU_MEMORY_UTILIZATION:-0.85}
-      - --no-enable-prefix-caching
-      - --mm-processor-cache-gb
-      - "0"
-      - --host
-      - "0.0.0.0"
-      - --port
-      - "8100"
+      <<: *vllm-env
+      VLLM_MODEL: deepseek-ai/DeepSeek-OCR
+      VLLM_PORT: "8100"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ["${VLLM_DEEPSEEK_CUDA_DEVICE:-0}"]
+              capabilities: [gpu]
     healthcheck:
       test:
         [
           "CMD-SHELL",
           "python3 -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8100/v1/models')\"",
+        ]
+      interval: 30s
+      timeout: 15s
+      retries: 60
+      start_period: 1800s
+
+  vllm-glm:
+    <<: [*vllm-service, *vllm-gpu]
+    environment:
+      <<: *vllm-env
+      VLLM_MODEL: zai-org/GLM-OCR
+      VLLM_PORT: "8101"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ["${VLLM_GLM_CUDA_DEVICE:-1}"]
+              capabilities: [gpu]
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "python3 -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8101/v1/models')\"",
         ]
       interval: 30s
       timeout: 15s
@@ -45,20 +79,25 @@ services:
     restart: unless-stopped
     environment:
       INFERENCE_BACKEND: ${INFERENCE_BACKEND:-vllm}
-      VLLM_HOST: ${VLLM_HOST:-http://vllm:8100}
+      VLLM_DEEPSEEK_HOST: ${VLLM_DEEPSEEK_HOST:-http://vllm-deepseek:8100}
+      VLLM_GLM_HOST: ${VLLM_GLM_HOST:-http://vllm-glm:8101}
+      VLLM_HOST: ${VLLM_HOST:-http://vllm-deepseek:8100}
       VLLM_TIMEOUT: ${VLLM_TIMEOUT:-600}
       OLLAMA_HOST: ${OLLAMA_HOST:-http://host.docker.internal:11434}
       OLLAMA_TIMEOUT: ${OLLAMA_TIMEOUT:-300}
       MAX_IMAGE_BYTES: ${MAX_IMAGE_BYTES:-10485760}
+      COMPOSE_PROJECT_DIR: /workspace
+      COMPOSE_FILE: /workspace/docker-compose.yml
+      # Must match `docker compose` project when started from this repo (default: directory name)
+      COMPOSE_PROJECT_NAME: ${COMPOSE_PROJECT_NAME:-ocr-ollama}
     volumes:
       - ./upload:/app/upload
       - ./result:/app/result
       - ./backend/config:/app/backend/config
+      - /var/run/docker.sock:/var/run/docker.sock
+      - .:/workspace:ro
     extra_hosts:
       - "host.docker.internal:host-gateway"
-    depends_on:
-      vllm:
-        condition: service_healthy
 
   nginx:
     build:

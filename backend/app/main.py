@@ -19,6 +19,12 @@ from app.ocr_service import (
 from app.scan_service import run_browser_scan
 from app.prompts import get_prompts, remove_model_prompt, update_prompts
 from app.settings_store import get_inference_backend, get_inference_host, get_settings, update_settings
+from app.vllm_compose import (
+    compose_manage_enabled,
+    gpu_dashboard,
+    start_service,
+    stop_service,
+)
 
 app = FastAPI(title="OCR Inference API", version="0.2.0")
 
@@ -65,6 +71,41 @@ async def settings_put(body: SettingsUpdate):
         return {**data, **h, "status": "ok" if h.get("inference_reachable") else "degraded"}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
+
+
+@app.get("/api/gpu")
+async def gpu_get():
+    return await gpu_dashboard()
+
+
+@app.post("/api/vllm/services/{service_id}/start")
+async def vllm_service_start(service_id: str):
+    if not compose_manage_enabled():
+        raise HTTPException(
+            status_code=503,
+            detail="GPU management requires Docker socket and COMPOSE_PROJECT_DIR on the backend container.",
+        )
+    try:
+        return await start_service(service_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e)) from e
+    except (RuntimeError, TimeoutError) as e:
+        raise HTTPException(status_code=502, detail=str(e)) from e
+
+
+@app.post("/api/vllm/services/{service_id}/stop")
+async def vllm_service_stop(service_id: str):
+    if not compose_manage_enabled():
+        raise HTTPException(
+            status_code=503,
+            detail="GPU management requires Docker socket and COMPOSE_PROJECT_DIR on the backend container.",
+        )
+    try:
+        return await stop_service(service_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e)) from e
+    except (RuntimeError, TimeoutError) as e:
+        raise HTTPException(status_code=502, detail=str(e)) from e
 
 
 @app.get("/api/models")

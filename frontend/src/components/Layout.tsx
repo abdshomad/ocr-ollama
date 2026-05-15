@@ -43,6 +43,7 @@ export function Layout() {
         <NavLink to="/arena">Arena</NavLink>
         <NavLink to="/scan">Scan</NavLink>
         <NavLink to="/history">History</NavLink>
+        <NavLink to="/gpu">GPU</NavLink>
         <NavLink to="/settings">Settings</NavLink>
         {health && (
           <span className={`muted ${reachable ? "health-ok" : "health-bad"}`}>{healthLabel(health)}</span>

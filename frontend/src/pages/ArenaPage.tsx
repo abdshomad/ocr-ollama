@@ -5,7 +5,7 @@ import { ImageCapture } from "../components/ImageCapture";
 import { ModelPicker } from "../components/ModelPicker";
 import { useImage } from "../context/ImageContext";
 import type { ArenaResult, OllamaModel } from "../types";
-import { pickDefaultOcrModel } from "../utils/models";
+import { pickDefaultArenaModels } from "../utils/models";
 
 export function ArenaPage() {
   const { file } = useImage();
@@ -20,16 +20,7 @@ export function ArenaPage() {
     getModels()
       .then((r) => {
         setModels(r.models);
-        const ocrNames = r.models.filter((m) => m.ocr_capable && !m.has_parent_blob).map((m) => m.name);
-        const preferred = ocrNames.filter((n) =>
-          ["deepseek-ocr:latest", "glm-ocr:latest", "qwen3.6:latest"].includes(n)
-        );
-        if (preferred.length >= 2) setSelected(preferred.slice(0, 3));
-        else if (ocrNames.length >= 2) setSelected(ocrNames.slice(0, 2));
-        else {
-          const fallback = pickDefaultOcrModel(r.models);
-          if (fallback) setSelected([fallback]);
-        }
+        setSelected(pickDefaultArenaModels(r.models));
       })
       .catch((e) => setError(e instanceof Error ? e.message : "Failed to load models"));
   }, []);

@@ -35,7 +35,7 @@ async def ocr_chat(model: str, prompt: str, image_bytes: bytes) -> tuple[str, di
 def _normalize_health(raw: dict[str, Any], backend: str) -> dict[str, Any]:
     reachable = bool(raw.get("inference_reachable") or raw.get("ollama_reachable") or raw.get("vllm_reachable"))
     host = raw.get("inference_host") or raw.get("ollama_host") or raw.get("vllm_host") or ""
-    return {
+    out: dict[str, Any] = {
         "inference_backend": backend,
         "inference_reachable": reachable,
         "inference_host": host,
@@ -46,3 +46,6 @@ def _normalize_health(raw: dict[str, Any], backend: str) -> dict[str, Any]:
         "vllm_reachable": reachable if backend == "vllm" else False,
         "vllm_host": host if backend == "vllm" else "",
     }
+    if raw.get("vllm_endpoints") is not None:
+        out["vllm_endpoints"] = raw["vllm_endpoints"]
+    return out

@@ -51,6 +51,13 @@ vLLM serve flags (in `docker-compose.yml`): `NGramPerReqLogitsProcessor`, `--no-
 
 ## Issues encountered and fixes
 
+### 0. Orphan `vllm` container + dual-GPU OOM
+
+**Symptom:** `vllm-deepseek` unhealthy after ~90s; `Free memory on device cuda:0 (5.6/44.39 GiB)...`  
+**Cause:** Leftover `ocr-ollama-vllm-1` from the old single-service Compose still used ~39 GiB on GPU 1 while `vllm-deepseek` was also pinned there. GLM defaults to 131072 context without `--max-model-len`.  
+**Fix:** `docker compose down --remove-orphans`; per-service `device_ids` (DeepSeek GPU 0, GLM GPU 1); `VLLM_GPU_MEMORY_UTILIZATION=0.72`; GLM `--max-model-len 8192`.
+
+
 ### 1. Host port 8100 already allocated
 
 **Symptom:** `Bind for 0.0.0.0:8100 failed: port is already allocated`  
@@ -106,6 +113,10 @@ vLLM serve flags (in `docker-compose.yml`): `NGramPerReqLogitsProcessor`, `--no-
 | Compose | `docker-compose.yml`, `docker-compose.vllm-publish.yml`, `.env.example` |
 | UI | Settings: backend selector + `VLLM_HOST` / `OLLAMA_HOST` |
 | Docs | `README.md`, `AGENTS.md`, `plan/vllm-deepseek-ocr-migration.md` |
+
+## GLM-OCR (dual service)
+
+`vllm-glm` runs alongside `vllm-deepseek`; users choose in the Run/Arena model picker. See [vllm-glm-ocr.md](vllm-glm-ocr.md).
 
 ## Local dev (vLLM on host, not Compose)
 

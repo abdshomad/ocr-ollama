@@ -109,6 +109,14 @@ def get_vllm_host() -> str:
     )
 
 
+def get_vllm_deepseek_host() -> str:
+    return os.getenv("VLLM_DEEPSEEK_HOST", "http://vllm-deepseek:8100").strip().rstrip("/")
+
+
+def get_vllm_glm_host() -> str:
+    return os.getenv("VLLM_GLM_HOST", "http://vllm-glm:8101").strip().rstrip("/")
+
+
 def get_ollama_host() -> str:
     return _resolve_host(
         settings_key="ollama_host",
@@ -129,6 +137,8 @@ def get_settings() -> dict[str, str]:
         "inference_backend": backend,
         "inference_host": get_inference_host(),
         "vllm_host": get_vllm_host(),
+        "vllm_deepseek_host": get_vllm_deepseek_host(),
+        "vllm_glm_host": get_vllm_glm_host(),
         "ollama_host": get_ollama_host(),
     }
 

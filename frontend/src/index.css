@@ -203,6 +203,11 @@ nav a.active {
   font-size: 0.875rem;
 }
 
+.model-row-disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 .arena-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -327,4 +332,67 @@ nav a.active {
 
 .scan-fields dd {
   margin: 0;
+}
+
+.gpu-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1rem;
+}
+
+.gpu-card h2 {
+  font-size: 0.95rem;
+}
+
+.gpu-warn {
+  border-color: var(--warn);
+  margin-bottom: 1rem;
+}
+
+.gpu-badge.gpu-state-ready {
+  background: #2a4a3a;
+  color: var(--success);
+}
+
+.gpu-badge.gpu-state-loading {
+  background: #3a3a2a;
+  color: var(--warn);
+}
+
+.gpu-badge.gpu-state-stopped {
+  background: #2a2a2a;
+  color: var(--muted);
+}
+
+.gpu-badge.gpu-state-unknown {
+  background: #3a2a2a;
+  color: var(--muted);
+}
+
+.progress-fill.progress-warn {
+  background: var(--warn);
+}
+
+.gpu-service-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.gpu-service-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.gpu-service-list li:last-child {
+  border-bottom: none;
+}
+
+.gpu-service-list li > span:first-child {
+  flex: 1;
+  min-width: 140px;
 }

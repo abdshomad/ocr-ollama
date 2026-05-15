@@ -9,9 +9,22 @@ from fastapi import HTTPException, UploadFile
 
 from app.config import ALLOWED_CONTENT_TYPES, MAX_IMAGE_BYTES, UPLOAD_DIR
 from app.history import new_timestamp, save_result
-from app.inference.factory import ocr_chat
+from app.inference.factory import list_models_with_classification, ocr_chat
 from app.prompts import resolve_prompt
 from app.settings_store import get_inference_backend
+
+
+async def _ensure_model_available(model: str) -> None:
+    if get_inference_backend() != "vllm":
+        return
+    models = await list_models_with_classification()
+    entry = next((m for m in models if m.get("name") == model), None)
+    if entry is not None and entry.get("available") is False:
+        label = entry.get("vllm_endpoint_label") or entry.get("vllm_endpoint") or "vLLM"
+        raise HTTPException(
+            status_code=503,
+            detail=f"Model '{model}' is offline ({label} server not ready). Check docker compose logs.",
+        )
 
 EXT_BY_TYPE = {
     "image/jpeg": ".jpg",
@@ -57,12 +70,14 @@ async def run_ocr(
     prompt = resolve_prompt(model, prompt_override)
     run_id = str(uuid.uuid4())
 
+    await _ensure_model_available(model)
     try:
         text, meta, duration_ms = await ocr_chat(model, prompt, image_bytes)
     except httpx.HTTPStatusError as e:
         raise HTTPException(status_code=502, detail=str(e)) from e
     except httpx.HTTPError as e:
-        raise HTTPException(status_code=503, detail=f"Ollama unreachable: {e}") from e
+        backend = get_inference_backend()
+        raise HTTPException(status_code=503, detail=f"{backend} unreachable: {e}") from e
 
     record = {
         "id": run_id,
@@ -73,6 +88,8 @@ async def run_ocr(
         "image_path": image_path,
         "text": text,
         "duration_ms": duration_ms,
+        "inference_backend": get_inference_backend(),
+        "inference_meta": meta,
         "ollama_meta": meta,
     }
     save_result(record)
@@ -98,11 +115,16 @@ async def run_arena(
         prompt = resolve_prompt(model, override)
         entry: dict[str, Any] = {"model": model, "prompt": prompt}
         try:
+            await _ensure_model_available(model)
             text, meta, duration_ms = await ocr_chat(model, prompt, image_bytes)
             entry["text"] = text
             entry["duration_ms"] = duration_ms
             entry["inference_meta"] = meta
             entry["ollama_meta"] = meta
+        except HTTPException as e:
+            entry["error"] = str(e.detail)
+            entry["text"] = ""
+            entry["duration_ms"] = 0
         except httpx.HTTPError as e:
             entry["error"] = str(e)
             entry["text"] = ""
