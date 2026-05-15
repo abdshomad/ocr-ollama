@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import os
 import shutil
 import subprocess
@@ -18,6 +19,40 @@ def liteparse_bin() -> str:
 
 def liteparse_timeout() -> float:
     return float(os.getenv("LITEPARSE_TIMEOUT", "600"))
+
+
+def liteparse_dpi() -> str:
+    """Render DPI before OCR. Default 300 — LiteParse CLI default 150 is too low for scans vs GPU OCR."""
+    v = (os.getenv("LITEPARSE_DPI") or "300").strip()
+    return v or "300"
+
+
+def liteparse_output_format() -> str:
+    """json (default): join pages[].text; text: raw CLI stdout."""
+    f = (os.getenv("LITEPARSE_FORMAT") or "json").strip().lower()
+    return "text" if f == "text" else "json"
+
+
+def liteparse_ocr_language() -> str | None:
+    v = (os.getenv("LITEPARSE_OCR_LANGUAGE") or "").strip()
+    return v or None
+
+
+def liteparse_ocr_server_url() -> str | None:
+    v = (os.getenv("LITEPARSE_OCR_SERVER_URL") or "").strip()
+    return v or None
+
+
+def _env_flag(name: str, default_true: bool) -> bool:
+    raw = os.getenv(name)
+    if raw is None or raw == "":
+        return default_true
+    return raw.strip().lower() not in ("0", "false", "no", "off")
+
+
+def liteparse_preserve_small_text() -> bool:
+    """Helps faint / small glyphs; on by default (disable with LITEPARSE_PRESERVE_SMALL_TEXT=0)."""
+    return _env_flag("LITEPARSE_PRESERVE_SMALL_TEXT", True)
 
 
 def lit_cli_available() -> bool:
@@ -56,8 +91,50 @@ def _suffix_for_bytes(data: bytes) -> str:
     return ".bin"
 
 
+def _lit_parse_command(file_path: Path) -> list[str]:
+    cmd: list[str] = [
+        liteparse_bin(),
+        "parse",
+        str(file_path),
+        "-q",
+        "--format",
+        liteparse_output_format(),
+        "--dpi",
+        liteparse_dpi(),
+    ]
+    if liteparse_preserve_small_text():
+        cmd.append("--preserve-small-text")
+    lang = liteparse_ocr_language()
+    if lang:
+        cmd.extend(["--ocr-language", lang])
+    ocr_url = liteparse_ocr_server_url()
+    if ocr_url:
+        cmd.extend(["--ocr-server-url", ocr_url])
+    return cmd
+
+
+def _normalized_lit_stdout(stdout: str) -> str:
+    raw = (stdout or "").strip()
+    if not raw or liteparse_output_format() == "text":
+        return raw
+    try:
+        data = json.loads(raw)
+    except json.JSONDecodeError:
+        return raw
+    pages = data.get("pages")
+    if not isinstance(pages, list):
+        return raw
+    parts: list[str] = []
+    for p in pages:
+        if isinstance(p, dict):
+            t = str(p.get("text") or "").strip()
+            if t:
+                parts.append(t)
+    return "\n\n".join(parts).strip()
+
+
 def _run_lit_parse(file_path: Path, timeout: float) -> str:
-    cmd = [liteparse_bin(), "parse", str(file_path), "-q", "--format", "text"]
+    cmd = _lit_parse_command(file_path)
     r = subprocess.run(
         cmd,
         capture_output=True,
@@ -68,7 +145,7 @@ def _run_lit_parse(file_path: Path, timeout: float) -> str:
     if r.returncode != 0:
         err = (r.stderr or r.stdout or "").strip() or f"exit {r.returncode}"
         raise RuntimeError(f"lit parse failed: {err}")
-    return (r.stdout or "").strip()
+    return _normalized_lit_stdout(r.stdout or "")
 
 
 async def list_models_with_classification() -> list[dict[str, Any]]:
@@ -141,5 +218,7 @@ async def ocr_chat(model: str, prompt: str, image_bytes: bytes) -> tuple[str, di
         "engine_type": "litparse",
         "engine_label": str(ep.get("label") or "LiteParse"),
         "lit_binary": liteparse_bin(),
+        "litparse_dpi": liteparse_dpi(),
+        "litparse_format": liteparse_output_format(),
     }
     return text, meta, duration_ms

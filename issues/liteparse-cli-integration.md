@@ -16,14 +16,18 @@ LiteParse runs as a **local subprocess** (`lit parse …`) from the FastAPI back
 
 ## Analysis / evidence
 
-- CLI reference: [LiteParse CLI](https://developers.llamaindex.ai/liteparse/cli-reference/) — `lit parse <file> -q --format text`.
+- CLI reference: [LiteParse CLI](https://developers.llamaindex.ai/liteparse/cli-reference/) — `lit parse <file> -q`; backend uses `--format json` (joined `pages[].text`), **`--dpi`** (default 300), optional **`--ocr-server-url`**, **`--preserve-small-text`**.
 - Repo wiring: `backend/app/liteparse_client.py`, `backend/config/ocr_engines.json` (`type: litparse`, `gpu_device: -1`), `factory.py` routing, `ocr_service.py` PDF allowlist, `backend/Dockerfile` `npm install -g @llamaindex/liteparse`.
 
 ## Resolution
 
 - Install CLI on the host: `npm i -g @llamaindex/liteparse`, or set **`LITEPARSE_BIN`** to the full path of `lit`.
 - For long documents, increase **`LITEPARSE_TIMEOUT`** (seconds, default 600).
+- **Scanned PDFs / images look bad vs GPU models:** LiteParse uses Tesseract on rendered pages. The CLI default render DPI is **150** — the backend uses **`LITEPARSE_DPI`** default **300** plus **`--preserve-small-text`** so OCR is closer to usable. Raise DPI further if needed (`LITEPARSE_DPI=400`), set **`LITEPARSE_OCR_LANGUAGE`** for non-English, or point **`LITEPARSE_OCR_SERVER_URL`** at a compatible HTTP OCR service (see LiteParse docs). LiteParse still will not match full vision OCR on difficult scans; pick Chandra / DeepSeek for those.
+- **Digital PDF garbage / mojibake:** That is usually broken embedded fonts or encoding in the PDF, not OCR; LiteParse extracts the text layer. Use a GPU model on an exported image, or repair the PDF.
 - Use **Rebuild** backend image after Dockerfile changes so `lit` exists in the container.
+
+**Date changelog:** 2026-05-16 — OCR defaults: DPI 300, preserve-small-text, JSON page join (`LITEPARSE_FORMAT=json`).
 
 ## Repo impact
 
