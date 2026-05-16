@@ -460,6 +460,29 @@ services:
       retries: 8
       start_period: 900s
 
+  docling:
+    profiles: ["docling"]
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.docling
+    image: ${DOCLING_IMAGE:-ocr-ollama-docling:latest}
+    restart: unless-stopped
+    environment:
+      DOCLING_PORT: "8270"
+      DOCLING_MODEL_ID: docling
+    volumes:
+      - docling-cache:/root/.cache
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "python3 -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8270/health')\"",
+        ]
+      interval: 30s
+      timeout: 15s
+      retries: 8
+      start_period: 1800s
+
   backend:
     build:
       context: .
@@ -524,3 +547,4 @@ volumes:
   doctr-torch-cache:
   paddleocr-model-cache:
   paddleocr-paddle-cache:
+  docling-cache:

@@ -136,6 +136,8 @@ def gpu_device_for_endpoint(ep: dict[str, Any]) -> int:
         return int(os.getenv("DOCTR_CUDA_DEVICE", str(ep.get("gpu_device", -1))))
     if ep_id == "paddleocr":
         return int(os.getenv("PADDLEOCR_CUDA_DEVICE", str(ep.get("gpu_device", -1))))
+    if ep_id == "docling":
+        return int(os.getenv("DOCLING_CUDA_DEVICE", str(ep.get("gpu_device", -1))))
     return int(ep.get("gpu_device", 0))
 
 
@@ -223,6 +225,7 @@ async def _probe_runtime(host: str, *, engine_type: str | None = None) -> tuple[
                 "easyocr",
                 "doctr",
                 "paddleocr",
+                "docling",
             ):
                 r = await client.get(f"{base}/health")
                 if r.status_code != 200:
@@ -243,7 +246,16 @@ async def _probe_runtime(host: str, *, engine_type: str | None = None) -> tuple[
 
 
 def _host_for_service(ep: dict[str, Any]) -> str:
-    if ep.get("type") in ("nano_dvlm", "nemotron", "rapidocr", "onnxtr", "easyocr", "doctr", "paddleocr"):
+    if ep.get("type") in (
+        "nano_dvlm",
+        "nemotron",
+        "rapidocr",
+        "onnxtr",
+        "easyocr",
+        "doctr",
+        "paddleocr",
+        "docling",
+    ):
         return host_for_engine(ep)
     return host_for_endpoint(ep)
 

@@ -46,6 +46,9 @@ function rowTitle(m: OllamaModel, up: boolean): string | undefined {
     if (m.engine_type === "paddleocr") {
       return "Start the paddleocr service (compose profile paddleocr), then refresh.";
     }
+    if (m.engine_type === "docling") {
+      return "Start the docling service (compose profile docling), then refresh.";
+    }
     return undefined;
   }
   if (m.input_modes?.length) {

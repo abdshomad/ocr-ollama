@@ -13,6 +13,7 @@ Write-ups for non-trivial bugs and integration problems. Format and when to add 
 | [easyocr-integration.md](easyocr-integration.md) | **EasyOCR** — PyTorch CPU sidecar, profile `easyocr`, port 8240, model id `easyocr` |
 | [doctr-integration.md](doctr-integration.md) | **docTR** — PyTorch CPU sidecar, profile `doctr`, port 8250, model id `doctr` |
 | [paddleocr-integration.md](paddleocr-integration.md) | **PaddleOCR** — PaddlePaddle CPU sidecar (PP-OCR), profile `paddleocr`, port 8260, model id `paddleocr` |
+| [docling-integration.md](docling-integration.md) | **Docling** — layout + OCR CPU sidecar, profile `docling`, port 8270, model id `docling` |
 | [tesseract-native-ocr-backend.md](tesseract-native-ocr-backend.md) | **Tesseract (native)** — `model=tesseract`, CLI in backend container |
 | [nemotron-ocr-v2-integration.md](nemotron-ocr-v2-integration.md) | **Nemotron OCR v2** — PyTorch sidecar, profile `nemotron`, port 8210, `nvidia/nemotron-ocr-v2` |
 | [liteparse-cli-integration.md](liteparse-cli-integration.md) | **LiteParse** — `lit` CLI subprocess, PDF + documents, `model=litparse`, Docker image installs `@llamaindex/liteparse` |

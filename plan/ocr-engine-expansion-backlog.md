@@ -46,6 +46,7 @@ Treat these as **done** unless adding a second checkpoint or fixing gaps.
 | **EasyOCR** | Sidecar `easyocr` | Apache 2.0; PyTorch **CPU** image in repo; model id **`easyocr`**, profile **`easyocr`**. |
 | **docTR** | Sidecar `doctr` | Apache 2.0; PyTorch **CPU**; model id **`doctr`**, profile **`doctr`**, port 8250. |
 | **PaddleOCR** (PP-OCR) | Sidecar `paddleocr` | Apache 2.0; PaddlePaddle **CPU**; model id **`paddleocr`**, profile **`paddleocr`**, port 8260 (distinct from **PaddleOCR-VL** on vLLM). |
+| **Docling** | Sidecar `docling` | MIT; layout + OCR **CPU**; model id **`docling`**, profile **`docling`**, port 8270. |
 | **PaddleOCR-VL** | vLLM (`vllm-paddleocr-vl`) | Apache 2.0; model id **`PaddlePaddle/PaddleOCR-VL`**, profile **`paddleocr-vl`**, port 8107; Ollama path still broken — [paddleocr-vl-ollama-load-failure.md](../issues/paddleocr-vl-ollama-load-failure.md). |
 | Gemma 4 | Optional vLLM (`gemma4` profile) | User list: “Gemma 4 OCR”. |
 | **Hunyuan OCR** | vLLM (`vllm-hunyuanocr`, profile `hunyuanocr`) | `tencent/HunyuanOCR` ~1B VLM; Tencent license — see HF card. |
@@ -69,7 +70,7 @@ Treat these as **done** unless adding a second checkpoint or fixing gaps.
 | [Lany OCR](https://github.com/JC1DA/lanyocr) | Research / Subproc | Check repo license | Confirm maintenance and model weights distribution. |
 | [Surya](https://github.com/VikParuchuri/surya) | Sidecar / Subproc | GPL-3.0 | **Conflicts with prior “out of scope”** in medium plan; only integrate if project **accepts GPL** in sidecar boundary. |
 | [Tesseract](https://github.com/tesseract-ocr/tesseract) (native) | Subproc | Apache 2.0 | Wrap `tesseract` binary or `pytesseract`; useful for **CPU baseline** and PDF raster fallback. |
-| [Docling](https://github.com/DS4SD/docling) | Sidecar | MIT (verify sub-deps) | Layout + OCR pipeline; likely **heavy**; good sidecar candidate. |
+| [Docling](https://github.com/DS4SD/docling) | Sidecar | MIT (verify sub-deps) | Layout + OCR pipeline; **in repo** — CPU sidecar `docling`, profile **`docling`**, port 8270. |
 | [OnnxTR](https://github.com/felixdittrich92/OnnxTR) | Subproc / Sidecar | Apache 2.0 | ONNX — **in repo** as CPU sidecar (`onnxtr`, profile `onnxtr`, port 8230). |
 | [TrOCR](https://huggingface.co/docs/transformers/en/model_doc/trocr) | Browser / Example | Apache 2.0 | **Example / research** on server; browser path exists. |
 | [LightOnOCR](https://huggingface.co/blog/lightonai/lightonocr) | vLLM | Apache 2.0 | **In repo**; track “Light On OCR 2 1B” as **model ID / prompt** updates only. |
@@ -117,7 +118,7 @@ Order balances **license safety**, **engineering clarity**, and **distinct capab
 
 ### Wave 3 — Layout / document AI (heavier sidecars)
 
-**Candidates:** Docling, Dots.OCR, (optional) full MinerU **after license sign-off**.
+**Candidates:** ~~Docling~~ (**in repo** — CPU sidecar `docling`), Dots.OCR, (optional) full MinerU **after license sign-off**.
 
 **Approach:** Reuse MinerU-Diffusion lessons: internal HTTP, batching flags, strong error messages when OOM.
 
@@ -177,6 +178,7 @@ Use this as a **program tracker**; implementation tickets can reference wave + r
 
 | Date | Change |
 |------|--------|
+| 2026-05-16 | **Docling** — CPU sidecar (`docling`, profile `docling`, port 8270), model id `docling` |
 | 2026-05-16 | **Hunyuan OCR** — `tencent/HunyuanOCR`, vLLM optional profile `hunyuanocr`, port 8106 |
 | 2026-05-16 | OnnxTR CPU sidecar (`onnxtr`, profile `onnxtr`, port 8230) |
 | 2026-05-16 | **EasyOCR** — CPU PyTorch sidecar (`easyocr`, profile `easyocr`, port 8240) |

@@ -71,6 +71,20 @@
       "speed_tier": "medium"
     },
     {
+      "id": "docling",
+      "type": "docling",
+      "label": "Docling",
+      "models": ["docling"],
+      "input_modes": ["image"],
+      "host_env": "DOCLING_HOST",
+      "default_host": "http://docling:8270",
+      "compose_service": "docling",
+      "compose_profile": "docling",
+      "gpu_device": -1,
+      "port": 8270,
+      "speed_tier": "slow"
+    },
+    {
       "id": "tesseract",
       "type": "tesseract",
       "label": "Tesseract (native)",

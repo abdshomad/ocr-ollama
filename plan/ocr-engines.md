@@ -98,7 +98,7 @@ Server GPU models are usually faster and better than browser VLMs for full pages
 |----------|---------|------------------------|
 | **vLLM OpenAI** | DeepSeek, GLM, LightOn, Chandra, Gemma 4 (optional `gemma4`), Qwen3-VL (optional `qwen3vl`), Hunyuan OCR (optional `hunyuanocr`), **PaddleOCR-VL** (optional `paddleocr-vl`) | `vllm` |
 | **Custom GPU sidecar** | MinerU (`nano_dvlm`), Nemotron OCR v2 (`nemotron`) | `nano_dvlm`, `nemotron` |
-| **Custom CPU sidecar** | RapidOCR ONNX (`rapidocr`), OnnxTR (`onnxtr`), EasyOCR (`easyocr`), docTR (`doctr`), PaddleOCR (`paddleocr`) | `rapidocr`, `onnxtr`, `easyocr`, `doctr`, `paddleocr` |
+| **Custom CPU sidecar** | RapidOCR ONNX (`rapidocr`), OnnxTR (`onnxtr`), EasyOCR (`easyocr`), docTR (`doctr`), PaddleOCR (`paddleocr`), Docling (`docling`) | `rapidocr`, `onnxtr`, `easyocr`, `doctr`, `paddleocr`, `docling` |
 | **Subprocess** | LiteParse, Tesseract (native) | `litparse`, `tesseract` |
 | **Ollama** | `deepseek-ocr`, `glm-ocr`, PaddleOCR-VL, Qwen, Mistral | `ollama` (global backend) |
 | **Browser worker** | TrOCR, Tesseract, PaliGemma | N/A (`POST /api/scan` only) |
