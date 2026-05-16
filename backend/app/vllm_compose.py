@@ -122,6 +122,8 @@ def gpu_device_for_endpoint(ep: dict[str, Any]) -> int:
         return int(os.getenv("VLLM_GEMMA4_CUDA_DEVICE", str(ep.get("gpu_device", 1))))
     if ep_id == "qwen3vl":
         return int(os.getenv("VLLM_QWEN3_VL_CUDA_DEVICE", str(ep.get("gpu_device", 1))))
+    if ep_id == "hunyuanocr":
+        return int(os.getenv("VLLM_HUNYUAN_OCR_CUDA_DEVICE", str(ep.get("gpu_device", 1))))
     if ep_id == "mineru-diffusion":
         return int(os.getenv("MINERU_DIFFUSION_CUDA_DEVICE", str(ep.get("gpu_device", 0))))
     if ep_id == "nemotron-ocr-v2":
@@ -198,21 +200,30 @@ async def _compose_ps_map() -> dict[str, dict[str, str]]:
     return by_service
 
 
-async def _api_ready(host: str, *, engine_type: str | None = None) -> bool:
+async def _probe_runtime(host: str, *, engine_type: str | None = None) -> tuple[bool, list[str]]:
+    """HTTP reachability plus model IDs reported by the running service (vLLM or /health)."""
     if not host:
-        return False
+        return False, []
     base = host.rstrip("/")
-    path = "/health" if engine_type in ("nano_dvlm", "nemotron", "rapidocr", "onnxtr") else "/v1/models"
     try:
         async with httpx.AsyncClient(timeout=5.0) as client:
-            r = await client.get(f"{base}{path}")
-            if r.status_code != 200:
-                return False
             if engine_type in ("nano_dvlm", "nemotron", "rapidocr", "onnxtr"):
-                return bool(r.json().get("model_loaded"))
-            return True
+                r = await client.get(f"{base}/health")
+                if r.status_code != 200:
+                    return False, []
+                body = r.json()
+                ready = bool(body.get("model_loaded"))
+                mid = body.get("model_id")
+                models = [str(mid)] if mid else []
+                return ready, models
+            r = await client.get(f"{base}/v1/models")
+            if r.status_code != 200:
+                return False, []
+            body = r.json()
+            models = [str(x["id"]) for x in (body.get("data") or []) if x.get("id")]
+            return True, models
     except httpx.HTTPError:
-        return False
+        return False, []
 
 
 def _host_for_service(ep: dict[str, Any]) -> str:
@@ -249,11 +260,12 @@ async def list_service_statuses() -> list[dict[str, Any]]:
         state = str(row.get("State") or "not_created").lower()
         health = str(row.get("Health") or "")
         host = _host_for_service(ep)
-        api_ready = (
-            await _api_ready(host, engine_type=str(ep.get("type") or ""))
-            if state == "running"
-            else False
-        )
+        cfg_models = list(ep.get("models") or [])
+        api_ready = False
+        live_models: list[str] = []
+        if state == "running":
+            api_ready, live_models = await _probe_runtime(host, engine_type=str(ep.get("type") or ""))
+        models_out = live_models if live_models else cfg_models
         docker_state = state
         if state == "running" and health and health.lower() not in ("healthy", ""):
             if not api_ready:
@@ -265,7 +277,7 @@ async def list_service_statuses() -> list[dict[str, Any]]:
                 "compose_service": service,
                 "gpu_device": gpu_device_for_endpoint(ep),
                 "port": int(ep.get("port") or 0),
-                "models": list(ep.get("models") or []),
+                "models": models_out,
                 "docker_state": docker_state,
                 "health": health or None,
                 "api_ready": api_ready,
@@ -378,7 +390,9 @@ async def _services_without_compose() -> list[dict[str, Any]]:
             )
             continue
         host = _host_for_service(ep)
-        api_ready = await _api_ready(host, engine_type=str(ep.get("type") or ""))
+        cfg_models = list(ep.get("models") or [])
+        api_ready, live_models = await _probe_runtime(host, engine_type=str(ep.get("type") or ""))
+        models_out = live_models if live_models else cfg_models
         out.append(
             {
                 "id": str(ep.get("id", "")),
@@ -386,7 +400,7 @@ async def _services_without_compose() -> list[dict[str, Any]]:
                 "compose_service": str(ep.get("compose_service") or ""),
                 "gpu_device": gpu_device_for_endpoint(ep),
                 "port": int(ep.get("port") or 0),
-                "models": list(ep.get("models") or []),
+                "models": models_out,
                 "docker_state": "running" if api_ready else "unknown",
                 "health": None,
                 "api_ready": api_ready,

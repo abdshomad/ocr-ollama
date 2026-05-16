@@ -22,8 +22,19 @@ function stateLabel(s: VllmServiceStatus): { text: string; className: string } {
   return { text: s.docker_state, className: "gpu-state-unknown" };
 }
 
-function serviceOnGpu(services: VllmServiceStatus[], gpuIndex: number): VllmServiceStatus | undefined {
-  return services.find((s) => s.gpu_device === gpuIndex);
+function servicesOnGpu(services: VllmServiceStatus[], gpuIndex: number): VllmServiceStatus[] {
+  const score = (s: VllmServiceStatus) => {
+    if (s.api_ready) return 0;
+    if (s.docker_state === "running" || s.docker_state === "starting") return 1;
+    return 2;
+  };
+  return services
+    .filter((s) => s.gpu_device === gpuIndex)
+    .sort((a, b) => {
+      const d = score(a) - score(b);
+      if (d !== 0) return d;
+      return a.label.localeCompare(b.label);
+    });
 }
 
 export function GpuPage() {
@@ -121,9 +132,8 @@ export function GpuPage() {
       <div className="gpu-grid">
         {gpuIndices.map((idx) => {
           const gpu = gpus.find((g) => g.index === idx);
-          const svc = serviceOnGpu(services, idx);
+          const svcs = servicesOnGpu(services, idx);
           const pct = gpu ? memPct(gpu) : null;
-          const st = svc ? stateLabel(svc) : null;
 
           return (
             <div key={idx} className="card gpu-card">
@@ -150,60 +160,78 @@ export function GpuPage() {
                 </div>
               )}
 
-              {svc ? (
-                <div>
-                  <p style={{ margin: "0 0 0.5rem" }}>
-                    <strong>{svc.label}</strong>
-                    {st && <span className={`badge gpu-badge ${st.className}`}>{st.text}</span>}
-                  </p>
-                  <p className="muted" style={{ margin: "0 0 0.75rem", fontSize: "0.8rem" }}>
-                    {svc.models.join(", ")}
-                    <br />
-                    Port {svc.port}
-                    {svc.compose_service ? ` · ${svc.compose_service}` : " · (local CLI)"}
-                  </p>
-                  <div className="row">
-                    {svc.api_ready || svc.docker_state === "running" || svc.docker_state === "starting" ? (
-                      <button
-                        type="button"
-                        disabled={!data?.manage_enabled || busyId !== null}
-                        onClick={() => handleStop(svc.id)}
-                      >
-                        {busyId === svc.id ? (
-                          <>
-                            <span className="spinner" /> Stopping…
-                          </>
-                        ) : (
-                          "Unload (free GPU)"
-                        )}
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        className="primary"
-                        disabled={!data?.manage_enabled || busyId !== null}
-                        onClick={() => handleStart(svc.id)}
-                      >
-                        {busyId === svc.id ? (
-                          <>
-                            <span className="spinner" /> Loading…
-                          </>
-                        ) : (
-                          "Load model"
-                        )}
-                      </button>
-                    )}
-                  </div>
-                  {(svc.docker_state === "running" || svc.docker_state === "starting") && !svc.api_ready && (
-                    <p className="muted" style={{ marginTop: "0.75rem", marginBottom: 0 }}>
-                      First load can take 15–30+ minutes (weights download). Page refreshes every 5s.
-                    </p>
-                  )}
-                </div>
-              ) : (
+              {svcs.length === 0 ? (
                 <p className="muted" style={{ margin: 0 }}>
                   No OCR service assigned to this GPU.
                 </p>
+              ) : (
+                svcs.map((svc, si) => {
+                  const st = stateLabel(svc);
+                  return (
+                    <div
+                      key={svc.id}
+                      style={{
+                        marginTop: si > 0 ? "1rem" : 0,
+                        paddingTop: si > 0 ? "1rem" : 0,
+                        borderTop: si > 0 ? "1px solid var(--border)" : undefined,
+                      }}
+                    >
+                      <p style={{ margin: "0 0 0.5rem" }}>
+                        <strong>{svc.label}</strong>
+                        <span className={`badge gpu-badge ${st.className}`}>{st.text}</span>
+                      </p>
+                      <p className="muted" style={{ margin: "0 0 0.75rem", fontSize: "0.8rem" }}>
+                        {svc.models.length > 0 ? (
+                          <>
+                            <span className="muted">Models:</span> {svc.models.join(", ")}
+                          </>
+                        ) : (
+                          <span className="muted">Models: —</span>
+                        )}
+                        <br />
+                        Port {svc.port}
+                        {svc.compose_service ? ` · ${svc.compose_service}` : " · (local CLI)"}
+                      </p>
+                      <div className="row">
+                        {svc.api_ready || svc.docker_state === "running" || svc.docker_state === "starting" ? (
+                          <button
+                            type="button"
+                            disabled={!data?.manage_enabled || busyId !== null}
+                            onClick={() => handleStop(svc.id)}
+                          >
+                            {busyId === svc.id ? (
+                              <>
+                                <span className="spinner" /> Stopping…
+                              </>
+                            ) : (
+                              "Unload (free GPU)"
+                            )}
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            className="primary"
+                            disabled={!data?.manage_enabled || busyId !== null}
+                            onClick={() => handleStart(svc.id)}
+                          >
+                            {busyId === svc.id ? (
+                              <>
+                                <span className="spinner" /> Loading…
+                              </>
+                            ) : (
+                              "Load model"
+                            )}
+                          </button>
+                        )}
+                      </div>
+                      {(svc.docker_state === "running" || svc.docker_state === "starting") && !svc.api_ready && (
+                        <p className="muted" style={{ marginTop: "0.75rem", marginBottom: 0 }}>
+                          First load can take 15–30+ minutes (weights download). Page refreshes every 5s.
+                        </p>
+                      )}
+                    </div>
+                  );
+                })
               )}
             </div>
           );
@@ -220,6 +248,11 @@ export function GpuPage() {
                 <li key={s.id}>
                   <span>
                     {s.label} (GPU {s.gpu_device})
+                    {s.models.length > 0 && (
+                      <span className="muted" style={{ display: "block", fontSize: "0.8rem", marginTop: "0.15rem" }}>
+                        {s.models.join(", ")}
+                      </span>
+                    )}
                   </span>
                   <span className={`badge gpu-badge ${st.className}`}>{st.text}</span>
                   {s.compose_service ? (
