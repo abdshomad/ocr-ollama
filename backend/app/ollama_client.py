@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import base64
 import json
 import time
@@ -100,26 +101,26 @@ async def fetch_show(client: httpx.AsyncClient, name: str, host: str | None = No
 async def list_models_with_classification() -> list[dict[str, Any]]:
     async with httpx.AsyncClient(timeout=30.0) as client:
         tags = await fetch_tags(client)
-        result = []
-        for m in tags:
+
+        async def one_entry(m: dict[str, Any]) -> dict[str, Any]:
             name = m.get("name", "")
             try:
                 show = await fetch_show(client, name)
             except httpx.HTTPError:
                 show = {}
             tier = classify_model(name, show)
-            result.append(
-                {
-                    "name": name,
-                    "size": m.get("size"),
-                    "modified_at": m.get("modified_at"),
-                    "tier": tier.value,
-                    "ocr_capable": is_ocr_capable(tier),
-                    "has_parent_blob": has_parent_blob(show),
-                    "capabilities": show.get("capabilities", []),
-                    "families": (show.get("details") or {}).get("families", []),
-                }
-            )
+            return {
+                "name": name,
+                "size": m.get("size"),
+                "modified_at": m.get("modified_at"),
+                "tier": tier.value,
+                "ocr_capable": is_ocr_capable(tier),
+                "has_parent_blob": has_parent_blob(show),
+                "capabilities": show.get("capabilities", []),
+                "families": (show.get("details") or {}).get("families", []),
+            }
+
+        result = await asyncio.gather(*[one_entry(m) for m in tags])
         # #region agent log
         ocr_count = sum(1 for m in result if m.get("ocr_capable"))
         _agent_log(
@@ -129,7 +130,7 @@ async def list_models_with_classification() -> list[dict[str, Any]]:
             "D",
         )
         # #endregion
-        return result
+        return list(result)
 
 
 async def check_health() -> dict[str, Any]:

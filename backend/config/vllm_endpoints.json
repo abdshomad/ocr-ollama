@@ -71,6 +71,18 @@
       "gpu_device": 1,
       "port": 8105,
       "speed_tier": "very_slow"
+    },
+    {
+      "id": "hunyuanocr",
+      "label": "Hunyuan OCR",
+      "models": ["tencent/HunyuanOCR"],
+      "host_env": "VLLM_HUNYUAN_OCR_HOST",
+      "default_host": "http://vllm-hunyuanocr:8106",
+      "compose_service": "vllm-hunyuanocr",
+      "compose_profile": "hunyuanocr",
+      "gpu_device": 1,
+      "port": 8106,
+      "speed_tier": "fast"
     }
   ]
 }

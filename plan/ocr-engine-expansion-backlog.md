@@ -44,9 +44,10 @@ Treat these as **done** unless adding a second checkpoint or fixing gaps.
 | **RapidOCR** | Sidecar `rapidocr` | ONNX (**CPU**), Apache 2.0; model id **`rapidocr`**, profile **`rapidocr`**. |
 | **OnnxTR** | Sidecar `onnxtr` | ONNX (**CPU**), Apache 2.0; model id **`onnxtr`**, profile **`onnxtr`**. |
 | Gemma 4 | Optional vLLM (`gemma4` profile) | User list: “Gemma 4 OCR”. |
+| **Hunyuan OCR** | vLLM (`vllm-hunyuanocr`, profile `hunyuanocr`) | `tencent/HunyuanOCR` ~1B VLM; Tencent license — see HF card. |
 | Qwen3-VL | Optional vLLM (`qwen3vl`) | Related to “Qwen 3 … VL OCR”. |
 | TrOCR | Browser `/scan` | User asked to **keep as example only** for server path — OK to leave browser-only. |
-| Tesseract | Browser Tesseract.js | User list: native Tesseract — **server wrapper** would be a *new* integration class if desired. |
+| **Tesseract (native)** | Subprocess (`tesseract_client.py`) | Apache 2.0 | **In repo** — wraps `tesseract` binary as a subprocess engine. |
 
 ---
 
@@ -81,7 +82,7 @@ Treat these as **done** unless adding a second checkpoint or fixing gaps.
 | owlOCR / OCR Flux / Monkey OCR / Nanonets | Research | — | Clarify vendor vs OSS; many are **marketing names**. |
 | [NuMarkdown](https://github.com/numindai/NuMarkdown) / [NuMarkdown-8B](https://huggingface.co/numind/NumMarkdown-8B-Thinking) | vLLM | Check license | “Markdown thinking” VLM — may overlap OCR with **long reasoning**; high VRAM. |
 | DocParse / OCR Docker / OpenPage / OCRbro / DocuMagnet / OCR Studio | Research | — | Could be products; **do not implement** until open inference surface exists. |
-| Gemma 3 OCR / Falcon OCR / Youtu-VL / Hunyuan OCR / ExaOCR / Col Pali / Pixl | Research | — | Pin HF ids; **ColPali** is retrieval — different task unless scoped to “OCR-like”. |
+| Gemma 3 OCR / Falcon OCR / Youtu-VL / ~~Hunyuan OCR~~ / ExaOCR / Col Pali / Pixl | Research | — | **Hunyuan:** shipped as `tencent/HunyuanOCR` vLLM (`hunyuanocr` profile). **ColPali** is retrieval — different task unless scoped to “OCR-like”. |
 | Pike PDF | Research | — | Clarify if library vs model. |
 | DeepSeek OCR 2 / Paddle OCR VL 1.5 / MinerU 2.5 / Dolphin v2 / Light On OCR 2 | Research | — | Track upstream releases; integrate when **public weights + serve recipe** stabilizes. |
 | Gemini 3.0 | API | Google ToS | Only via **user API key** pattern if ever; out of default self-host stack. |
@@ -100,7 +101,7 @@ Order balances **license safety**, **engineering clarity**, and **distinct capab
 
 ### Wave 1 — Classical / ONNX cluster (CPU-friendly sidecars)
 
-**Candidates:** ~~RapidOCR~~ (**in repo**), ~~OnnxTR~~ (**in repo**), optional native **Tesseract** wrapper, docTR (if smaller variant fits CPU).
+**Candidates:** ~~RapidOCR~~ (**in repo**), ~~OnnxTR~~ (**in repo**), ~~optional native **Tesseract** wrapper~~ (**in repo**), docTR (if smaller variant fits CPU).
 
 **Approach:** Thin FastAPI sidecar in `docker/` + small adapter in `backend/app/`. Prefer **one multi-model sidecar** only if deps align; else separate images to avoid dependency hell.
 
@@ -172,4 +173,5 @@ Use this as a **program tracker**; implementation tickets can reference wave + r
 
 | Date | Change |
 |------|--------|
+| 2026-05-16 | **Hunyuan OCR** — `tencent/HunyuanOCR`, vLLM optional profile `hunyuanocr`, port 8106 |
 | 2026-05-16 | OnnxTR CPU sidecar (`onnxtr`, profile `onnxtr`, port 8230) |

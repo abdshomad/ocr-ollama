@@ -26,14 +26,15 @@ Fastest at top. Compare only within this workload.
 | Rank | Engine / model | Typical latency | Evidence | In repo |
 |------|----------------|-----------------|----------|---------|
 | 1 | **LightOnOCR** (`lightonai/LightOnOCR-1B-1025` / `2-1B`) | **~3–7 s** typical; **~23–25 s** on dense tables | Measured | Yes (`LightOnOCR-2-1B` vLLM) |
-| 2 | **DeepSeek-OCR** (`deepseek-ai/DeepSeek-OCR`) | **~5–15 s** | Estimated | Yes (vLLM) |
-| 3 | **GLM-OCR** (`zai-org/GLM-OCR`) | **~6–20 s** | Estimated | Yes (vLLM) |
-| 4 | **MinerU-Diffusion** (batched, `nano_dvlm`) | **~10.5 s/page** avg | Measured | Yes (`mineru-diffusion` sidecar) |
-| 5 | **MinerU-Diffusion** (sequential / no batch) | **~15.6 s/page** | Measured | Same service (single-page requests) |
-| 6 | **Chandra** (vLLM / `chandra_vllm`) | **~20–40 s** | Partial (article) | Yes (`vllm-chandra`, profile `chandra`) |
-| 7 | **Chandra** (HuggingFace local) | **~66 s/page** | Measured | Fallback only |
-| 8 | **General VLMs** (Qwen, Mistral, etc. via Ollama) | **~30–120+ s** | Estimated | Prompts only |
-| 9 | **Hybrid** MinerU layout → LightOn text | **~15–35 s+** | Sum of stages | Optional (Phase 5) |
+| 2 | **Hunyuan OCR** (`tencent/HunyuanOCR`) | **~similar tier to small VLMs** (~1B) | Estimated | Yes (optional `vllm-hunyuanocr`, profile `hunyuanocr`) |
+| 3 | **DeepSeek-OCR** (`deepseek-ai/DeepSeek-OCR`) | **~5–15 s** | Estimated | Yes (vLLM) |
+| 4 | **GLM-OCR** (`zai-org/GLM-OCR`) | **~6–20 s** | Estimated | Yes (vLLM) |
+| 5 | **MinerU-Diffusion** (batched, `nano_dvlm`) | **~10.5 s/page** avg | Measured | Yes (`mineru-diffusion` sidecar) |
+| 6 | **MinerU-Diffusion** (sequential / no batch) | **~15.6 s/page** | Measured | Same service (single-page requests) |
+| 7 | **Chandra** (vLLM / `chandra_vllm`) | **~20–40 s** | Partial (article) | Yes (`vllm-chandra`, profile `chandra`) |
+| 8 | **Chandra** (HuggingFace local) | **~66 s/page** | Measured | Fallback only |
+| 9 | **General VLMs** (Qwen, Mistral, etc. via Ollama) | **~30–120+ s** | Estimated | Prompts only |
+| 10 | **Hybrid** MinerU layout → LightOn text | **~15–35 s+** | Sum of stages | Optional (Phase 5) |
 
 ### Article throughput (30 scanned medical pages)
 
@@ -81,7 +82,7 @@ Server GPU models are usually faster and better than browser VLMs for full pages
 | **Text extraction** | LiteParse | Fastest on **A**; poor on raw scans | Digital PDFs, embedded text |
 | **Classical OCR** | Tesseract.js | Fast, limited | Labels, high contrast, offline |
 | **Seq2seq OCR (small)** | TrOCR | Fast–medium | Short text, handwriting-ish crops |
-| **Autoregressive VLM (small)** | LightOnOCR ~1B | Fastest GPU OCR in article | Scanned docs, markdown/tables |
+| **Autoregressive VLM (small)** | LightOnOCR ~1B, Hunyuan OCR ~1B | Fastest GPU OCR in article; Hunyuan similar class | Scanned docs, markdown/tables |
 | **Autoregressive VLM (medium)** | DeepSeek-OCR, GLM-OCR | Medium | General OCR + tables (repo baselines) |
 | **Diffusion decoder** | MinerU-Diffusion | Medium–slow; custom engine | Layout + coordinates |
 | **Layout VLM (large)** | Chandra ~3–4B | Slow (HF path very slow) | Layout HTML/MD + bboxes |
@@ -95,10 +96,10 @@ Server GPU models are usually faster and better than browser VLMs for full pages
 
 | Category | Engines | Planned `engine.type` |
 |----------|---------|------------------------|
-| **vLLM OpenAI** | DeepSeek, GLM, LightOn, Chandra, Gemma 4 (optional `gemma4`), Qwen3-VL (optional `qwen3vl`) | `vllm` |
+| **vLLM OpenAI** | DeepSeek, GLM, LightOn, Chandra, Gemma 4 (optional `gemma4`), Qwen3-VL (optional `qwen3vl`), Hunyuan OCR (optional `hunyuanocr`) | `vllm` |
 | **Custom GPU sidecar** | MinerU (`nano_dvlm`), Nemotron OCR v2 (`nemotron`) | `nano_dvlm`, `nemotron` |
 | **Custom CPU sidecar** | RapidOCR ONNX (`rapidocr`), OnnxTR (`onnxtr`) | `rapidocr`, `onnxtr` |
-| **Subprocess (Node)** | LiteParse | `litparse` |
+| **Subprocess** | LiteParse, Tesseract (native) | `litparse`, `tesseract` |
 | **Ollama** | `deepseek-ocr`, `glm-ocr`, PaddleOCR-VL, Qwen, Mistral | `ollama` (global backend) |
 | **Browser worker** | TrOCR, Tesseract, PaliGemma | N/A (`POST /api/scan` only) |
 
@@ -121,7 +122,7 @@ Server GPU models are usually faster and better than browser VLMs for full pages
 
 | Bucket | Engines |
 |--------|---------|
-| **In repo today** | DeepSeek-OCR, GLM-OCR (vLLM); Gemma 4 E4B (optional `vllm-gemma4`); Qwen3-VL Instruct (optional `vllm-qwen3-vl`); TrOCR, Tesseract, PaliGemma (browser); Ollama catalog |
+| **In repo today** | DeepSeek-OCR, GLM-OCR (vLLM); Gemma 4 E4B (optional `vllm-gemma4`); Qwen3-VL Instruct (optional `vllm-qwen3-vl`); Hunyuan OCR (optional `vllm-hunyuanocr`); TrOCR, Tesseract, PaliGemma (browser); Tesseract (native server subprocess); Ollama catalog |
 | **In repo (RapidOCR)** | RapidOCR ONNX (`rapidocr`, profile `rapidocr`, port 8220, CPU) |
 | **In repo (OnnxTR)** | OnnxTR (`onnxtr`, profile `onnxtr`, port 8230, CPU) |
 | **In repo (Nemotron OCR v2)** | Nemotron OCR v2 multilingual (`nemotron-ocr-v2`, profile `nemotron`, port 8210) |
@@ -143,6 +144,7 @@ For the **same model**, Ollama is typically **~1.2–1.5× slower** than vLLM, w
 | GLM-OCR | Yes | `glm-ocr:latest` | vLLM faster |
 | PaddleOCR-VL | — | Broken | See [paddleocr-vl-ollama-load-failure.md](../issues/paddleocr-vl-ollama-load-failure.md) |
 | Qwen3-VL Instruct | Yes (profile `qwen3vl`) | — | Optional vLLM multimodal OCR |
+| Hunyuan OCR | Yes (profile `hunyuanocr`) | — | `tencent/HunyuanOCR` dedicated OCR VLM |
 | Qwen / Mistral (general) | — | Various | Slowest server path (Ollama) |
 
 ---
@@ -152,7 +154,7 @@ For the **same model**, Ollama is typically **~1.2–1.5× slower** than vLLM, w
 | `speed_tier` | Engines |
 |--------------|---------|
 | `instant` | LiteParse (workload A only) |
-| `fast` | Tesseract, TrOCR, LightOnOCR, Nemotron OCR v2 (sidecar), RapidOCR (`rapidocr`), OnnxTR (`onnxtr`) |
+| `fast` | Tesseract (browser + native), TrOCR, LightOnOCR, Nemotron OCR v2 (sidecar), RapidOCR (`rapidocr`), OnnxTR (`onnxtr`) |
 | `medium` | DeepSeek-OCR, GLM-OCR, MinerU-Diffusion (batched) |
 | `slow` | MinerU (sequential), Chandra vLLM, PaliGemma (browser) |
 | `very_slow` | Chandra HF, Gemma 4 vLLM, Qwen3-VL vLLM, Qwen/Mistral OCR (Ollama), hybrid pipelines |

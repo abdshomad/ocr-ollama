@@ -16,6 +16,14 @@ import type {
   VllmServiceActionResult,
 } from "../types";
 
+/** Slow GPU OCR (e.g. Hunyuan) can exceed 60s; avoid premature client abort where supported. */
+function longRunningOcrSignal(): AbortSignal | undefined {
+  if (typeof AbortSignal !== "undefined" && typeof AbortSignal.timeout === "function") {
+    return AbortSignal.timeout(600_000);
+  }
+  return undefined;
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(path, init);
   if (!res.ok) {
@@ -92,7 +100,11 @@ export function runOcr(image: File | Blob, model: string, prompt?: string) {
   form.append("image", image, image instanceof File ? image.name : "capture.jpg");
   form.append("model", model);
   if (prompt?.trim()) form.append("prompt", prompt.trim());
-  return request<SingleResult>("/api/ocr", { method: "POST", body: form });
+  return request<SingleResult>("/api/ocr", {
+    method: "POST",
+    body: form,
+    signal: longRunningOcrSignal(),
+  });
 }
 
 export function runArena(
@@ -108,7 +120,11 @@ export function runArena(
   if (promptOverrides && Object.keys(promptOverrides).length > 0) {
     form.append("prompt_overrides", JSON.stringify(promptOverrides));
   }
-  return request<ArenaResult>("/api/arena", { method: "POST", body: form });
+  return request<ArenaResult>("/api/arena", {
+    method: "POST",
+    body: form,
+    signal: longRunningOcrSignal(),
+  });
 }
 
 export function getHistory(offset = 0, limit = 50) {

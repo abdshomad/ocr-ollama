@@ -10,6 +10,7 @@ GLM_MAX_LEN="${VLLM_GLM_MAX_MODEL_LEN:-8192}"
 CHANDRA_MAX_LEN="${VLLM_CHANDRA_MAX_MODEL_LEN:-8192}"
 GEMMA4_MAX_LEN="${VLLM_GEMMA4_MAX_MODEL_LEN:-8192}"
 QWEN3_VL_MAX_LEN="${VLLM_QWEN3_VL_MAX_MODEL_LEN:-8192}"
+HUNYUAN_MAX_LEN="${VLLM_HUNYUAN_OCR_MAX_MODEL_LEN:-8192}"
 
 COMMON=(
   --host "0.0.0.0"
@@ -69,6 +70,15 @@ elif [[ "$model_lower" == *"qwen3-vl"* ]]; then
     --mm-processor-cache-gb 0 \
     --no-enable-prefix-caching \
     --enforce-eager
+elif [[ "$model_lower" == *"hunyuanocr"* ]]; then
+  # https://docs.vllm.ai/projects/recipes/en/latest/Tencent-Hunyuan/HunyuanOCR.html
+  # Cap max-model-len — HF default 32k balloons KV cache on mid-range GPUs.
+  exec vllm serve "$MODEL" \
+    "${COMMON[@]}" \
+    --max-model-len "$HUNYUAN_MAX_LEN" \
+    --limit-mm-per-prompt '{"image": 1}' \
+    --mm-processor-cache-gb 0 \
+    --no-enable-prefix-caching
 else
   exec vllm serve "$MODEL" "${COMMON[@]}"
 fi

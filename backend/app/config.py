@@ -19,6 +19,8 @@ ALLOWED_CONTENT_TYPES = {
 ALLOWED_OCR_UPLOAD_TYPES = ALLOWED_CONTENT_TYPES | {"application/pdf"}
 OLLAMA_TIMEOUT = float(os.getenv("OLLAMA_TIMEOUT", "300"))
 VLLM_TIMEOUT = float(os.getenv("VLLM_TIMEOUT", "600"))
+# Probes for /api/models listing (per-host /v1/models). Too low marks healthy vLLM as offline when the API is slow.
+MODEL_LIST_HTTP_TIMEOUT = float(os.getenv("MODEL_LIST_HTTP_TIMEOUT", "30"))
 # Output cap only; model ctx is 8192 and the image consumes most of it.
 VLLM_MAX_TOKENS = int(os.getenv("VLLM_MAX_TOKENS", "2048"))
 VLLM_MODEL = os.getenv("VLLM_MODEL", "deepseek-ai/DeepSeek-OCR")

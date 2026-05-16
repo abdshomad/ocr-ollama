@@ -232,35 +232,34 @@ def _host_for_service(ep: dict[str, Any]) -> str:
     return host_for_endpoint(ep)
 
 
-async def list_service_statuses() -> list[dict[str, Any]]:
+async def _endpoint_dashboard_row(
+    ep: dict[str, Any], *, ps_map: dict[str, dict[str, str]] | None
+) -> dict[str, Any]:
     from app import liteparse_client
 
-    ps_map = await _compose_ps_map()
-    out: list[dict[str, Any]] = []
-    for ep in load_all_endpoints():
-        if str(ep.get("type") or "") == "litparse":
-            ready = await asyncio.to_thread(liteparse_client.lit_cli_available)
-            out.append(
-                {
-                    "id": str(ep.get("id", "")),
-                    "label": str(ep.get("label") or ep.get("id") or ""),
-                    "compose_service": "",
-                    "gpu_device": int(ep.get("gpu_device", -1)),
-                    "port": int(ep.get("port") or 0),
-                    "models": list(ep.get("models") or []),
-                    "docker_state": "local_cli",
-                    "health": None,
-                    "api_ready": ready,
-                    "container_id": None,
-                }
-            )
-            continue
+    if str(ep.get("type") or "") == "litparse":
+        ready = await asyncio.to_thread(liteparse_client.lit_cli_available)
+        return {
+            "id": str(ep.get("id", "")),
+            "label": str(ep.get("label") or ep.get("id") or ""),
+            "compose_service": "",
+            "gpu_device": int(ep.get("gpu_device", -1)),
+            "port": int(ep.get("port") or 0),
+            "models": list(ep.get("models") or []),
+            "docker_state": "local_cli",
+            "health": None,
+            "api_ready": ready,
+            "container_id": None,
+        }
+
+    host = _host_for_service(ep)
+    cfg_models = list(ep.get("models") or [])
+
+    if ps_map is not None:
         service = str(ep.get("compose_service") or "")
         row = ps_map.get(service, {})
         state = str(row.get("State") or "not_created").lower()
         health = str(row.get("Health") or "")
-        host = _host_for_service(ep)
-        cfg_models = list(ep.get("models") or [])
         api_ready = False
         live_models: list[str] = []
         if state == "running":
@@ -270,21 +269,39 @@ async def list_service_statuses() -> list[dict[str, Any]]:
         if state == "running" and health and health.lower() not in ("healthy", ""):
             if not api_ready:
                 docker_state = "starting"
-        out.append(
-            {
-                "id": str(ep.get("id", "")),
-                "label": str(ep.get("label") or ep.get("id") or ""),
-                "compose_service": service,
-                "gpu_device": gpu_device_for_endpoint(ep),
-                "port": int(ep.get("port") or 0),
-                "models": models_out,
-                "docker_state": docker_state,
-                "health": health or None,
-                "api_ready": api_ready,
-                "container_id": (str(row.get("ID") or row.get("Id") or "")) or None,
-            }
-        )
-    return out
+        return {
+            "id": str(ep.get("id", "")),
+            "label": str(ep.get("label") or ep.get("id") or ""),
+            "compose_service": service,
+            "gpu_device": gpu_device_for_endpoint(ep),
+            "port": int(ep.get("port") or 0),
+            "models": models_out,
+            "docker_state": docker_state,
+            "health": health or None,
+            "api_ready": api_ready,
+            "container_id": (str(row.get("ID") or row.get("Id") or "")) or None,
+        }
+
+    api_ready, live_models = await _probe_runtime(host, engine_type=str(ep.get("type") or ""))
+    models_out = live_models if live_models else cfg_models
+    return {
+        "id": str(ep.get("id", "")),
+        "label": str(ep.get("label") or ep.get("id") or ""),
+        "compose_service": str(ep.get("compose_service") or ""),
+        "gpu_device": gpu_device_for_endpoint(ep),
+        "port": int(ep.get("port") or 0),
+        "models": models_out,
+        "docker_state": "running" if api_ready else "unknown",
+        "health": None,
+        "api_ready": api_ready,
+        "container_id": None,
+    }
+
+
+async def list_service_statuses() -> list[dict[str, Any]]:
+    ps_map = await _compose_ps_map()
+    endpoints = load_all_endpoints()
+    return list(await asyncio.gather(*[_endpoint_dashboard_row(ep, ps_map=ps_map) for ep in endpoints]))
 
 
 async def start_service(service_id: str) -> dict[str, Any]:
@@ -368,43 +385,5 @@ async def gpu_dashboard() -> dict[str, Any]:
 
 
 async def _services_without_compose() -> list[dict[str, Any]]:
-    from app import liteparse_client
-
-    out: list[dict[str, Any]] = []
-    for ep in load_all_endpoints():
-        if str(ep.get("type") or "") == "litparse":
-            ready = await asyncio.to_thread(liteparse_client.lit_cli_available)
-            out.append(
-                {
-                    "id": str(ep.get("id", "")),
-                    "label": str(ep.get("label") or ep.get("id") or ""),
-                    "compose_service": "",
-                    "gpu_device": int(ep.get("gpu_device", -1)),
-                    "port": int(ep.get("port") or 0),
-                    "models": list(ep.get("models") or []),
-                    "docker_state": "local_cli",
-                    "health": None,
-                    "api_ready": ready,
-                    "container_id": None,
-                }
-            )
-            continue
-        host = _host_for_service(ep)
-        cfg_models = list(ep.get("models") or [])
-        api_ready, live_models = await _probe_runtime(host, engine_type=str(ep.get("type") or ""))
-        models_out = live_models if live_models else cfg_models
-        out.append(
-            {
-                "id": str(ep.get("id", "")),
-                "label": str(ep.get("label") or ep.get("id") or ""),
-                "compose_service": str(ep.get("compose_service") or ""),
-                "gpu_device": gpu_device_for_endpoint(ep),
-                "port": int(ep.get("port") or 0),
-                "models": models_out,
-                "docker_state": "running" if api_ready else "unknown",
-                "health": None,
-                "api_ready": api_ready,
-                "container_id": None,
-            }
-        )
-    return out
+    endpoints = load_all_endpoints()
+    return list(await asyncio.gather(*[_endpoint_dashboard_row(ep, ps_map=None) for ep in endpoints]))

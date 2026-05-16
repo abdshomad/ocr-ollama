@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import base64
 import os
 import re
@@ -8,7 +9,7 @@ from typing import Any
 
 import httpx
 
-from app.config import VLLM_MAX_TOKENS, VLLM_TIMEOUT, VLLM_XARGS
+from app.config import MODEL_LIST_HTTP_TIMEOUT, VLLM_MAX_TOKENS, VLLM_TIMEOUT, VLLM_XARGS
 from app.vllm_registry import (
     all_configured_models,
     host_for_endpoint,
@@ -21,6 +22,7 @@ _DEEPSEEK_OCR_RE = re.compile(r"deepseek-ocr", re.IGNORECASE)
 _CHANDRA_RE = re.compile(r"chandra", re.IGNORECASE)
 _GEMMA4_RE = re.compile(r"gemma-4", re.IGNORECASE)
 _QWEN3_VL_RE = re.compile(r"qwen.*3.*vl|qwen3-vl", re.IGNORECASE)
+_HUNYUAN_OCR_RE = re.compile(r"hunyuanocr", re.IGNORECASE)
 
 
 def _mime_for_image(image_bytes: bytes) -> str:
@@ -55,6 +57,8 @@ def _max_tokens_for_model(model: str) -> int:
         return int(os.getenv("VLLM_GEMMA4_MAX_TOKENS", "4096"))
     if _QWEN3_VL_RE.search(model):
         return int(os.getenv("VLLM_QWEN3_VL_MAX_TOKENS", "4096"))
+    if _HUNYUAN_OCR_RE.search(model):
+        return int(os.getenv("VLLM_HUNYUAN_OCR_MAX_TOKENS", "2048"))
     return VLLM_MAX_TOKENS
 
 
@@ -62,6 +66,16 @@ def _sampling_for_model(model: str) -> dict[str, float]:
     if _CHANDRA_RE.search(model):
         return {"top_p": float(os.getenv("VLLM_CHANDRA_TOP_P", "0.1"))}
     return {}
+
+
+def _hunyuan_ocr_extras(model: str) -> dict[str, Any]:
+    """Recipe-aligned sampling flags for OpenAI-compatible vLLM body."""
+    if not _HUNYUAN_OCR_RE.search(model):
+        return {}
+    return {
+        "top_k": int(os.getenv("VLLM_HUNYUAN_OCR_TOP_K", "1")),
+        "repetition_penalty": float(os.getenv("VLLM_HUNYUAN_OCR_REPETITION_PENALTY", "1.0")),
+    }
 
 
 def format_vllm_error(status_code: int, detail: Any, model: str) -> str:
@@ -84,71 +98,88 @@ async def fetch_models(client: httpx.AsyncClient, host: str) -> list[dict[str, A
 
 
 async def list_models_with_classification() -> list[dict[str, Any]]:
+    rows = all_configured_models()
+    hosts_ordered: list[str] = []
+    seen_hosts: set[str] = set()
+    for ep, _mid in rows:
+        h = host_for_endpoint(ep)
+        if h and h not in seen_hosts:
+            seen_hosts.add(h)
+            hosts_ordered.append(h)
+
+    async def _live_ids(client: httpx.AsyncClient, host: str) -> set[str]:
+        try:
+            live = await fetch_models(client, host)
+            return {str(m.get("id", "")) for m in live}
+        except httpx.HTTPError:
+            return set()
+
+    host_live: dict[str, set[str]]
+    async with httpx.AsyncClient(timeout=MODEL_LIST_HTTP_TIMEOUT) as client:
+        fetched = await asyncio.gather(*[_live_ids(client, h) for h in hosts_ordered])
+        host_live = dict(zip(hosts_ordered, fetched, strict=True))
+
     result: list[dict[str, Any]] = []
-    async with httpx.AsyncClient(timeout=30.0) as client:
-        for ep, model_id in all_configured_models():
-            host = host_for_endpoint(ep)
-            available = False
-            if host:
-                try:
-                    live = await fetch_models(client, host)
-                    live_ids = {str(m.get("id", "")) for m in live}
-                    available = model_id in live_ids
-                except httpx.HTTPError:
-                    available = False
-            speed = ep.get("speed_tier")
-            result.append(
-                model_entry(
-                    model_id,
-                    available=available,
-                    endpoint_id=str(ep.get("id", "")),
-                    endpoint_label=str(ep.get("label") or ep.get("id") or ""),
-                    speed_tier=str(speed) if speed else None,
-                )
+    for ep, model_id in rows:
+        host = host_for_endpoint(ep)
+        available = bool(host) and model_id in host_live.get(host, set())
+        speed = ep.get("speed_tier")
+        result.append(
+            model_entry(
+                model_id,
+                available=available,
+                endpoint_id=str(ep.get("id", "")),
+                endpoint_label=str(ep.get("label") or ep.get("id") or ""),
+                speed_tier=str(speed) if speed else None,
             )
+        )
     return result
 
 
 async def check_health() -> dict[str, Any]:
-    endpoint_status: list[dict[str, Any]] = []
-    any_up = False
-    total = 0
-    errors: list[str] = []
+    async def _probe_one(client: httpx.AsyncClient, ep: dict[str, Any]) -> tuple[dict[str, Any], str | None, int]:
+        ep_id = str(ep.get("id", ""))
+        host = host_for_endpoint(ep)
+        if not host:
+            return (
+                {"id": ep_id, "label": ep.get("label"), "reachable": False, "error": "no host configured"},
+                None,
+                0,
+            )
+        try:
+            models = await fetch_models(client, host)
+            count = len(models)
+            return (
+                {
+                    "id": ep_id,
+                    "label": ep.get("label"),
+                    "reachable": True,
+                    "host": host,
+                    "model_count": count,
+                },
+                None,
+                count,
+            )
+        except Exception as e:
+            return (
+                {
+                    "id": ep_id,
+                    "label": ep.get("label"),
+                    "reachable": False,
+                    "host": host,
+                    "error": str(e),
+                },
+                f"{ep_id}: {e}",
+                0,
+            )
 
     async with httpx.AsyncClient(timeout=10.0) as client:
-        for ep in load_endpoints():
-            host = host_for_endpoint(ep)
-            ep_id = str(ep.get("id", ""))
-            if not host:
-                endpoint_status.append(
-                    {"id": ep_id, "label": ep.get("label"), "reachable": False, "error": "no host configured"}
-                )
-                continue
-            try:
-                models = await fetch_models(client, host)
-                count = len(models)
-                any_up = True
-                total += count
-                endpoint_status.append(
-                    {
-                        "id": ep_id,
-                        "label": ep.get("label"),
-                        "reachable": True,
-                        "host": host,
-                        "model_count": count,
-                    }
-                )
-            except Exception as e:
-                errors.append(f"{ep_id}: {e}")
-                endpoint_status.append(
-                    {
-                        "id": ep_id,
-                        "label": ep.get("label"),
-                        "reachable": False,
-                        "host": host,
-                        "error": str(e),
-                    }
-                )
+        parts = await asyncio.gather(*[_probe_one(client, ep) for ep in load_endpoints()])
+
+    endpoint_status = [p[0] for p in parts]
+    errors = [p[1] for p in parts if p[1]]
+    total = sum(p[2] for p in parts)
+    any_up = any(p[0].get("reachable") for p in parts)
 
     primary_host = host_for_endpoint(load_endpoints()[0]) if load_endpoints() else ""
     return {
@@ -186,6 +217,7 @@ async def ocr_chat(model: str, prompt: str, image_bytes: bytes) -> tuple[str, di
         "stream": False,
     }
     payload.update(_sampling_for_model(model))
+    payload.update(_hunyuan_ocr_extras(model))
     extra = _deepseek_extra_body(model)
     if extra:
         payload.update(extra)

@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+import asyncio
 import time
 from typing import Any
 
 import httpx
 
-from app.config import VLLM_TIMEOUT
+from app.config import MODEL_LIST_HTTP_TIMEOUT, VLLM_TIMEOUT
 from app.engine_registry import all_rapidocr_models, host_for_engine, model_entry
 
 
@@ -31,24 +32,36 @@ async def _service_ready(client: httpx.AsyncClient, host: str) -> bool:
 
 
 async def list_models_with_classification() -> list[dict[str, Any]]:
+    pairs = all_rapidocr_models()
+    hosts_ordered: list[str] = []
+    seen: set[str] = set()
+    for ep, _mid in pairs:
+        h = host_for_engine(ep)
+        if h and h not in seen:
+            seen.add(h)
+            hosts_ordered.append(h)
+
+    async with httpx.AsyncClient(timeout=MODEL_LIST_HTTP_TIMEOUT) as client:
+        host_ready_list = await asyncio.gather(*[_service_ready(client, h) for h in hosts_ordered])
+        ready_by_host = dict(zip(hosts_ordered, host_ready_list, strict=True))
+
     result: list[dict[str, Any]] = []
-    async with httpx.AsyncClient(timeout=30.0) as client:
-        for ep, model_id in all_rapidocr_models():
-            host = host_for_engine(ep)
-            available = await _service_ready(client, host) if host else False
-            speed = ep.get("speed_tier")
-            modes = ep.get("input_modes")
-            im = list(modes) if isinstance(modes, list) else None
-            entry = model_entry(
-                model_id,
-                available=available,
-                endpoint_id=str(ep.get("id", "")),
-                endpoint_label=str(ep.get("label") or ep.get("id") or ""),
-                engine_type=str(ep.get("type", "rapidocr")),
-                speed_tier=str(speed) if speed else None,
-                input_modes=im,
-            )
-            result.append(entry)
+    for ep, model_id in pairs:
+        host = host_for_engine(ep)
+        available = ready_by_host.get(host, False) if host else False
+        speed = ep.get("speed_tier")
+        modes = ep.get("input_modes")
+        im = list(modes) if isinstance(modes, list) else None
+        entry = model_entry(
+            model_id,
+            available=available,
+            endpoint_id=str(ep.get("id", "")),
+            endpoint_label=str(ep.get("label") or ep.get("id") or ""),
+            engine_type=str(ep.get("type", "rapidocr")),
+            speed_tier=str(speed) if speed else None,
+            input_modes=im,
+        )
+        result.append(entry)
     return result
 
 

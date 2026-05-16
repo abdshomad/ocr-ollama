@@ -10,6 +10,7 @@ RUN apt-get update \
       > /etc/apt/sources.list.d/docker.list \
     && apt-get update \
     && apt-get install -y --no-install-recommends docker-ce-cli docker-compose-plugin imagemagick \
+      tesseract-ocr tesseract-ocr-eng \
     && rm -rf /var/lib/apt/lists/*
 
 RUN npm install -g @llamaindex/liteparse \

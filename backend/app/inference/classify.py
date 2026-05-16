@@ -11,7 +11,10 @@ class ModelTier(str, Enum):
     TEXT_ONLY = "text_only"
 
 
-_OCR_NAME_RE = re.compile(r"ocr|paddleocr|glm-ocr|lighton|mineru|litparse|chandra|nemotron|rapidocr|onnxtr", re.IGNORECASE)
+_OCR_NAME_RE = re.compile(
+    r"ocr|paddleocr|glm-ocr|lighton|mineru|litparse|chandra|nemotron|rapidocr|onnxtr|hunyuan|tesseract",
+    re.IGNORECASE,
+)
 _GEMMA4_RE = re.compile(r"gemma-4", re.IGNORECASE)
 _QWEN_VL_RE = re.compile(r"qwen.*vl", re.IGNORECASE)
 

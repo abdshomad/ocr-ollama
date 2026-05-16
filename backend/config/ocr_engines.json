@@ -29,6 +29,15 @@
       "speed_tier": "fast"
     },
     {
+      "id": "tesseract",
+      "type": "tesseract",
+      "label": "Tesseract (native)",
+      "models": ["tesseract"],
+      "input_modes": ["image"],
+      "gpu_device": -1,
+      "speed_tier": "fast"
+    },
+    {
       "id": "litparse",
       "type": "litparse",
       "label": "LiteParse",

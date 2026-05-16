@@ -66,6 +66,11 @@ def is_onnxtr_model(model: str) -> bool:
     return ep is not None and str(ep.get("type")) == "onnxtr"
 
 
+def is_tesseract_model(model: str) -> bool:
+    ep = ocr_engine_for_model(model)
+    return ep is not None and str(ep.get("type")) == "tesseract"
+
+
 def all_mineru_models() -> list[tuple[dict[str, Any], str]]:
     out: list[tuple[dict[str, Any], str]] = []
     for ep in load_ocr_engines():
@@ -110,6 +115,16 @@ def all_onnxtr_models() -> list[tuple[dict[str, Any], str]]:
     out: list[tuple[dict[str, Any], str]] = []
     for ep in load_ocr_engines():
         if str(ep.get("type")) != "onnxtr":
+            continue
+        for name in ep.get("models") or []:
+            out.append((ep, str(name)))
+    return out
+
+
+def all_tesseract_models() -> list[tuple[dict[str, Any], str]]:
+    out: list[tuple[dict[str, Any], str]] = []
+    for ep in load_ocr_engines():
+        if str(ep.get("type")) != "tesseract":
             continue
         for name in ep.get("models") or []:
             out.append((ep, str(name)))

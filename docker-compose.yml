@@ -235,6 +235,40 @@ services:
       retries: 60
       start_period: 1800s
 
+  vllm-hunyuanocr:
+    <<: [*vllm-service, *vllm-gpu]
+    profiles: ["hunyuanocr"]
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.vllm-ocr
+    image: ${VLLM_OCR_IMAGE:-ocr-ollama-vllm-ocr:latest}
+    volumes:
+      - vllm-hf-cache:/root/.cache/huggingface
+    environment:
+      <<: *vllm-env
+      VLLM_MODEL: ${VLLM_HUNYUAN_OCR_MODEL:-tencent/HunyuanOCR}
+      VLLM_PORT: "8106"
+      # Hunyuan shares a GPU with other optional vLLM services; cap reservation (see issues/hunyuanocr).
+      VLLM_GPU_MEMORY_UTILIZATION: ${VLLM_HUNYUAN_OCR_GPU_MEMORY_UTIL:-0.42}
+      VLLM_HUNYUAN_OCR_MAX_MODEL_LEN: ${VLLM_HUNYUAN_OCR_MAX_MODEL_LEN:-8192}
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ["${VLLM_HUNYUAN_OCR_CUDA_DEVICE:-1}"]
+              capabilities: [gpu]
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "python3 -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8106/v1/models')\"",
+        ]
+      interval: 30s
+      timeout: 15s
+      retries: 60
+      start_period: 1800s
+
   nemotron-ocr-v2:
     profiles: ["nemotron"]
     build:
@@ -332,12 +366,15 @@ services:
       VLLM_CHANDRA_HOST: ${VLLM_CHANDRA_HOST:-http://vllm-chandra:8103}
       VLLM_GEMMA4_HOST: ${VLLM_GEMMA4_HOST:-http://vllm-gemma4:8104}
       VLLM_QWEN3_VL_HOST: ${VLLM_QWEN3_VL_HOST:-http://vllm-qwen3-vl:8105}
+      VLLM_HUNYUAN_OCR_HOST: ${VLLM_HUNYUAN_OCR_HOST:-http://vllm-hunyuanocr:8106}
       MINERU_DIFFUSION_HOST: ${MINERU_DIFFUSION_HOST:-http://mineru-diffusion:8200}
       NEMOTRON_OCR_HOST: ${NEMOTRON_OCR_HOST:-http://nemotron-ocr-v2:8210}
       RAPIDOCR_HOST: ${RAPIDOCR_HOST:-http://rapidocr:8220}
       ONNXTR_HOST: ${ONNXTR_HOST:-http://onnxtr:8230}
       VLLM_HOST: ${VLLM_HOST:-http://vllm-deepseek:8100}
       VLLM_TIMEOUT: ${VLLM_TIMEOUT:-600}
+      # Listing /api/models probes every vLLM host in parallel; allow slow /v1/models (cold GPU).
+      MODEL_LIST_HTTP_TIMEOUT: ${MODEL_LIST_HTTP_TIMEOUT:-45}
       OLLAMA_HOST: ${OLLAMA_HOST:-http://host.docker.internal:11434}
       OLLAMA_TIMEOUT: ${OLLAMA_TIMEOUT:-300}
       MAX_IMAGE_BYTES: ${MAX_IMAGE_BYTES:-10485760}
