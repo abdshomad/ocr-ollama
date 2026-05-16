@@ -32,6 +32,7 @@ Write-ups for non-trivial bugs and integration problems. Format and when to add 
 | [doc-owl-wave-r-triage.md](doc-owl-wave-r-triage.md) | **Doc OWL (Wave R)** — mPLUG-DocOwl lineage pinned (`mPLUG/DocOwl2`); Apache-2.0; no stock vLLM path; optional GPU Transformers sidecar for future Ship |
 | [aya-vision-ocr-wave-r-triage.md](aya-vision-ocr-wave-r-triage.md) | **Aya Vision OCR (Wave R)** — `CohereLabs/aya-vision-8b` / 32B; CC-BY-NC + HF gated; vLLM `AyaVisionForConditionalGeneration`; Ollama not pinned |
 | [dolphin-wave-r-triage.md](dolphin-wave-r-triage.md) | **Dolphin / ByteDance (Wave R)** — `ByteDance/Dolphin` (MIT), `Dolphin-v2` (Qwen Research NC); Transformers path; vLLM one-liner unverified |
+| [marketing-ocr-names-wave-r-triage.md](marketing-ocr-names-wave-r-triage.md) | **Wave R #4** — owlOCR vs OlmOCR; OCRFlux (Qwen NC LICENSE); MonkeyOCR (non-commercial); Nanonets-OCR-s (license TBD) |
 | [granite-docling-browser.md](granite-docling-browser.md) | **Granite Docling 258M** — `/scan` worker, `onnx-community/granite-docling-258M-ONNX`, engine `granite`; rebuild nginx after frontend updates |
 | [vllm-lighton-gpu-compose-entrypoint-directory.md](vllm-lighton-gpu-compose-entrypoint-directory.md) | LightOn restart loop after GPU start — `/workspace` compose path created entrypoint as directory (exit 126) |
 | [vllm-compose-unhealthy.md](vllm-compose-unhealthy.md) | Compose `vllm` unhealthy — chat-template crash, GPU 0 OOM, slow first start |
