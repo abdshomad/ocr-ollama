@@ -11,6 +11,18 @@
       "port": 8100
     },
     {
+      "id": "deepseek-ocr2",
+      "label": "DeepSeek-OCR-2",
+      "models": ["deepseek-ai/DeepSeek-OCR-2"],
+      "host_env": "VLLM_DEEPSEEK_OCR2_HOST",
+      "default_host": "http://vllm-deepseek-ocr2:8114",
+      "compose_service": "vllm-deepseek-ocr2",
+      "compose_profile": "deepseek-ocr2",
+      "gpu_device": 1,
+      "port": 8114,
+      "speed_tier": "medium"
+    },
+    {
       "id": "glm",
       "label": "GLM-OCR",
       "models": ["zai-org/GLM-OCR"],

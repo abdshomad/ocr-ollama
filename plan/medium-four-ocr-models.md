@@ -23,7 +23,7 @@
 
 **Explicitly out of scope** (article kill list or already covered elsewhere): Marker, Surya, MinerU 2.5 (AGPL), GLM-OCR (article: cloud/API; we already have **vLLM GLM-OCR** in-repo), PaddleOCR-only, GOT-OCR2, Docling.
 
-**Already in repo (baseline, not part of this plan’s four):** `deepseek-ai/DeepSeek-OCR`, `zai-org/GLM-OCR` on dual vLLM services.
+**Already in repo (baseline, not part of this plan’s four):** `deepseek-ai/DeepSeek-OCR`, **`deepseek-ai/DeepSeek-OCR-2`** (optional `deepseek-ocr2`), `zai-org/GLM-OCR` on vLLM services.
 
 ## Target architecture
 

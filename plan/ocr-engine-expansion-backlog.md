@@ -69,6 +69,7 @@ Treat these as **done** unless adding a second checkpoint or fixing gaps.
 | Engine / capability | Where | Notes |
 |---------------------|-------|--------|
 | DeepSeek-OCR | vLLM (`vllm-deepseek`) | Baseline GPU OCR. |
+| DeepSeek-OCR-2 | vLLM (`vllm-deepseek-ocr2`, profile `deepseek-ocr2`, port 8114) | Optional; ~3.4B VLM (`deepseek-ai/DeepSeek-OCR-2`). |
 | GLM-OCR | vLLM (`vllm-glm`) | Baseline GPU OCR. |
 | LightOnOCR | vLLM (`vllm-lighton`) | User list: “Light Ono OCR” / LightOnOCR-1B-1025 / blog — **already routed**. Optional: second catalog row for `2-1B` / bbox variant. |
 | Chandra OCR 2 | vLLM (`vllm-chandra`, profile `chandra`) | User list: “Chandra OCR”. |
@@ -130,7 +131,7 @@ Treat these as **done** unless adding a second checkpoint or fixing gaps.
 | DocParse / OCR Docker / OpenPage / OCRbro / DocuMagnet / OCR Studio | Vendor / ambiguous | **Commercial or N/A** | **#5 triaged** — [vendor-ocr-products-wave-r-triage.md](../issues/vendor-ocr-products-wave-r-triage.md); **Ship still deferred** (no open inference artifact for bundle). |
 | Gemma 3 OCR / Falcon OCR / Youtu-VL / ~~Hunyuan OCR~~ / ExaOCR / Col Pali / Pixl | vLLM / pipeline / API / retrieval | **Varies** (Gemma ToU; Tencent; TII verify; Pixl commercial) | **#6 triaged** — [wave-r-6-vlm-doc-models-triage.md](../issues/wave-r-6-vlm-doc-models-triage.md). **Hunyuan:** in repo. **ColPali:** retrieval. |
 | Pike PDF (pikepdf) | Library (not OCR) | **MPL-2.0** | **#7 triaged** — Python PDF I/O, optional plumbing only. [pikepdf-wave-r-triage.md](../issues/pikepdf-wave-r-triage.md). |
-| DeepSeek OCR 2 / PaddleOCR-VL-1.5 / MinerU 2.5+ / Dolphin v2 / LightOnOCR “2” | vLLM / AGPL / NC / **done** | Apache / Qwen NC / AGPL / Apache | **#8 triaged** — DS-OCR-2 + PaddleOCR-VL-1.5 pin on HF; **LightOnOCR-2-1B** already shipped (`vllm-lighton`). [wave-r-8-upstream-watchlist-triage.md](../issues/wave-r-8-upstream-watchlist-triage.md). |
+| DeepSeek OCR 2 / PaddleOCR-VL-1.5 / MinerU 2.5+ / Dolphin v2 / LightOnOCR “2” | vLLM / AGPL / NC / **done** | Apache / Qwen NC / AGPL / Apache | **#8 triaged** — **DeepSeek-OCR-2** shipped (`vllm-deepseek-ocr2`; [plan/deepseek-ocr-2-vllm-integration.md](./deepseek-ocr-2-vllm-integration.md)); PaddleOCR-VL-1.5 pin on HF; **LightOnOCR-2-1B** already shipped (`vllm-lighton`). [wave-r-8-upstream-watchlist-triage.md](../issues/wave-r-8-upstream-watchlist-triage.md). |
 | Gemini 3.0 | API | Google ToS | Only via **user API key** pattern if ever; out of default self-host stack. |
 | iFlyTek AI NOTE 2 | API / closed | Commercial | Likely **out of scope** for self-host unless legal + SDK. |
 

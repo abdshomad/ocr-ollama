@@ -92,6 +92,7 @@ def endpoint_by_id(service_id: str) -> dict[str, Any] | None:
 
 _CUDA_DEVICE_ENV_FOR_ENDPOINT_ID: dict[str, str] = {
     "deepseek": "VLLM_DEEPSEEK_CUDA_DEVICE",
+    "deepseek-ocr2": "VLLM_DEEPSEEK_OCR2_CUDA_DEVICE",
     "glm": "VLLM_GLM_CUDA_DEVICE",
     "lighton": "VLLM_LIGHTON_CUDA_DEVICE",
     "chandra": "VLLM_CHANDRA_CUDA_DEVICE",
@@ -148,6 +149,8 @@ def gpu_device_for_endpoint(ep: dict[str, Any]) -> int:
     ep_id = str(ep.get("id", ""))
     if ep_id == "deepseek":
         return int(os.getenv("VLLM_DEEPSEEK_CUDA_DEVICE", str(ep.get("gpu_device", 0))))
+    if ep_id == "deepseek-ocr2":
+        return int(os.getenv("VLLM_DEEPSEEK_OCR2_CUDA_DEVICE", str(ep.get("gpu_device", 1))))
     if ep_id == "glm":
         return int(os.getenv("VLLM_GLM_CUDA_DEVICE", str(ep.get("gpu_device", 1))))
     if ep_id == "lighton":

@@ -5,6 +5,7 @@ Write-ups for non-trivial bugs and integration problems. Format and when to add 
 | Issue | Summary |
 |-------|---------|
 | [vllm-deepseek-ocr-integration.md](vllm-deepseek-ocr-integration.md) | **vLLM default OCR** — Compose + DeepSeek-OCR working; GPU, ports, healthcheck, `max_tokens` fixes |
+| [deepseek-ocr-2-vllm-integration.md](deepseek-ocr-2-vllm-integration.md) | **DeepSeek-OCR-2** — `deepseek-ai/DeepSeek-OCR-2`, profile `deepseek-ocr2`, port 8114, optional second DeepSeek vLLM |
 | [vllm-glm-ocr.md](vllm-glm-ocr.md) | **vLLM GLM-OCR** — `zai-org/GLM-OCR`, MTP flags, `docker-compose.glm-ocr.yml` |
 | [lightonocr-vllm-integration.md](lightonocr-vllm-integration.md) | **vLLM LightOnOCR** — `lightonai/LightOnOCR-2-1B`, profile `lighton`, port 8102, transformers 5.4+ image |
 | [mineru-diffusion-nano-dvlm-integration.md](mineru-diffusion-nano-dvlm-integration.md) | **MinerU-Diffusion** — `nano_dvlm` sidecar, profile `mineru`, port 8200, `POST /v1/ocr` |

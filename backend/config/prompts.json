@@ -2,6 +2,7 @@
   "general": "Free OCR.",
   "per_model": {
     "deepseek-ai/DeepSeek-OCR": "Free OCR.",
+    "deepseek-ai/DeepSeek-OCR-2": "<|grounding|>Convert the document to markdown.",
     "zai-org/GLM-OCR": "Text Recognition:",
     "lightonai/LightOnOCR-2-1B": "",
     "datalab-to/chandra-ocr-2": "OCR this image to HTML, arranged as layout blocks. Each layout block should be a div with the data-bbox attribute (x0 y0 x1 y1, normalized 0-1000) and a data-label. Preserve tables, math, forms, lists, and reading order. Output HTML only.",

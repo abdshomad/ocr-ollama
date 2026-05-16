@@ -189,6 +189,7 @@ Index: [issues/README.md](issues/README.md). Primary vLLM reference: [issues/vll
 | Change exposed port | `.env` → `PORT=...` |
 | Change inference backend/URL | Settings UI or `PUT /api/settings` |
 | Run vLLM (DeepSeek-OCR) | `docker compose up --build` or [issues/vllm-deepseek-ocr-integration.md](issues/vllm-deepseek-ocr-integration.md) |
+| Run vLLM (DeepSeek-OCR-2) | `docker compose --profile deepseek-ocr2 up -d vllm-deepseek-ocr2` — [issues/deepseek-ocr-2-vllm-integration.md](issues/deepseek-ocr-2-vllm-integration.md) |
 | Run vLLM (GLM-OCR) | `docker compose -f docker-compose.yml -f docker-compose.glm-ocr.yml up -d` — [issues/vllm-glm-ocr.md](issues/vllm-glm-ocr.md) |
 | Run vLLM (Gemma 4) | `docker compose --profile gemma4 up -d vllm-gemma4` — [issues/gemma4-vllm-integration.md](issues/gemma4-vllm-integration.md) |
 | Run vLLM (Qwen3-VL) | `docker compose --profile qwen3vl up -d vllm-qwen3-vl` — [issues/qwen3-vl-vllm-integration.md](issues/qwen3-vl-vllm-integration.md) |
