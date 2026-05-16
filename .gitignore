@@ -9,4 +9,5 @@ __pycache__/
 *.pyc
 .env
 backend/config/settings.json
+backend/config/gpu_device_assignments.json
 .DS_Store

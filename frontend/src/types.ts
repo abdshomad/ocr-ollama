@@ -124,6 +124,7 @@ export interface VllmServiceStatus {
   label: string;
   compose_service: string;
   gpu_device: number;
+  gpu_assignment_supported?: boolean;
   port: number;
   models: string[];
   docker_state: string;
@@ -139,12 +140,32 @@ export interface GpuDashboard {
   gpu_query_error?: string | null;
   services: VllmServiceStatus[];
   gpu_memory_utilization: number;
+  gpu_device_assignments?: Record<string, number>;
 }
 
 export interface VllmServiceActionResult {
   ok: boolean;
-  action: "start" | "stop";
+  action: "start" | "stop" | "recycle";
   service_id: string;
   message: string;
   service?: VllmServiceStatus | null;
+}
+
+export interface BulkVllmStopResult {
+  ok: boolean;
+  action: "stop_all" | "stop_gpu";
+  gpu_index?: number;
+  stopped_service_ids: string[];
+  errors?: { service_id: string; detail: string }[] | null;
+  message: string;
+}
+
+export interface GpuAssignmentsPutBody {
+  assignments: Record<string, number | null>;
+}
+
+export interface GpuAssignmentsResponse {
+  ok: boolean;
+  assignments: Record<string, number>;
+  message?: string;
 }

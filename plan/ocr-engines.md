@@ -68,8 +68,9 @@ Runs on user CPU/GPU; no vLLM.
 |------|--------|-----------------|---------|
 | 1 | **Tesseract.js** | **~0.5–3 s** | Yes (“Fast scan”) |
 | 2 | **TrOCR** (`Xenova/trocr-base-handwritten`) | **~2–10 s** | Yes (default) |
-| 3 | **PaliGemma 2** (`onnx-community/paligemma2-3b-pt-224`) | **~15–60+ s** | Yes (“slow”) |
-| 4 | **Chrome Built-in AI** refine | **+2–20 s** on top | Yes (optional) |
+| 3 | **Granite Docling 258M** (`onnx-community/granite-docling-258M-ONNX`) | **~5–30+ s** (first run includes large download) | Yes (“Granite Docling” on `/scan`) |
+| 4 | **PaliGemma 2** (`onnx-community/paligemma2-3b-pt-224`) | **~15–60+ s** | Yes (“slow”) |
+| 5 | **Chrome Built-in AI** refine | **+2–20 s** on top | Yes (optional) |
 
 Server GPU models are usually faster and better than browser VLMs for full pages but require a GPU host.
 
@@ -101,7 +102,7 @@ Server GPU models are usually faster and better than browser VLMs for full pages
 | **Custom CPU sidecar** | RapidOCR ONNX (`rapidocr`), OnnxTR (`onnxtr`), EasyOCR (`easyocr`), docTR (`doctr`), PaddleOCR (`paddleocr`), Docling (`docling`), LanyOCR (`lanyocr`) | `rapidocr`, `onnxtr`, `easyocr`, `doctr`, `paddleocr`, `docling`, `lanyocr` |
 | **Subprocess** | LiteParse, Tesseract (native) | `litparse`, `tesseract` |
 | **Ollama** | `deepseek-ocr`, `glm-ocr`, PaddleOCR-VL, Qwen, Mistral | `ollama` (global backend) |
-| **Browser worker** | TrOCR, Tesseract, PaliGemma | N/A (`POST /api/scan` only) |
+| **Browser worker** | TrOCR, Tesseract, PaliGemma, **Granite Docling** (`granite`) | N/A (`POST /api/scan` only) |
 
 ---
 
@@ -122,7 +123,7 @@ Server GPU models are usually faster and better than browser VLMs for full pages
 
 | Bucket | Engines |
 |--------|---------|
-| **In repo today** | DeepSeek-OCR, GLM-OCR (vLLM); Gemma 4 E4B (optional `vllm-gemma4`); Qwen3-VL Instruct (optional `vllm-qwen3-vl`); **Qwen3-Omni** (optional `vllm-qwen3-omni`, **vLLM-Omni**, profile `qwen3omni`); **Phi-4-multimodal** (optional `vllm-phi4-mm`, profile `phi4mm`); **RolmOCR** (optional `vllm-rolmocr`, profile `rolmocr`); **NuMarkdown** (optional `vllm-numarkdown`, profile `numarkdown`); **Smol Docling** (optional `vllm-smoldocling`, profile `smoldocling`, `docling-project/SmolDocling-256M-preview`); Hunyuan OCR (optional `vllm-hunyuanocr`); **PaddleOCR-VL** (optional `vllm-paddleocr-vl`, profile `paddleocr-vl`); **Dots.MOCR** (optional `vllm-dotsmocr`, profile `dotsmocr`, `rednote-hilab/dots.mocr`); TrOCR, Tesseract, PaliGemma (browser); Tesseract (native server subprocess); Ollama catalog |
+| **In repo today** | DeepSeek-OCR, GLM-OCR (vLLM); Gemma 4 E4B (optional `vllm-gemma4`); Qwen3-VL Instruct (optional `vllm-qwen3-vl`); **Qwen3-Omni** (optional `vllm-qwen3-omni`, **vLLM-Omni**, profile `qwen3omni`); **Phi-4-multimodal** (optional `vllm-phi4-mm`, profile `phi4mm`); **RolmOCR** (optional `vllm-rolmocr`, profile `rolmocr`); **NuMarkdown** (optional `vllm-numarkdown`, profile `numarkdown`); **Smol Docling** (optional `vllm-smoldocling`, profile `smoldocling`, `docling-project/SmolDocling-256M-preview`); Hunyuan OCR (optional `vllm-hunyuanocr`); **PaddleOCR-VL** (optional `vllm-paddleocr-vl`, profile `paddleocr-vl`); **Dots.MOCR** (optional `vllm-dotsmocr`, profile `dotsmocr`, `rednote-hilab/dots.mocr`); TrOCR, Tesseract, PaliGemma, **Granite Docling** (`granite`, ONNX on `/scan`) (browser); Tesseract (native server subprocess); Ollama catalog |
 | **In repo (RapidOCR)** | RapidOCR ONNX (`rapidocr`, profile `rapidocr`, port 8220, CPU) |
 | **In repo (OnnxTR)** | OnnxTR (`onnxtr`, profile `onnxtr`, port 8230, CPU) |
 | **In repo (EasyOCR)** | EasyOCR (`easyocr`, profile `easyocr`, port 8240, PyTorch CPU image) |
@@ -211,3 +212,4 @@ For the **same model**, Ollama is typically **~1.2–1.5× slower** than vLLM, w
 | 2026-05-16 | Dots.MOCR optional vLLM endpoint (`rednote-hilab/dots.mocr`, profile `dotsmocr`, port 8108) |
 | 2026-05-16 | RolmOCR optional vLLM endpoint (`reducto/RolmOCR`, profile `rolmocr`, port 8110) |
 | 2026-05-16 | Phi-4-multimodal optional vLLM endpoint (`microsoft/Phi-4-multimodal-instruct`, profile `phi4mm`, port 8109) |
+| 2026-05-16 | Granite Docling 258M browser ONNX on `/scan` (`granite`, `onnx-community/granite-docling-258M-ONNX`) |

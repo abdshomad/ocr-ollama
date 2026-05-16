@@ -8,6 +8,7 @@ from typing import Any
 
 import httpx
 
+from app import gpu_device_assignments_store
 from app.engine_registry import host_for_engine, load_all_endpoints
 from app.vllm_registry import host_for_endpoint
 
@@ -89,6 +90,41 @@ def endpoint_by_id(service_id: str) -> dict[str, Any] | None:
     return None
 
 
+_CUDA_DEVICE_ENV_FOR_ENDPOINT_ID: dict[str, str] = {
+    "deepseek": "VLLM_DEEPSEEK_CUDA_DEVICE",
+    "glm": "VLLM_GLM_CUDA_DEVICE",
+    "lighton": "VLLM_LIGHTON_CUDA_DEVICE",
+    "chandra": "VLLM_CHANDRA_CUDA_DEVICE",
+    "gemma4": "VLLM_GEMMA4_CUDA_DEVICE",
+    "qwen3vl": "VLLM_QWEN3_VL_CUDA_DEVICE",
+    "hunyuanocr": "VLLM_HUNYUAN_OCR_CUDA_DEVICE",
+    "paddleocr-vl": "VLLM_PADDLEOCR_VL_CUDA_DEVICE",
+    "dotsmocr": "VLLM_DOTS_MOCR_CUDA_DEVICE",
+    "phi4multimodal": "VLLM_PHI4_MM_CUDA_DEVICE",
+    "rolmocr": "VLLM_ROLMOCR_CUDA_DEVICE",
+    "numarkdown": "VLLM_NUMARKDOWN_CUDA_DEVICE",
+    "qwen3omni": "VLLM_QWEN3_OMNI_CUDA_DEVICE",
+    "smoldocling": "VLLM_SMOLDOCLING_CUDA_DEVICE",
+    "mineru-diffusion": "MINERU_DIFFUSION_CUDA_DEVICE",
+    "nemotron-ocr-v2": "NEMOTRON_OCR_CUDA_DEVICE",
+    "easyocr": "EASYOCR_CUDA_DEVICE",
+    "doctr": "DOCTR_CUDA_DEVICE",
+    "paddleocr": "PADDLEOCR_CUDA_DEVICE",
+    "docling": "DOCLING_CUDA_DEVICE",
+    "lanyocr": "LANYOCR_CUDA_DEVICE",
+}
+
+
+def _compose_cuda_assignment_env_for_subprocess() -> dict[str, str]:
+    """Inject UI-persisted device indices so compose substitutions override host .env defaults."""
+    out: dict[str, str] = {}
+    for sid, gpu_i in gpu_device_assignments_store.load_assignments().items():
+        env_key = _CUDA_DEVICE_ENV_FOR_ENDPOINT_ID.get(str(sid).strip())
+        if env_key:
+            out[env_key] = str(int(gpu_i))
+    return out
+
+
 def _profiles_for_endpoint(ep: dict[str, Any]) -> list[str]:
     raw = ep.get("compose_profile")
     if not raw:
@@ -155,6 +191,19 @@ def gpu_device_for_endpoint(ep: dict[str, Any]) -> int:
     return int(ep.get("gpu_device", 0))
 
 
+def cuda_device_env_var_for_endpoint_id(endpoint_id: str) -> str | None:
+    return _CUDA_DEVICE_ENV_FOR_ENDPOINT_ID.get(str(endpoint_id).strip()) or None
+
+
+def resolved_gpu_device_for_endpoint(ep: dict[str, Any]) -> int:
+    sid = str(ep.get("id", "")).strip()
+    if sid:
+        assigned = gpu_device_assignments_store.assignment_for(sid)
+        if assigned is not None:
+            return int(assigned)
+    return gpu_device_for_endpoint(ep)
+
+
 async def run_docker(args: list[str], *, timeout: float = 60.0) -> tuple[int, str, str]:
     proc = await asyncio.create_subprocess_exec(
         _DOCKER,
@@ -184,10 +233,12 @@ async def _run_compose(
         raise RuntimeError("Docker Compose management is not configured")
     profiles = profile_args if profile_args is not None else _compose_profile_args()
     cmd = [*_compose_base_cmd(), *profiles, *args]
+    env = {**os.environ, **_compose_cuda_assignment_env_for_subprocess()}
     proc = await asyncio.create_subprocess_exec(
         *cmd,
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
+        env=env,
     )
     try:
         stdout_b, stderr_b = await asyncio.wait_for(proc.communicate(), timeout=timeout)
@@ -294,7 +345,8 @@ async def _endpoint_dashboard_row(
             "id": str(ep.get("id", "")),
             "label": str(ep.get("label") or ep.get("id") or ""),
             "compose_service": "",
-            "gpu_device": int(ep.get("gpu_device", -1)),
+            "gpu_device": resolved_gpu_device_for_endpoint(ep),
+            "gpu_assignment_supported": False,
             "port": int(ep.get("port") or 0),
             "models": list(ep.get("models") or []),
             "docker_state": "local_cli",
@@ -330,7 +382,8 @@ async def _endpoint_dashboard_row(
             "id": str(ep.get("id", "")),
             "label": str(ep.get("label") or ep.get("id") or ""),
             "compose_service": service,
-            "gpu_device": gpu_device_for_endpoint(ep),
+            "gpu_device": resolved_gpu_device_for_endpoint(ep),
+            "gpu_assignment_supported": cuda_device_env_var_for_endpoint_id(str(ep.get("id", ""))) is not None,
             "port": int(ep.get("port") or 0),
             "models": models_out,
             "docker_state": docker_state,
@@ -349,7 +402,8 @@ async def _endpoint_dashboard_row(
         "id": str(ep.get("id", "")),
         "label": str(ep.get("label") or ep.get("id") or ""),
         "compose_service": str(ep.get("compose_service") or ""),
-        "gpu_device": gpu_device_for_endpoint(ep),
+        "gpu_device": resolved_gpu_device_for_endpoint(ep),
+        "gpu_assignment_supported": cuda_device_env_var_for_endpoint_id(str(ep.get("id", ""))) is not None,
         "port": int(ep.get("port") or 0),
         "models": models_out,
         "docker_state": "running" if api_ready else "unknown",
@@ -404,6 +458,77 @@ async def start_service(service_id: str) -> dict[str, Any]:
         "service_id": service_id,
         "message": f"Started {compose_name}",
         "service": match,
+    }
+
+
+async def recycle_service(service_id: str) -> dict[str, Any]:
+    await stop_service(service_id)
+    inner = await start_service(service_id)
+    return {
+        **inner,
+        "action": "recycle",
+        "message": f"Stopped and restarted {service_id} (GPU remap applied)",
+    }
+
+
+async def stop_all_running_services() -> dict[str, Any]:
+    """Unload every compose-managed service that Docker reports running or starting."""
+    from app.model_availability import merge_gpu_services
+
+    fast = await list_service_statuses_fast()
+    statuses = merge_gpu_services(fast)
+    stopping = []
+    errors: list[dict[str, str]] = []
+    for st in statuses:
+        sid = str(st.get("id") or "")
+        if not sid or not str(st.get("compose_service") or "").strip():
+            continue
+        state = str(st.get("docker_state") or "").lower()
+        if state not in {"running", "starting"}:
+            continue
+        try:
+            await stop_service(sid)
+            stopping.append(sid)
+        except (ValueError, RuntimeError, TimeoutError) as e:
+            errors.append({"service_id": sid, "detail": str(e)})
+    return {
+        "ok": len(errors) == 0,
+        "action": "stop_all",
+        "stopped_service_ids": stopping,
+        "errors": errors or None,
+        "message": f"Stopped {len(stopping)} service(s)" + (f" ({len(errors)} errors)" if errors else ""),
+    }
+
+
+async def stop_running_services_on_gpu(gpu_index: int) -> dict[str, Any]:
+    from app.model_availability import merge_gpu_services
+
+    fast = await list_service_statuses_fast()
+    statuses = merge_gpu_services(fast)
+    stopping = []
+    errors: list[dict[str, str]] = []
+    for st in statuses:
+        sid = str(st.get("id") or "")
+        if not sid or not str(st.get("compose_service") or "").strip():
+            continue
+        if int(st.get("gpu_device", -999)) != gpu_index:
+            continue
+        state = str(st.get("docker_state") or "").lower()
+        if state not in {"running", "starting"}:
+            continue
+        try:
+            await stop_service(sid)
+            stopping.append(sid)
+        except (ValueError, RuntimeError, TimeoutError) as e:
+            errors.append({"service_id": sid, "detail": str(e)})
+    return {
+        "ok": len(errors) == 0,
+        "action": "stop_gpu",
+        "gpu_index": gpu_index,
+        "stopped_service_ids": stopping,
+        "errors": errors or None,
+        "message": f"Stopped {len(stopping)} service(s) on GPU {gpu_index}"
+        + (f" ({len(errors)} errors)" if errors else ""),
     }
 
 
@@ -468,6 +593,7 @@ async def gpu_dashboard(*, background_tasks: Any | None = None) -> dict[str, Any
         "gpu_query_error": gpu_err,
         "services": services,
         "gpu_memory_utilization": float(os.getenv("VLLM_GPU_MEMORY_UTILIZATION", "0.92")),
+        "gpu_device_assignments": gpu_device_assignments_store.load_assignments(),
     }
 
 

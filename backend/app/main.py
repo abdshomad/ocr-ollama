@@ -32,10 +32,15 @@ from app.scan_service import run_browser_scan
 from app.prompts import get_prompts, remove_model_prompt, update_prompts
 from app.settings_store import get_inference_backend, get_inference_host, get_settings, update_settings
 from app.config import cors_allow_origin_regex, cors_allow_origins
+from app.engine_registry import load_all_endpoints
+from app.gpu_device_assignments_store import load_assignments, merge_assignments
 from app.vllm_compose import (
     compose_manage_enabled,
     gpu_dashboard,
+    recycle_service,
     start_service,
+    stop_all_running_services,
+    stop_running_services_on_gpu,
     stop_service,
 )
 
@@ -66,6 +71,10 @@ class PromptsUpdate(BaseModel):
 class SettingsUpdate(BaseModel):
     inference_backend: Literal["ollama", "vllm"] = "vllm"
     inference_host: str
+
+
+class GpuAssignmentsUpdate(BaseModel):
+    assignments: dict[str, int | None] = Field(default_factory=dict)
 
 
 class ArenaRequest(BaseModel):
@@ -123,6 +132,73 @@ async def vllm_service_stop(service_id: str):
         )
     try:
         return await stop_service(service_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e)) from e
+    except (RuntimeError, TimeoutError) as e:
+        raise HTTPException(status_code=502, detail=str(e)) from e
+
+
+@app.get("/api/gpu/device-assignments")
+async def gpu_device_assignments_get():
+    return {"assignments": load_assignments()}
+
+
+@app.put("/api/gpu/device-assignments")
+async def gpu_device_assignments_put(body: GpuAssignmentsUpdate):
+    known = {str(e.get("id")) for e in load_all_endpoints() if e.get("id")}
+    for raw_key in body.assignments:
+        sid = raw_key.strip()
+        if sid not in known:
+            raise HTTPException(status_code=400, detail=f"Unknown service id: {raw_key}")
+        val = body.assignments[raw_key]
+        if val is not None and int(val) < -1:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid gpu_device for {sid}: use -1 for CPU-eligible compose services or ≥0 for a GPU index",
+            )
+    merged = merge_assignments(dict(body.assignments))
+    return {
+        "ok": True,
+        "assignments": merged,
+        "message": "GPU device overrides saved for docker compose substitution.",
+    }
+
+
+@app.post("/api/vllm/services/stop-all")
+async def vllm_services_stop_all():
+    if not compose_manage_enabled():
+        raise HTTPException(
+            status_code=503,
+            detail="GPU management requires Docker socket and COMPOSE_PROJECT_DIR on the backend container.",
+        )
+    try:
+        return await stop_all_running_services()
+    except (RuntimeError, TimeoutError) as e:
+        raise HTTPException(status_code=502, detail=str(e)) from e
+
+
+@app.post("/api/vllm/services/stop-gpu/{gpu_index}")
+async def vllm_services_stop_gpu(gpu_index: int):
+    if not compose_manage_enabled():
+        raise HTTPException(
+            status_code=503,
+            detail="GPU management requires Docker socket and COMPOSE_PROJECT_DIR on the backend container.",
+        )
+    try:
+        return await stop_running_services_on_gpu(gpu_index)
+    except (RuntimeError, TimeoutError) as e:
+        raise HTTPException(status_code=502, detail=str(e)) from e
+
+
+@app.post("/api/vllm/services/{service_id}/recycle")
+async def vllm_service_recycle(service_id: str):
+    if not compose_manage_enabled():
+        raise HTTPException(
+            status_code=503,
+            detail="GPU management requires Docker socket and COMPOSE_PROJECT_DIR on the backend container.",
+        )
+    try:
+        return await recycle_service(service_id)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e)) from e
     except (RuntimeError, TimeoutError) as e:

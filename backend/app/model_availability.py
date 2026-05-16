@@ -53,6 +53,8 @@ def merge_gpu_services(fast_rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
         cached = _GPU_API_BY_ID.get(sid)
         if cached:
             merged = {**row, **cached}
+            if "gpu_device" in row:
+                merged["gpu_device"] = row["gpu_device"]
         else:
             merged = dict(row)
         out.append(merged)

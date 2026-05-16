@@ -3,6 +3,9 @@ import type {
   AppSettings,
   ArenaResult,
   BrowserScanResult,
+  BulkVllmStopResult,
+  GpuAssignmentsPutBody,
+  GpuAssignmentsResponse,
   GpuDashboard,
   HealthResponse,
   HistorySummary,
@@ -56,6 +59,28 @@ export function startVllmService(serviceId: string) {
 export function stopVllmService(serviceId: string) {
   return request<VllmServiceActionResult>(`/api/vllm/services/${encodeURIComponent(serviceId)}/stop`, {
     method: "POST",
+  });
+}
+
+export function recycleVllmService(serviceId: string) {
+  return request<VllmServiceActionResult>(`/api/vllm/services/${encodeURIComponent(serviceId)}/recycle`, {
+    method: "POST",
+  });
+}
+
+export function stopAllVllmServices() {
+  return request<BulkVllmStopResult>("/api/vllm/services/stop-all", { method: "POST" });
+}
+
+export function stopVllmServicesOnGpu(gpuIndex: number) {
+  return request<BulkVllmStopResult>(`/api/vllm/services/stop-gpu/${gpuIndex}`, { method: "POST" });
+}
+
+export function putGpuDeviceAssignments(body: GpuAssignmentsPutBody) {
+  return request<GpuAssignmentsResponse>("/api/gpu/device-assignments", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
   });
 }
 

@@ -8,7 +8,7 @@
 1. **100% offline inference** in the browser for product **SKU** and **expiration date** from packaged-goods photos.
 2. **No server-side ML** for this path—the browser never calls vLLM/Ollama; the server stores uploads + structured JSON only.
 3. **Persist scans to server History** via `POST /api/scan` (`kind: "browser_scan"`).
-4. **Graceful degradation:** TrOCR (default) → PaliGemma 2 (opt-in) → Tesseract.js (fallback) → optional Chrome `window.ai` refinement.
+4. **Graceful degradation:** TrOCR (default) → Granite Docling (opt-in, small VLM) → PaliGemma 2 (opt-in, larger VLM) → Tesseract.js (fallback) → optional Chrome `window.ai` refinement.
 
 ## Architecture
 
@@ -47,8 +47,9 @@ flowchart TB
 |------|--------|----------|------|
 | A (default) | Transformers.js | `Xenova/trocr-base-handwritten` (q8) | Auto / capable devices |
 | B (opt-in) | PaliGemma | `onnx-community/paligemma2-3b-pt-224` | User selects “High quality” |
-| C (fallback) | Tesseract.js | `eng` | Fast scan or VLM failure |
-| D (refine) | Chrome Built-in AI | `window.ai.languageModel` | Opt-in on Scan page |
+| C (opt-in) | Granite Docling | `onnx-community/granite-docling-258M-ONNX` | User selects “Granite Docling” on `/scan` |
+| D (fallback) | Tesseract.js | `eng` | Fast scan or VLM failure |
+| E (refine) | Chrome Built-in AI | `window.ai.languageModel` | Opt-in on Scan page |
 
 ## Frontend layout
 
@@ -72,4 +73,5 @@ Record `kind: "browser_scan"` in `result/`.
 
 - **Phase 1 (done):** TrOCR + Tesseract, EntityParser, `/scan`, `/api/scan`, history UI.
 - **Phase 2 (done):** PaliGemma opt-in, model cache clear in Settings.
+- **Phase 2b (done):** Granite Docling 258M ONNX (`granite`) on `/scan`.
 - **Phase 3 (done):** Chrome AI refinement toggle on Scan page.

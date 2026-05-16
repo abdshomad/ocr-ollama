@@ -118,7 +118,7 @@ Index: [issues/README.md](issues/README.md). Primary vLLM reference: [issues/vll
 
 ## Architecture rules
 
-1. **Browser never calls vLLM/Ollama.** Server OCR traffic goes through FastAPI (`/api/ocr`, `/api/arena`). **Browser scan** (`/scan`) runs Transformers.js / Tesseract in a Web Worker; only structured results + images are posted via `POST /api/scan`.
+1. **Browser never calls vLLM/Ollama.** Server OCR traffic goes through FastAPI (`/api/ocr`, `/api/arena`). **Browser scan** (`/scan`) runs Transformers.js / Tesseract in a Web Worker (including optional **Granite Docling** ONNX); only structured results + images are posted via `POST /api/scan`.
 2. **Production traffic** enters only via **nginx** on `PORT` (from `.env`, default `3036`). Do not expose the backend port in Compose.
 3. **Persistence:** images → `upload/`; run JSON → `result/`; plans → `plan/`; issue write-ups → `issues/`; prompts → `backend/config/prompts.json`; inference settings → `backend/config/settings.json` (gitignored).
 4. **Inference resolution:** `INFERENCE_BACKEND` (`vllm` default) + `settings.json` (`inference_backend`, `vllm_host` / `ollama_host`) → env → defaults (`http://vllm:8100` in Compose, `http://localhost:8100` local). Loopback in `settings.json` is overridden by non-loopback env in Docker. Use `get_inference_backend()`, `get_inference_host()`, `get_vllm_host()`, or `get_ollama_host()` from `settings_store.py`. OCR calls go through `app.inference.factory`. vLLM OCR uses `VLLM_MAX_TOKENS` default **2048** (model ctx 8192; image consumes input budget).

@@ -29,6 +29,7 @@ Write-ups for non-trivial bugs and integration problems. Format and when to add 
 | [numarkdown-vllm-integration.md](numarkdown-vllm-integration.md) | **NuMarkdown** — `numind/NuMarkdown-8B-Thinking`, profile `numarkdown`, port 8111, reasoning doc → markdown (MIT) |
 | [qwen3-omni-vllm-integration.md](qwen3-omni-vllm-integration.md) | **Qwen3-Omni** — `Qwen/Qwen3-Omni-30B-A3B-*`, vLLM-Omni (`--omni`), profile `qwen3omni`, port 8112 |
 | [smol-docling-vllm-integration.md](smol-docling-vllm-integration.md) | **Smol Docling** — `docling-project/SmolDocling-256M-preview`, profile `smoldocling`, port 8113, DocTags→markdown (CDLA-Permissive-2.0) |
+| [granite-docling-browser.md](granite-docling-browser.md) | **Granite Docling 258M** — `/scan` worker, `onnx-community/granite-docling-258M-ONNX`, engine `granite`; rebuild nginx after frontend updates |
 | [vllm-lighton-gpu-compose-entrypoint-directory.md](vllm-lighton-gpu-compose-entrypoint-directory.md) | LightOn restart loop after GPU start — `/workspace` compose path created entrypoint as directory (exit 126) |
 | [vllm-compose-unhealthy.md](vllm-compose-unhealthy.md) | Compose `vllm` unhealthy — chat-template crash, GPU 0 OOM, slow first start |
 | [cors-non-localhost-ui-empty-model-picker.md](cors-non-localhost-ui-empty-model-picker.md) | Hosted UI (non-localhost) — CORS blocked `/api/models` → “No models match filter” |

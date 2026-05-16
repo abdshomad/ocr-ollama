@@ -59,7 +59,8 @@ Treat these as **done** unless adding a second checkpoint or fixing gaps.
 | **Hunyuan OCR** | vLLM (`vllm-hunyuanocr`, profile `hunyuanocr`) | `tencent/HunyuanOCR` ~1B VLM; Tencent license — see HF card. |
 | Qwen3-VL | Optional vLLM (`qwen3vl`) | Related to “Qwen 3 … VL OCR”. |
 | TrOCR | Browser `/scan` | User asked to **keep as example only** for server path — OK to leave browser-only. |
-| **Tesseract (native)** | Subprocess (`tesseract_client.py`) | Apache 2.0 | **In repo** — wraps `tesseract` binary as a subprocess engine. |
+| **Granite Docling 258M** | Browser `/scan` (`granite`) | Apache 2.0; ONNX `onnx-community/granite-docling-258M-ONNX` via Transformers.js — [plan/granite-docling-browser.md](./granite-docling-browser.md), [issues/granite-docling-browser.md](../issues/granite-docling-browser.md). |
+| **Tesseract (native)** | Subprocess (`tesseract_client.py`) | **In repo** — wraps `tesseract` binary as a subprocess engine. |
 
 ---
 
@@ -85,7 +86,7 @@ Treat these as **done** unless adding a second checkpoint or fixing gaps.
 | [Phi-4-multimodal](https://huggingface.co/microsoft/Phi-4-multimodal-instruct) | vLLM | MS license | **In repo** — optional vLLM `vllm-phi4-mm` (`microsoft/Phi-4-multimodal-instruct`, profile `phi4mm`, port 8109) — [phi4-multimodal-vllm-integration.md](../issues/phi4-multimodal-vllm-integration.md). |
 | Smol Docling | vLLM | CDLA Permissive v2 (**verify** HF card) | **In repo** — optional `vllm-smoldocling` (`docling-project/SmolDocling-256M-preview`, profile `smoldocling`, port **8113**) — [smol-docling-vllm-integration.md](../issues/smol-docling-vllm-integration.md). Successor **`ibm-granite/granite-docling-258M`** tracked separately if added later. |
 | [RolmOCR](https://huggingface.co/reducto/RolmOCR) | vLLM | Apache 2.0 | **In repo** — optional vLLM `vllm-rolmocr` (`reducto/RolmOCR`, profile `rolmocr`, port 8110) — [rolmocr-vllm-integration.md](../issues/rolmocr-vllm-integration.md). |
-| [IBM Granite Docling WebGPU](https://huggingface.co/spaces/ibm-granite/granite-docling-258M-WebGPU) | Browser (WASM) | Apache 2.0 | Likely **browser tier** only unless IBM ships server ONNX; compare to existing PaliGemma worker cost. |
+| [IBM Granite Docling WebGPU](https://huggingface.co/spaces/ibm-granite/granite-docling-258M-WebGPU) | Browser (WASM / ONNX) | Apache 2.0 | **In repo** — **`/scan`** worker engine **`granite`**, HF ONNX community build `onnx-community/granite-docling-258M-ONNX` (see [plan/granite-docling-browser.md](./granite-docling-browser.md)). |
 | Aya Vision OCR | vLLM / Ollama | Check license | Blog comparisons only until a **single serve command** is chosen. |
 | Mistral OCR / “Mistral OCR 3” | API / vLLM | **Often API-only** | If closed API, add `engine.type: http_proxy` pattern or document “out of self-host”. |
 | Dolphin (X link) | Research | — | Wait for open weights + license. |
@@ -143,7 +144,7 @@ Order balances **license safety**, **engineering clarity**, and **distinct capab
 
 ### Wave 6 — Browser / WebGPU demos
 
-**Candidates:** IBM Granite Docling WebGPU, other WASM-friendly small models.
+**Candidates:** ~~IBM Granite Docling (`granite`, ONNX in Transformers.js)~~ (**in repo**), other WASM-friendly small models.
 
 **Approach:** Extend **browser worker** pipeline; results via `POST /api/scan`; label latency in UI.
 
@@ -185,6 +186,7 @@ Use this as a **program tracker**; implementation tickets can reference wave + r
 
 | Date | Change |
 |------|--------|
+| 2026-05-16 | **Granite Docling 258M (browser)** — `/scan` engine `granite`, `onnx-community/granite-docling-258M-ONNX`; nginx image must be rebuilt to refresh static assets |
 | 2026-05-16 | **Smol Docling** — optional vLLM `vllm-smoldocling` (`docling-project/SmolDocling-256M-preview`, profile `smoldocling`, port 8113) |
 | 2026-05-16 | **Qwen3-Omni** — optional vLLM-Omni `vllm-qwen3-omni` (`Qwen/Qwen3-Omni-30B-A3B-Instruct` default, profile `qwen3omni`, port 8112) |
 | 2026-05-16 | **NuMarkdown** — optional vLLM `vllm-numarkdown` (`numind/NuMarkdown-8B-Thinking`, profile `numarkdown`, port 8111) |
