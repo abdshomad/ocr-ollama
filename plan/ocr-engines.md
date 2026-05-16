@@ -96,7 +96,7 @@ Server GPU models are usually faster and better than browser VLMs for full pages
 | Category | Engines | Planned `engine.type` |
 |----------|---------|------------------------|
 | **vLLM OpenAI** | DeepSeek, GLM, LightOn, Chandra, Gemma 4 (optional `gemma4`), Qwen3-VL (optional `qwen3vl`) | `vllm` |
-| **Custom GPU sidecar** | MinerU (`nano_dvlm`) | `nano_dvlm` |
+| **Custom GPU sidecar** | MinerU (`nano_dvlm`), Nemotron OCR v2 (`nemotron`) | `nano_dvlm`, `nemotron` |
 | **Subprocess (Node)** | LiteParse | `litparse` |
 | **Ollama** | `deepseek-ocr`, `glm-ocr`, PaddleOCR-VL, Qwen, Mistral | `ollama` (global backend) |
 | **Browser worker** | TrOCR, Tesseract, PaliGemma | N/A (`POST /api/scan` only) |
@@ -121,6 +121,7 @@ Server GPU models are usually faster and better than browser VLMs for full pages
 | Bucket | Engines |
 |--------|---------|
 | **In repo today** | DeepSeek-OCR, GLM-OCR (vLLM); Gemma 4 E4B (optional `vllm-gemma4`); Qwen3-VL Instruct (optional `vllm-qwen3-vl`); TrOCR, Tesseract, PaliGemma (browser); Ollama catalog |
+| **In repo (Nemotron OCR v2)** | Nemotron OCR v2 multilingual (`nemotron-ocr-v2`, profile `nemotron`, port 8210) |
 | **Planned (Medium four)** | — (LiteParse shipped) |
 | **In repo (LiteParse)** | LiteParse (`litparse`, local `lit` CLI, PDF + multi-format) |
 | **In repo (Chandra)** | Chandra OCR 2 (`vllm-chandra`) |
@@ -148,7 +149,7 @@ For the **same model**, Ollama is typically **~1.2–1.5× slower** than vLLM, w
 | `speed_tier` | Engines |
 |--------------|---------|
 | `instant` | LiteParse (workload A only) |
-| `fast` | Tesseract, TrOCR, LightOnOCR |
+| `fast` | Tesseract, TrOCR, LightOnOCR, Nemotron OCR v2 (sidecar) |
 | `medium` | DeepSeek-OCR, GLM-OCR, MinerU-Diffusion (batched) |
 | `slow` | MinerU (sequential), Chandra vLLM, PaliGemma (browser) |
 | `very_slow` | Chandra HF, Gemma 4 vLLM, Qwen3-VL vLLM, Qwen/Mistral OCR (Ollama), hybrid pipelines |
@@ -184,4 +185,4 @@ For the **same model**, Ollama is typically **~1.2–1.5× slower** than vLLM, w
 | 2026-05-16 | MinerU-Diffusion in repo (`mineru-diffusion` nano_dvlm sidecar) |
 | 2026-05-16 | LiteParse in repo (`litparse`, `lit` CLI in backend, PDF uploads) |
 | 2026-05-16 | Gemma 4 optional vLLM endpoint (`google/gemma-4-E4B-it`, profile `gemma4`, port 8104) |
-| 2026-05-16 | Qwen3-VL optional vLLM service (`qwen3vl`, port 8105) |
+| 2026-05-16 | Nemotron OCR v2 sidecar (`nemotron`, profile `nemotron`, port 8210) |

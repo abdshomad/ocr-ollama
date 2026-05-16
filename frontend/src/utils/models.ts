@@ -12,6 +12,7 @@ export function pickDefaultOcrModel(models: OllamaModel[]): string | undefined {
     list.filter((m) => m.tier === "dedicated_ocr");
   const prefer = (list: OllamaModel[]) =>
     list.find((m) => /lightonai\/LightOnOCR/i.test(m.name)) ??
+    list.find((m) => /nvidia\/nemotron-ocr-v2/i.test(m.name)) ??
     list.find((m) => /deepseek-ai\/DeepSeek-OCR/i.test(m.name)) ??
     list.find((m) => /zai-org\/GLM-OCR/i.test(m.name)) ??
     list.find((m) => /glm-ocr/i.test(m.name)) ??

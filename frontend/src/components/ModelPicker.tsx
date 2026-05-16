@@ -17,6 +17,9 @@ function rowTitle(m: OllamaModel, up: boolean): string | undefined {
     if (m.engine_type === "litparse") {
       return "Install the lit CLI (npm i -g @llamaindex/liteparse) or set LITEPARSE_BIN on the backend host.";
     }
+    if (m.engine_type === "nemotron") {
+      return "Start the nemotron-ocr-v2 service (compose profile nemotron), then refresh.";
+    }
     return undefined;
   }
   if (m.input_modes?.length) {

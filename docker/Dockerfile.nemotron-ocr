@@ -1,0 +1,46 @@
+# Nemotron OCR v2 — GPU sidecar (NVIDIA PyTorch + nemotron_ocr CUDA extension).
+# Upstream: https://huggingface.co/nvidia/nemotron-ocr-v2
+# Requires BuildKit for large LFS pulls; build: docker compose build nemotron-ocr-v2
+
+FROM nvcr.io/nvidia/pytorch:25.09-py3
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        git \
+        git-lfs \
+        build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN git lfs install
+
+WORKDIR /opt
+RUN git clone https://huggingface.co/nvidia/nemotron-ocr-v2 nemotron-ocr-v2 \
+    && cd nemotron-ocr-v2 \
+    && git lfs pull
+
+WORKDIR /opt/nemotron-ocr-v2/nemotron-ocr
+
+ARG TARGETARCH=amd64
+ENV BUILD_CPP_FORCE=1 \
+    ARCH=${TARGETARCH}
+
+RUN pip install -U pip hatchling "setuptools>=68" ninja --root-user-action ignore \
+    && pip install -v . --no-build-isolation --root-user-action ignore \
+    && pip install "uvicorn[standard]" fastapi python-multipart --root-user-action ignore
+
+ENV NEMOTRON_REPO_ROOT=/opt/nemotron-ocr-v2 \
+    NEMOTRON_VARIANT=multilingual \
+    NEMOTRON_PORT=8210 \
+    NEMOTRON_MODEL_ID=nvidia/nemotron-ocr-v2 \
+    HF_HOME=/root/.cache/huggingface
+
+WORKDIR /opt
+COPY docker/nemotron-ocr/serve.py /opt/serve.py
+
+EXPOSE 8210
+
+CMD ["python3", "/opt/serve.py"]

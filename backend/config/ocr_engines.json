@@ -21,6 +21,19 @@
       "gpu_device": 0,
       "port": 8200,
       "speed_tier": "medium"
+    },
+    {
+      "id": "nemotron-ocr-v2",
+      "type": "nemotron",
+      "label": "Nemotron OCR v2",
+      "models": ["nvidia/nemotron-ocr-v2"],
+      "host_env": "NEMOTRON_OCR_HOST",
+      "default_host": "http://nemotron-ocr-v2:8210",
+      "compose_service": "nemotron-ocr-v2",
+      "compose_profile": "nemotron",
+      "gpu_device": 0,
+      "port": 8210,
+      "speed_tier": "fast"
     }
   ]
 }

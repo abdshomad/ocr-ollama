@@ -51,6 +51,11 @@ def is_litparse_model(model: str) -> bool:
     return ep is not None and str(ep.get("type")) == "litparse"
 
 
+def is_nemotron_model(model: str) -> bool:
+    ep = ocr_engine_for_model(model)
+    return ep is not None and str(ep.get("type")) == "nemotron"
+
+
 def all_mineru_models() -> list[tuple[dict[str, Any], str]]:
     out: list[tuple[dict[str, Any], str]] = []
     for ep in load_ocr_engines():
@@ -65,6 +70,16 @@ def all_litparse_models() -> list[tuple[dict[str, Any], str]]:
     out: list[tuple[dict[str, Any], str]] = []
     for ep in load_ocr_engines():
         if str(ep.get("type")) != "litparse":
+            continue
+        for name in ep.get("models") or []:
+            out.append((ep, str(name)))
+    return out
+
+
+def all_nemotron_models() -> list[tuple[dict[str, Any], str]]:
+    out: list[tuple[dict[str, Any], str]] = []
+    for ep in load_ocr_engines():
+        if str(ep.get("type")) != "nemotron":
             continue
         for name in ep.get("models") or []:
             out.append((ep, str(name)))

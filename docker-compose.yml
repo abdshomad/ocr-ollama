@@ -235,6 +235,44 @@ services:
       retries: 60
       start_period: 1800s
 
+  nemotron-ocr-v2:
+    profiles: ["nemotron"]
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.nemotron-ocr
+    image: ${NEMOTRON_OCR_IMAGE:-ocr-ollama-nemotron-ocr-v2:latest}
+    restart: unless-stopped
+    ipc: host
+    shm_size: "8gb"
+    environment:
+      HF_HOME: /root/.cache/huggingface
+      HUGGING_FACE_HUB_TOKEN: ${HUGGING_FACE_HUB_TOKEN:-}
+      NEMOTRON_REPO_ROOT: /opt/nemotron-ocr-v2
+      NEMOTRON_VARIANT: ${NEMOTRON_VARIANT:-multilingual}
+      NEMOTRON_PORT: "8210"
+      NEMOTRON_MODEL_ID: nvidia/nemotron-ocr-v2
+      NEMOTRON_MERGE_LEVEL: ${NEMOTRON_MERGE_LEVEL:-paragraph}
+      NEMOTRON_SKIP_RELATIONAL: ${NEMOTRON_SKIP_RELATIONAL:-0}
+    volumes:
+      - vllm-hf-cache:/root/.cache/huggingface
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ["${NEMOTRON_OCR_CUDA_DEVICE:-0}"]
+              capabilities: [gpu]
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "python3 -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8210/health')\"",
+        ]
+      interval: 30s
+      timeout: 15s
+      retries: 60
+      start_period: 1800s
+
   backend:
     build:
       context: .
@@ -249,6 +287,7 @@ services:
       VLLM_GEMMA4_HOST: ${VLLM_GEMMA4_HOST:-http://vllm-gemma4:8104}
       VLLM_QWEN3_VL_HOST: ${VLLM_QWEN3_VL_HOST:-http://vllm-qwen3-vl:8105}
       MINERU_DIFFUSION_HOST: ${MINERU_DIFFUSION_HOST:-http://mineru-diffusion:8200}
+      NEMOTRON_OCR_HOST: ${NEMOTRON_OCR_HOST:-http://nemotron-ocr-v2:8210}
       VLLM_HOST: ${VLLM_HOST:-http://vllm-deepseek:8100}
       VLLM_TIMEOUT: ${VLLM_TIMEOUT:-600}
       OLLAMA_HOST: ${OLLAMA_HOST:-http://host.docker.internal:11434}
