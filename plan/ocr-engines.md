@@ -96,9 +96,9 @@ Server GPU models are usually faster and better than browser VLMs for full pages
 
 | Category | Engines | Planned `engine.type` |
 |----------|---------|------------------------|
-| **vLLM OpenAI** | DeepSeek, GLM, LightOn, Chandra, Gemma 4 (optional `gemma4`), Qwen3-VL (optional `qwen3vl`), Hunyuan OCR (optional `hunyuanocr`) | `vllm` |
+| **vLLM OpenAI** | DeepSeek, GLM, LightOn, Chandra, Gemma 4 (optional `gemma4`), Qwen3-VL (optional `qwen3vl`), Hunyuan OCR (optional `hunyuanocr`), **PaddleOCR-VL** (optional `paddleocr-vl`) | `vllm` |
 | **Custom GPU sidecar** | MinerU (`nano_dvlm`), Nemotron OCR v2 (`nemotron`) | `nano_dvlm`, `nemotron` |
-| **Custom CPU sidecar** | RapidOCR ONNX (`rapidocr`), OnnxTR (`onnxtr`), EasyOCR (`easyocr`), docTR (`doctr`) | `rapidocr`, `onnxtr`, `easyocr`, `doctr` |
+| **Custom CPU sidecar** | RapidOCR ONNX (`rapidocr`), OnnxTR (`onnxtr`), EasyOCR (`easyocr`), docTR (`doctr`), PaddleOCR (`paddleocr`) | `rapidocr`, `onnxtr`, `easyocr`, `doctr`, `paddleocr` |
 | **Subprocess** | LiteParse, Tesseract (native) | `litparse`, `tesseract` |
 | **Ollama** | `deepseek-ocr`, `glm-ocr`, PaddleOCR-VL, Qwen, Mistral | `ollama` (global backend) |
 | **Browser worker** | TrOCR, Tesseract, PaliGemma | N/A (`POST /api/scan` only) |
@@ -122,11 +122,13 @@ Server GPU models are usually faster and better than browser VLMs for full pages
 
 | Bucket | Engines |
 |--------|---------|
-| **In repo today** | DeepSeek-OCR, GLM-OCR (vLLM); Gemma 4 E4B (optional `vllm-gemma4`); Qwen3-VL Instruct (optional `vllm-qwen3-vl`); Hunyuan OCR (optional `vllm-hunyuanocr`); TrOCR, Tesseract, PaliGemma (browser); Tesseract (native server subprocess); Ollama catalog |
+| **In repo today** | DeepSeek-OCR, GLM-OCR (vLLM); Gemma 4 E4B (optional `vllm-gemma4`); Qwen3-VL Instruct (optional `vllm-qwen3-vl`); Hunyuan OCR (optional `vllm-hunyuanocr`); **PaddleOCR-VL** (optional `vllm-paddleocr-vl`, profile `paddleocr-vl`); TrOCR, Tesseract, PaliGemma (browser); Tesseract (native server subprocess); Ollama catalog |
 | **In repo (RapidOCR)** | RapidOCR ONNX (`rapidocr`, profile `rapidocr`, port 8220, CPU) |
 | **In repo (OnnxTR)** | OnnxTR (`onnxtr`, profile `onnxtr`, port 8230, CPU) |
 | **In repo (EasyOCR)** | EasyOCR (`easyocr`, profile `easyocr`, port 8240, PyTorch CPU image) |
 | **In repo (docTR)** | docTR (`doctr`, profile `doctr`, port 8250, PyTorch CPU image) |
+| **In repo (PaddleOCR)** | PaddleOCR PP-OCR (`paddleocr`, profile `paddleocr`, port 8260, PaddlePaddle CPU image) |
+| **In repo (PaddleOCR-VL VLM)** | PaddleOCR-VL (`PaddlePaddle/PaddleOCR-VL`, vLLM `vllm-paddleocr-vl`, profile `paddleocr-vl`, port 8107) — distinct from CPU PP-OCR sidecar |
 | **In repo (Nemotron OCR v2)** | Nemotron OCR v2 multilingual (`nemotron-ocr-v2`, profile `nemotron`, port 8210) |
 | **Planned (Medium four)** | — (LiteParse shipped) |
 | **In repo (LiteParse)** | LiteParse (`litparse`, local `lit` CLI, PDF + multi-format) |
@@ -144,7 +146,7 @@ For the **same model**, Ollama is typically **~1.2–1.5× slower** than vLLM, w
 |-------|-------------|--------|----------|
 | DeepSeek-OCR | Yes | `deepseek-ocr:latest` | vLLM faster |
 | GLM-OCR | Yes | `glm-ocr:latest` | vLLM faster |
-| PaddleOCR-VL | — | Broken | See [paddleocr-vl-ollama-load-failure.md](../issues/paddleocr-vl-ollama-load-failure.md) |
+| PaddleOCR-VL | Yes (profile `paddleocr-vl`) | Broken | vLLM: `PaddlePaddle/PaddleOCR-VL`; Ollama: see [paddleocr-vl-ollama-load-failure.md](../issues/paddleocr-vl-ollama-load-failure.md) |
 | Qwen3-VL Instruct | Yes (profile `qwen3vl`) | — | Optional vLLM multimodal OCR |
 | Hunyuan OCR | Yes (profile `hunyuanocr`) | — | `tencent/HunyuanOCR` dedicated OCR VLM |
 | Qwen / Mistral (general) | — | Various | Slowest server path (Ollama) |
@@ -156,8 +158,8 @@ For the **same model**, Ollama is typically **~1.2–1.5× slower** than vLLM, w
 | `speed_tier` | Engines |
 |--------------|---------|
 | `instant` | LiteParse (workload A only) |
-| `fast` | Tesseract (browser + native), TrOCR, LightOnOCR, Nemotron OCR v2 (sidecar), RapidOCR (`rapidocr`), OnnxTR (`onnxtr`), docTR (`doctr`) |
-| `medium` | EasyOCR (`easyocr`, CPU PyTorch sidecar), DeepSeek-OCR, GLM-OCR, MinerU-Diffusion (batched) |
+| `fast` | Tesseract (browser + native), TrOCR, LightOnOCR, Nemotron OCR v2 (sidecar), RapidOCR (`rapidocr`), OnnxTR (`onnxtr`), docTR (`doctr`), Hunyuan OCR (vLLM), **PaddleOCR-VL** (vLLM) |
+| `medium` | EasyOCR (`easyocr`, CPU PyTorch sidecar), PaddleOCR (`paddleocr`, CPU Paddle sidecar), DeepSeek-OCR, GLM-OCR, MinerU-Diffusion (batched) |
 | `slow` | MinerU (sequential), Chandra vLLM, PaliGemma (browser) |
 | `very_slow` | Chandra HF, Gemma 4 vLLM, Qwen3-VL vLLM, Qwen/Mistral OCR (Ollama), hybrid pipelines |
 
@@ -195,3 +197,4 @@ For the **same model**, Ollama is typically **~1.2–1.5× slower** than vLLM, w
 | 2026-05-16 | OnnxTR ONNX CPU sidecar (`onnxtr`, profile `onnxtr`, port 8230) |
 | 2026-05-16 | EasyOCR PyTorch CPU sidecar (`easyocr`, profile `easyocr`, port 8240) |
 | 2026-05-16 | docTR PyTorch CPU sidecar (`doctr`, profile `doctr`, port 8250) |
+| 2026-05-16 | PaddleOCR-VL vLLM optional endpoint (`PaddlePaddle/PaddleOCR-VL`, profile `paddleocr-vl`, port 8107) |

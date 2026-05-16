@@ -54,6 +54,10 @@ Ollama’s HTTP API only returns a generic `unable to load model: .../blobs/sha2
 
 ## Workarounds
 
+### Self-host PaddleOCR-VL on vLLM (works in this repo)
+
+The app catalogs **`PaddlePaddle/PaddleOCR-VL`** on the **vLLM** inference path (optional Compose profile **`paddleocr-vl`**). That path does not use Ollama’s `paddleocr` runner. See [paddleocr-vl-vllm-integration.md](paddleocr-vl-vllm-integration.md).
+
 ### Use another OCR model (works today)
 
 Models that load on the same host:
@@ -88,6 +92,7 @@ Only needed to reclaim ~936 MB; not required for the app to work.
 
 - `.env`: `OLLAMA_HOST=http://host.docker.internal:11434`
 - Default prompt for this model: `backend/config/prompts.json` → `MedAIBase/PaddleOCR-VL:0.9b`
+- **vLLM workaround:** `PaddlePaddle/PaddleOCR-VL` is listed when `INFERENCE_BACKEND=vllm`; start `vllm-paddleocr-vl` (profile `paddleocr-vl`) — see [paddleocr-vl-vllm-integration.md](paddleocr-vl-vllm-integration.md)
 
 ## Related
 

@@ -168,10 +168,12 @@ Index: [issues/README.md](issues/README.md). Primary vLLM reference: [issues/vll
 | Run vLLM (Gemma 4) | `docker compose --profile gemma4 up -d vllm-gemma4` — [issues/gemma4-vllm-integration.md](issues/gemma4-vllm-integration.md) |
 | Run vLLM (Qwen3-VL) | `docker compose --profile qwen3vl up -d vllm-qwen3-vl` — [issues/qwen3-vl-vllm-integration.md](issues/qwen3-vl-vllm-integration.md) |
 | Run vLLM (Hunyuan OCR) | `docker compose --profile hunyuanocr up -d vllm-hunyuanocr` — [issues/hunyuanocr-vllm-integration.md](issues/hunyuanocr-vllm-integration.md) |
+| Run vLLM (PaddleOCR-VL) | `docker compose --profile paddleocr-vl up -d vllm-paddleocr-vl` — [issues/paddleocr-vl-vllm-integration.md](issues/paddleocr-vl-vllm-integration.md) |
 | Run RapidOCR (ONNX CPU) | `docker compose --profile rapidocr up -d rapidocr` — [issues/rapidocr-integration.md](issues/rapidocr-integration.md) |
 | Run OnnxTR (ONNX CPU) | `docker compose --profile onnxtr up -d onnxtr` — [issues/onnxtr-integration.md](issues/onnxtr-integration.md) |
 | Run EasyOCR (PyTorch CPU) | `docker compose --profile easyocr up -d easyocr` — [issues/easyocr-integration.md](issues/easyocr-integration.md) |
 | Run docTR (PyTorch CPU) | `docker compose --profile doctr up -d doctr` — [issues/doctr-integration.md](issues/doctr-integration.md) |
+| Run PaddleOCR (PaddlePaddle CPU) | `docker compose --profile paddleocr up -d paddleocr` — [issues/paddleocr-integration.md](issues/paddleocr-integration.md) |
 | Native Tesseract (`tesseract` model) | No extra service — `tesseract-ocr` in **backend** image; [issues/tesseract-native-ocr-backend.md](issues/tesseract-native-ocr-backend.md) |
 | Load/unload vLLM per GPU | **GPU** page or `POST /api/vllm/services/{deepseek\|glm}/start\|stop` |
 | GPU metrics + compose control | `GET /api/gpu` (backend needs Docker socket; `COMPOSE_PROJECT_NAME` must match stack) |

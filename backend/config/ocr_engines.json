@@ -57,6 +57,20 @@
       "speed_tier": "fast"
     },
     {
+      "id": "paddleocr",
+      "type": "paddleocr",
+      "label": "PaddleOCR",
+      "models": ["paddleocr"],
+      "input_modes": ["image"],
+      "host_env": "PADDLEOCR_HOST",
+      "default_host": "http://paddleocr:8260",
+      "compose_service": "paddleocr",
+      "compose_profile": "paddleocr",
+      "gpu_device": -1,
+      "port": 8260,
+      "speed_tier": "medium"
+    },
+    {
       "id": "tesseract",
       "type": "tesseract",
       "label": "Tesseract (native)",

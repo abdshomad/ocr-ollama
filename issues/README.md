@@ -12,6 +12,7 @@ Write-ups for non-trivial bugs and integration problems. Format and when to add 
 | [onnxtr-integration.md](onnxtr-integration.md) | **OnnxTR** — ONNX CPU sidecar, profile `onnxtr`, port 8230, model id `onnxtr` |
 | [easyocr-integration.md](easyocr-integration.md) | **EasyOCR** — PyTorch CPU sidecar, profile `easyocr`, port 8240, model id `easyocr` |
 | [doctr-integration.md](doctr-integration.md) | **docTR** — PyTorch CPU sidecar, profile `doctr`, port 8250, model id `doctr` |
+| [paddleocr-integration.md](paddleocr-integration.md) | **PaddleOCR** — PaddlePaddle CPU sidecar (PP-OCR), profile `paddleocr`, port 8260, model id `paddleocr` |
 | [tesseract-native-ocr-backend.md](tesseract-native-ocr-backend.md) | **Tesseract (native)** — `model=tesseract`, CLI in backend container |
 | [nemotron-ocr-v2-integration.md](nemotron-ocr-v2-integration.md) | **Nemotron OCR v2** — PyTorch sidecar, profile `nemotron`, port 8210, `nvidia/nemotron-ocr-v2` |
 | [liteparse-cli-integration.md](liteparse-cli-integration.md) | **LiteParse** — `lit` CLI subprocess, PDF + documents, `model=litparse`, Docker image installs `@llamaindex/liteparse` |
@@ -19,6 +20,7 @@ Write-ups for non-trivial bugs and integration problems. Format and when to add 
 | [gemma4-vllm-integration.md](gemma4-vllm-integration.md) | **Gemma 4** — `google/gemma-4-E4B-it`, profile `gemma4`, port 8104, vision-tier OCR |
 | [qwen3-vl-vllm-integration.md](qwen3-vl-vllm-integration.md) | **Qwen3-VL** — `Qwen/Qwen3-VL-*-Instruct`, profile `qwen3vl`, port 8105, vision-tier OCR |
 | [hunyuanocr-vllm-integration.md](hunyuanocr-vllm-integration.md) | **Hunyuan OCR** — `tencent/HunyuanOCR`, profile `hunyuanocr`, port 8106, dedicated OCR VLM |
+| [paddleocr-vl-vllm-integration.md](paddleocr-vl-vllm-integration.md) | **PaddleOCR-VL** — `PaddlePaddle/PaddleOCR-VL`, profile `paddleocr-vl`, port 8107, vLLM (not Ollama) |
 | [vllm-lighton-gpu-compose-entrypoint-directory.md](vllm-lighton-gpu-compose-entrypoint-directory.md) | LightOn restart loop after GPU start — `/workspace` compose path created entrypoint as directory (exit 126) |
 | [vllm-compose-unhealthy.md](vllm-compose-unhealthy.md) | Compose `vllm` unhealthy — chat-template crash, GPU 0 OOM, slow first start |
 | [cors-non-localhost-ui-empty-model-picker.md](cors-non-localhost-ui-empty-model-picker.md) | Hosted UI (non-localhost) — CORS blocked `/api/models` → “No models match filter” |

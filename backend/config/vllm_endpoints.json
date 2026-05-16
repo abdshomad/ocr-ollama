@@ -83,6 +83,18 @@
       "gpu_device": 1,
       "port": 8106,
       "speed_tier": "fast"
+    },
+    {
+      "id": "paddleocr-vl",
+      "label": "PaddleOCR-VL",
+      "models": ["PaddlePaddle/PaddleOCR-VL"],
+      "host_env": "VLLM_PADDLEOCR_VL_HOST",
+      "default_host": "http://vllm-paddleocr-vl:8107",
+      "compose_service": "vllm-paddleocr-vl",
+      "compose_profile": "paddleocr-vl",
+      "gpu_device": 1,
+      "port": 8107,
+      "speed_tier": "fast"
     }
   ]
 }

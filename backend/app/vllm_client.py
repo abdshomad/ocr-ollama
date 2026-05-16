@@ -23,6 +23,7 @@ _CHANDRA_RE = re.compile(r"chandra", re.IGNORECASE)
 _GEMMA4_RE = re.compile(r"gemma-4", re.IGNORECASE)
 _QWEN3_VL_RE = re.compile(r"qwen.*3.*vl|qwen3-vl", re.IGNORECASE)
 _HUNYUAN_OCR_RE = re.compile(r"hunyuanocr", re.IGNORECASE)
+_PADDLEOCR_VL_RE = re.compile(r"paddleocr-vl", re.IGNORECASE)
 
 
 def _mime_for_image(image_bytes: bytes) -> str:
@@ -59,6 +60,8 @@ def _max_tokens_for_model(model: str) -> int:
         return int(os.getenv("VLLM_QWEN3_VL_MAX_TOKENS", "4096"))
     if _HUNYUAN_OCR_RE.search(model):
         return int(os.getenv("VLLM_HUNYUAN_OCR_MAX_TOKENS", "2048"))
+    if _PADDLEOCR_VL_RE.search(model):
+        return int(os.getenv("VLLM_PADDLEOCR_VL_MAX_TOKENS", "4096"))
     return VLLM_MAX_TOKENS
 
 

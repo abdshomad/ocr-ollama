@@ -76,6 +76,11 @@ def is_doctr_model(model: str) -> bool:
     return ep is not None and str(ep.get("type")) == "doctr"
 
 
+def is_paddleocr_model(model: str) -> bool:
+    ep = ocr_engine_for_model(model)
+    return ep is not None and str(ep.get("type")) == "paddleocr"
+
+
 def is_tesseract_model(model: str) -> bool:
     ep = ocr_engine_for_model(model)
     return ep is not None and str(ep.get("type")) == "tesseract"
@@ -145,6 +150,16 @@ def all_doctr_models() -> list[tuple[dict[str, Any], str]]:
     out: list[tuple[dict[str, Any], str]] = []
     for ep in load_ocr_engines():
         if str(ep.get("type")) != "doctr":
+            continue
+        for name in ep.get("models") or []:
+            out.append((ep, str(name)))
+    return out
+
+
+def all_paddleocr_models() -> list[tuple[dict[str, Any], str]]:
+    out: list[tuple[dict[str, Any], str]] = []
+    for ep in load_ocr_engines():
+        if str(ep.get("type")) != "paddleocr":
             continue
         for name in ep.get("models") or []:
             out.append((ep, str(name)))

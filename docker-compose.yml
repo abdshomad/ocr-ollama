@@ -269,6 +269,38 @@ services:
       retries: 60
       start_period: 1800s
 
+  vllm-paddleocr-vl:
+    <<: [*vllm-service, *vllm-gpu]
+    profiles: ["paddleocr-vl"]
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.vllm-ocr
+    image: ${VLLM_OCR_IMAGE:-ocr-ollama-vllm-ocr:latest}
+    volumes:
+      - vllm-hf-cache:/root/.cache/huggingface
+    environment:
+      <<: *vllm-env
+      VLLM_MODEL: ${VLLM_PADDLEOCR_VL_MODEL:-PaddlePaddle/PaddleOCR-VL}
+      VLLM_PORT: "8107"
+      VLLM_GPU_MEMORY_UTILIZATION: ${VLLM_PADDLEOCR_VL_GPU_MEMORY_UTIL:-0.55}
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ["${VLLM_PADDLEOCR_VL_CUDA_DEVICE:-1}"]
+              capabilities: [gpu]
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "python3 -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8107/v1/models')\"",
+        ]
+      interval: 30s
+      timeout: 15s
+      retries: 60
+      start_period: 1800s
+
   nemotron-ocr-v2:
     profiles: ["nemotron"]
     build:
@@ -402,6 +434,32 @@ services:
       retries: 8
       start_period: 600s
 
+  paddleocr:
+    profiles: ["paddleocr"]
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.paddleocr
+    image: ${PADDLEOCR_IMAGE:-ocr-ollama-paddleocr:latest}
+    restart: unless-stopped
+    environment:
+      PADDLEOCR_PORT: "8260"
+      PADDLEOCR_MODEL_ID: paddleocr
+      PADDLEOCR_LANG: ${PADDLEOCR_LANG:-en}
+      PADDLEOCR_USE_GPU: ${PADDLEOCR_USE_GPU:-0}
+    volumes:
+      - paddleocr-model-cache:/root/.paddleocr
+      - paddleocr-paddle-cache:/root/.cache
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "python3 -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8260/health')\"",
+        ]
+      interval: 30s
+      timeout: 15s
+      retries: 8
+      start_period: 900s
+
   backend:
     build:
       context: .
@@ -416,12 +474,14 @@ services:
       VLLM_GEMMA4_HOST: ${VLLM_GEMMA4_HOST:-http://vllm-gemma4:8104}
       VLLM_QWEN3_VL_HOST: ${VLLM_QWEN3_VL_HOST:-http://vllm-qwen3-vl:8105}
       VLLM_HUNYUAN_OCR_HOST: ${VLLM_HUNYUAN_OCR_HOST:-http://vllm-hunyuanocr:8106}
+      VLLM_PADDLEOCR_VL_HOST: ${VLLM_PADDLEOCR_VL_HOST:-http://vllm-paddleocr-vl:8107}
       MINERU_DIFFUSION_HOST: ${MINERU_DIFFUSION_HOST:-http://mineru-diffusion:8200}
       NEMOTRON_OCR_HOST: ${NEMOTRON_OCR_HOST:-http://nemotron-ocr-v2:8210}
       RAPIDOCR_HOST: ${RAPIDOCR_HOST:-http://rapidocr:8220}
       ONNXTR_HOST: ${ONNXTR_HOST:-http://onnxtr:8230}
       EASYOCR_HOST: ${EASYOCR_HOST:-http://easyocr:8240}
       DOCTR_HOST: ${DOCTR_HOST:-http://doctr:8250}
+      PADDLEOCR_HOST: ${PADDLEOCR_HOST:-http://paddleocr:8260}
       VLLM_HOST: ${VLLM_HOST:-http://vllm-deepseek:8100}
       VLLM_TIMEOUT: ${VLLM_TIMEOUT:-600}
       # Listing /api/models probes every vLLM host in parallel; allow slow /v1/models (cold GPU).
@@ -462,3 +522,5 @@ volumes:
   easyocr-model-cache:
   easyocr-torch-cache:
   doctr-torch-cache:
+  paddleocr-model-cache:
+  paddleocr-paddle-cache:

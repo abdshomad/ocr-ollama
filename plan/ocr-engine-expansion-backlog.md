@@ -45,6 +45,8 @@ Treat these as **done** unless adding a second checkpoint or fixing gaps.
 | **OnnxTR** | Sidecar `onnxtr` | ONNX (**CPU**), Apache 2.0; model id **`onnxtr`**, profile **`onnxtr`**. |
 | **EasyOCR** | Sidecar `easyocr` | Apache 2.0; PyTorch **CPU** image in repo; model id **`easyocr`**, profile **`easyocr`**. |
 | **docTR** | Sidecar `doctr` | Apache 2.0; PyTorch **CPU**; model id **`doctr`**, profile **`doctr`**, port 8250. |
+| **PaddleOCR** (PP-OCR) | Sidecar `paddleocr` | Apache 2.0; PaddlePaddle **CPU**; model id **`paddleocr`**, profile **`paddleocr`**, port 8260 (distinct from **PaddleOCR-VL** on vLLM). |
+| **PaddleOCR-VL** | vLLM (`vllm-paddleocr-vl`) | Apache 2.0; model id **`PaddlePaddle/PaddleOCR-VL`**, profile **`paddleocr-vl`**, port 8107; Ollama path still broken — [paddleocr-vl-ollama-load-failure.md](../issues/paddleocr-vl-ollama-load-failure.md). |
 | Gemma 4 | Optional vLLM (`gemma4` profile) | User list: “Gemma 4 OCR”. |
 | **Hunyuan OCR** | vLLM (`vllm-hunyuanocr`, profile `hunyuanocr`) | `tencent/HunyuanOCR` ~1B VLM; Tencent license — see HF card. |
 | Qwen3-VL | Optional vLLM (`qwen3vl`) | Related to “Qwen 3 … VL OCR”. |
@@ -109,7 +111,7 @@ Order balances **license safety**, **engineering clarity**, and **distinct capab
 
 ### Wave 2 — PyTorch “OCR libraries” (GPU sidecars)
 
-**Candidates:** PaddleOCR, ~~EasyOCR~~ (**in repo** as CPU PyTorch sidecar), Lany OCR (if active).
+**Candidates:** ~~PaddleOCR~~ (**in repo** — CPU Paddle sidecar `paddleocr`), ~~EasyOCR~~ (**in repo** as CPU PyTorch sidecar), Lany OCR (if active).
 
 **Approach:** Dedicated Dockerfiles, **one model family per container**, strict timeouts, return plain text + optional boxes in JSON for Arena parity.
 
@@ -178,4 +180,4 @@ Use this as a **program tracker**; implementation tickets can reference wave + r
 | 2026-05-16 | **Hunyuan OCR** — `tencent/HunyuanOCR`, vLLM optional profile `hunyuanocr`, port 8106 |
 | 2026-05-16 | OnnxTR CPU sidecar (`onnxtr`, profile `onnxtr`, port 8230) |
 | 2026-05-16 | **EasyOCR** — CPU PyTorch sidecar (`easyocr`, profile `easyocr`, port 8240) |
-| 2026-05-16 | **docTR** — CPU PyTorch sidecar (`doctr`, profile `doctr`, port 8250) |
+| 2026-05-16 | **PaddleOCR-VL** — vLLM optional `vllm-paddleocr-vl` (`PaddlePaddle/PaddleOCR-VL`, profile `paddleocr-vl`, port 8107); Ollama remains unsupported — [paddleocr-vl-ollama-load-failure.md](../issues/paddleocr-vl-ollama-load-failure.md) |
