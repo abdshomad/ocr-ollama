@@ -10,7 +10,7 @@ Guidance for AI agents working in this repository.
 
 Monorepo: **Vite + React** frontend and **FastAPI** backend for OCR via **vLLM + DeepSeek-OCR** (default) or **Ollama**. Docker Compose runs `vllm`, `backend`, and `nginx` on one host port. Users upload or capture images, run OCR or **arena** compare, optional **browser scan**, and browse **history**. Inference backend and host URL are configurable in **Settings**.
 
-Spec: [plan/ocr-ollama-app.md](plan/ocr-ollama-app.md), [plan/vllm-deepseek-ocr-migration.md](plan/vllm-deepseek-ocr-migration.md), [plan/browser-ocr-pipeline.md](plan/browser-ocr-pipeline.md), [plan/ocr-engines.md](plan/ocr-engines.md) (speed ranking), [plan/medium-four-ocr-models.md](plan/medium-four-ocr-models.md) (integration queue). **Working vLLM setup:** [issues/vllm-deepseek-ocr-integration.md](issues/vllm-deepseek-ocr-integration.md).
+Spec: [plan/ocr-ollama-app.md](plan/ocr-ollama-app.md), [plan/vllm-deepseek-ocr-migration.md](plan/vllm-deepseek-ocr-migration.md), [plan/browser-ocr-pipeline.md](plan/browser-ocr-pipeline.md), [plan/ocr-engine-expansion-backlog.md](plan/ocr-engine-expansion-backlog.md) (**primary `next` queue**), [plan/ocr-engines.md](plan/ocr-engines.md) (speed ranking + in-repo ladder), [plan/medium-four-ocr-models.md](plan/medium-four-ocr-models.md) (registry / adapter patterns). **Working vLLM setup:** [issues/vllm-deepseek-ocr-integration.md](issues/vllm-deepseek-ocr-integration.md).
 
 ## Plan documentation (`plan/`)
 
@@ -41,29 +41,31 @@ Update the plan as work progresses; add a short **Date** or changelog line at th
 
 ## Next engine (`next` / `n`)
 
-When the user sends **`next`** or **`n`** alone (or clearly means “ship the next OCR engine”), implement **one** engine — the **fastest not yet in the repo** — end to end. Do not only plan or scaffold; finish Run/Arena/History (and browser path if the engine is browser-tier) for that engine.
+When the user sends **`next`** or **`n`** alone (or clearly means “ship the next OCR engine”), implement **one** engine — the **next eligible item from the expansion backlog** — end to end. Do not only plan or scaffold; finish Run/Arena/History (and browser path if the engine is browser-tier) for that engine.
 
 **How to pick the engine**
 
-1. Open [plan/ocr-engines.md](plan/ocr-engines.md) and use the **master speed ladder** for the active workload:
-   - **Default:** workload **B** (scanned page, server `/api/ocr` / Arena) — today the top **Planned** entry is **LightOnOCR**, then MinerU-Diffusion (batched), then Chandra, etc.
-   - **PDF / digital text focus** (user context or open PDF work): workload **A** — **LiteParse** when still unimplemented.
-   - **Browser `/scan` only** (user context): workload **C** — pick the fastest ladder row not marked **In repo**.
-2. Skip engines marked **In repo** or **Yes** in the ladder; skip **out of scope** in [plan/medium-four-ocr-models.md](plan/medium-four-ocr-models.md).
-3. If multiple workloads tie, prefer workload **B** (primary server path).
+1. Open [plan/ocr-engine-expansion-backlog.md](plan/ocr-engine-expansion-backlog.md) — this is the **canonical queue** for `next` / `n`.
+2. Choose the **next unimplemented** candidate by **Suggested waves** (Wave 1 → 7), unless the user’s context clearly targets one workload (then see step 4). Within a wave, prefer rows that are **not** listed under **Already in repo** in that doc.
+3. Skip engines **already in the repo** (backlog § “Already in repo”, plus **In repo** / **Yes** in [plan/ocr-engines.md](plan/ocr-engines.md) ladders). Skip backlog rows still in **Research** or **Blocked** (license, no weights, API-only with no adapter) until triaged to a concrete **Ship** path — if the next wave is all blocked, run a **spike** documented in `issues/` and update the backlog row.
+4. Use [plan/ocr-engines.md](plan/ocr-engines.md) **workload ladders** to disambiguate when several backlog candidates are ready:
+   - **Default:** workload **B** (scanned page, server `/api/ocr` / Arena).
+   - **PDF / digital text focus:** workload **A** (pick the next backlog engine that fits **digital PDF / extraction**, e.g. parser-class tools).
+   - **Browser `/scan` only:** workload **C** (pick the next backlog engine tagged **Browser** / WebGPU in the backlog table).
+5. If a candidate was historically **out of scope** in [plan/medium-four-ocr-models.md](plan/medium-four-ocr-models.md) but is **in scope** in the backlog (e.g. GPL sidecar with explicit profile), follow the **backlog** license/mitigation notes.
 
 **How to implement**
 
-1. Follow [plan/medium-four-ocr-models.md](plan/medium-four-ocr-models.md) for the matching **Phase** (Phase 0 registry/router first if `ocr_engines.json` / adapters are not in place yet — that unblocks the fastest pending model).
+1. Follow [plan/medium-four-ocr-models.md](plan/medium-four-ocr-models.md) for **registry / adapter / compose** patterns (Phase 0 if `ocr_engines.json` or adapters need extending for the new `engine.type`).
 2. Obey [Architecture rules](#architecture-rules) (FastAPI gateway, no browser → vLLM, sequential arena, uv-only backend).
 3. Smoke-test: `/api/health`, `/api/models`, one OCR run (e.g. `curl` or Python client), update GPU/compose docs if a new service was added.
 4. **Browser verification (required):** Use the **Cursor IDE browser** MCP — navigate to the running app (`http://localhost:${PORT}` from `.env`, default **3036**), open **Run** (`/`), pick the **new model** in the picker, upload **at least one sample** with readable content (add tiny tracked fixtures under `fixtures/ocr/` if the repo has none), run OCR / extraction, and confirm **non-empty plausible output** in the UI (fresh **snapshot**; screenshot optional). For **Arena**, include the new model in a compare if that is the primary workflow. For **browser-tier** engines (`/scan`), repeat on **Scan** with the same samples. If the stack is not running locally, start `docker compose up` (or dev frontend + backend) first; if browser automation is blocked (login, GPU unavailable), say so and attach API/smoke evidence instead.
 
    **LiteParse (`litparse`) — VERY IMPORTANT:** When this `next` cycle ships **LiteParse**, treating browser proof as optional is **not allowed**. After coding, you **must** use Cursor IDE browser tools on **Run** with **`litparse`** selected and verify extraction using **all applicable samples** under `fixtures/ocr/` — at minimum a small **digital PDF** with embedded text (LiteParse’s primary workload A path), **plus any PNG/JPEG samples** the app accepts for LiteParse in that build. Expected text must appear in the result panel (snapshot). Add or extend fixtures if none exist; do not close the task without this check.
 
-5. On completion: set **In repo** / phase checkboxes in `plan/ocr-engines.md` and `plan/medium-four-ocr-models.md`; add `issues/<engine>-integration.md` if setup was non-trivial.
+5. On completion: update [plan/ocr-engine-expansion-backlog.md](plan/ocr-engine-expansion-backlog.md) (master checklist / wave notes if present); set **In repo** / ladder notes in [plan/ocr-engines.md](plan/ocr-engines.md) and phase checkboxes in [plan/medium-four-ocr-models.md](plan/medium-four-ocr-models.md) where applicable; add `issues/<engine>-integration.md` if setup was non-trivial.
 
-**When all planned engines are done**, reply briefly that the queue is empty and point at [plan/ocr-engines.md](plan/ocr-engines.md).
+**When the backlog has no further Ship-ready engines**, reply briefly that the queue is empty (or only Research/Blocked items remain) and point at [plan/ocr-engine-expansion-backlog.md](plan/ocr-engine-expansion-backlog.md) and [plan/ocr-engines.md](plan/ocr-engines.md).
 
 ## Issue documentation (`issues/`)
 
@@ -165,6 +167,7 @@ Index: [issues/README.md](issues/README.md). Primary vLLM reference: [issues/vll
 | Run vLLM (GLM-OCR) | `docker compose -f docker-compose.yml -f docker-compose.glm-ocr.yml up -d` — [issues/vllm-glm-ocr.md](issues/vllm-glm-ocr.md) |
 | Run vLLM (Gemma 4) | `docker compose --profile gemma4 up -d vllm-gemma4` — [issues/gemma4-vllm-integration.md](issues/gemma4-vllm-integration.md) |
 | Run vLLM (Qwen3-VL) | `docker compose --profile qwen3vl up -d vllm-qwen3-vl` — [issues/qwen3-vl-vllm-integration.md](issues/qwen3-vl-vllm-integration.md) |
+| Run RapidOCR (ONNX CPU) | `docker compose --profile rapidocr up -d rapidocr` — [issues/rapidocr-integration.md](issues/rapidocr-integration.md) |
 | Load/unload vLLM per GPU | **GPU** page or `POST /api/vllm/services/{deepseek\|glm}/start\|stop` |
 | GPU metrics + compose control | `GET /api/gpu` (backend needs Docker socket; `COMPOSE_PROJECT_NAME` must match stack) |
 

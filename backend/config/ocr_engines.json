@@ -1,6 +1,20 @@
 {
   "engines": [
     {
+      "id": "rapidocr",
+      "type": "rapidocr",
+      "label": "RapidOCR",
+      "models": ["rapidocr"],
+      "input_modes": ["image"],
+      "host_env": "RAPIDOCR_HOST",
+      "default_host": "http://rapidocr:8220",
+      "compose_service": "rapidocr",
+      "compose_profile": "rapidocr",
+      "gpu_device": -1,
+      "port": 8220,
+      "speed_tier": "fast"
+    },
+    {
       "id": "litparse",
       "type": "litparse",
       "label": "LiteParse",

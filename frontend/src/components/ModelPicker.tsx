@@ -20,6 +20,9 @@ function rowTitle(m: OllamaModel, up: boolean): string | undefined {
     if (m.engine_type === "nemotron") {
       return "Start the nemotron-ocr-v2 service (compose profile nemotron), then refresh.";
     }
+    if (m.engine_type === "rapidocr") {
+      return "Start the rapidocr service (compose profile rapidocr), then refresh.";
+    }
     return undefined;
   }
   if (m.input_modes?.length) {

@@ -8,6 +8,7 @@ Write-ups for non-trivial bugs and integration problems. Format and when to add 
 | [vllm-glm-ocr.md](vllm-glm-ocr.md) | **vLLM GLM-OCR** — `zai-org/GLM-OCR`, MTP flags, `docker-compose.glm-ocr.yml` |
 | [lightonocr-vllm-integration.md](lightonocr-vllm-integration.md) | **vLLM LightOnOCR** — `lightonai/LightOnOCR-2-1B`, profile `lighton`, port 8102, transformers 5.4+ image |
 | [mineru-diffusion-nano-dvlm-integration.md](mineru-diffusion-nano-dvlm-integration.md) | **MinerU-Diffusion** — `nano_dvlm` sidecar, profile `mineru`, port 8200, `POST /v1/ocr` |
+| [rapidocr-integration.md](rapidocr-integration.md) | **RapidOCR** — ONNX CPU sidecar, profile `rapidocr`, port 8220, model id `rapidocr` |
 | [nemotron-ocr-v2-integration.md](nemotron-ocr-v2-integration.md) | **Nemotron OCR v2** — PyTorch sidecar, profile `nemotron`, port 8210, `nvidia/nemotron-ocr-v2` |
 | [liteparse-cli-integration.md](liteparse-cli-integration.md) | **LiteParse** — `lit` CLI subprocess, PDF + documents, `model=litparse`, Docker image installs `@llamaindex/liteparse` |
 | [chandra-vllm-integration.md](chandra-vllm-integration.md) | **Chandra OCR 2** — `datalab-to/chandra-ocr-2`, profile `chandra`, port 8103 |

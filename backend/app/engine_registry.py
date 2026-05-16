@@ -56,6 +56,11 @@ def is_nemotron_model(model: str) -> bool:
     return ep is not None and str(ep.get("type")) == "nemotron"
 
 
+def is_rapidocr_model(model: str) -> bool:
+    ep = ocr_engine_for_model(model)
+    return ep is not None and str(ep.get("type")) == "rapidocr"
+
+
 def all_mineru_models() -> list[tuple[dict[str, Any], str]]:
     out: list[tuple[dict[str, Any], str]] = []
     for ep in load_ocr_engines():
@@ -80,6 +85,16 @@ def all_nemotron_models() -> list[tuple[dict[str, Any], str]]:
     out: list[tuple[dict[str, Any], str]] = []
     for ep in load_ocr_engines():
         if str(ep.get("type")) != "nemotron":
+            continue
+        for name in ep.get("models") or []:
+            out.append((ep, str(name)))
+    return out
+
+
+def all_rapidocr_models() -> list[tuple[dict[str, Any], str]]:
+    out: list[tuple[dict[str, Any], str]] = []
+    for ep in load_ocr_engines():
+        if str(ep.get("type")) != "rapidocr":
             continue
         for name in ep.get("models") or []:
             out.append((ep, str(name)))

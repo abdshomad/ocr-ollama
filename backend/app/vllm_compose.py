@@ -202,13 +202,13 @@ async def _api_ready(host: str, *, engine_type: str | None = None) -> bool:
     if not host:
         return False
     base = host.rstrip("/")
-    path = "/health" if engine_type == "nano_dvlm" else "/v1/models"
+    path = "/health" if engine_type in ("nano_dvlm", "nemotron", "rapidocr") else "/v1/models"
     try:
         async with httpx.AsyncClient(timeout=5.0) as client:
             r = await client.get(f"{base}{path}")
             if r.status_code != 200:
                 return False
-            if engine_type in ("nano_dvlm", "nemotron"):
+            if engine_type in ("nano_dvlm", "nemotron", "rapidocr"):
                 return bool(r.json().get("model_loaded"))
             return True
     except httpx.HTTPError:
@@ -216,7 +216,7 @@ async def _api_ready(host: str, *, engine_type: str | None = None) -> bool:
 
 
 def _host_for_service(ep: dict[str, Any]) -> str:
-    if ep.get("type") in ("nano_dvlm", "nemotron"):
+    if ep.get("type") in ("nano_dvlm", "nemotron", "rapidocr"):
         return host_for_engine(ep)
     return host_for_endpoint(ep)
 
