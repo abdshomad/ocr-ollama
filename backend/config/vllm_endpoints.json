@@ -55,6 +55,22 @@
       "gpu_device": 1,
       "port": 8104,
       "speed_tier": "very_slow"
+    },
+    {
+      "id": "qwen3vl",
+      "label": "Qwen3-VL",
+      "models": [
+        "Qwen/Qwen3-VL-8B-Instruct",
+        "Qwen/Qwen3-VL-4B-Instruct",
+        "Qwen/Qwen3-VL-2B-Instruct"
+      ],
+      "host_env": "VLLM_QWEN3_VL_HOST",
+      "default_host": "http://vllm-qwen3-vl:8105",
+      "compose_service": "vllm-qwen3-vl",
+      "compose_profile": "qwen3vl",
+      "gpu_device": 1,
+      "port": 8105,
+      "speed_tier": "very_slow"
     }
   ]
 }

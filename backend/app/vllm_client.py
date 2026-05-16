@@ -20,6 +20,7 @@ from app.vllm_registry import (
 _DEEPSEEK_OCR_RE = re.compile(r"deepseek-ocr", re.IGNORECASE)
 _CHANDRA_RE = re.compile(r"chandra", re.IGNORECASE)
 _GEMMA4_RE = re.compile(r"gemma-4", re.IGNORECASE)
+_QWEN3_VL_RE = re.compile(r"qwen.*3.*vl|qwen3-vl", re.IGNORECASE)
 
 
 def _mime_for_image(image_bytes: bytes) -> str:
@@ -52,6 +53,8 @@ def _max_tokens_for_model(model: str) -> int:
         return int(os.getenv("VLLM_CHANDRA_MAX_TOKENS", "4096"))
     if _GEMMA4_RE.search(model):
         return int(os.getenv("VLLM_GEMMA4_MAX_TOKENS", "4096"))
+    if _QWEN3_VL_RE.search(model):
+        return int(os.getenv("VLLM_QWEN3_VL_MAX_TOKENS", "4096"))
     return VLLM_MAX_TOKENS
 
 

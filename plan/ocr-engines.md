@@ -85,7 +85,7 @@ Server GPU models are usually faster and better than browser VLMs for full pages
 | **Autoregressive VLM (medium)** | DeepSeek-OCR, GLM-OCR | Medium | General OCR + tables (repo baselines) |
 | **Diffusion decoder** | MinerU-Diffusion | Medium–slow; custom engine | Layout + coordinates |
 | **Layout VLM (large)** | Chandra ~3–4B | Slow (HF path very slow) | Layout HTML/MD + bboxes |
-| **General-purpose VLM** | Qwen, Mistral (Ollama); Gemma 4 (vLLM, optional profile `gemma4`) | Slowest server path | “Can OCR” but not specialized checkpoints |
+| **General-purpose VLM** | Qwen3-VL (vLLM, optional `qwen3vl`); Qwen, Mistral (Ollama); Gemma 4 (vLLM, optional profile `gemma4`) | Slowest server path | “Can OCR” but not specialized checkpoints |
 | **Browser VLM** | PaliGemma 2 | Slow in WASM | Offline quality on crops |
 | **Pipeline** | MinerU → LightOn | Slowest useful stack | Coordinates + clean text |
 
@@ -95,7 +95,7 @@ Server GPU models are usually faster and better than browser VLMs for full pages
 
 | Category | Engines | Planned `engine.type` |
 |----------|---------|------------------------|
-| **vLLM OpenAI** | DeepSeek, GLM, LightOn, Chandra, Gemma 4 (optional `gemma4`) | `vllm` |
+| **vLLM OpenAI** | DeepSeek, GLM, LightOn, Chandra, Gemma 4 (optional `gemma4`), Qwen3-VL (optional `qwen3vl`) | `vllm` |
 | **Custom GPU sidecar** | MinerU (`nano_dvlm`) | `nano_dvlm` |
 | **Subprocess (Node)** | LiteParse | `litparse` |
 | **Ollama** | `deepseek-ocr`, `glm-ocr`, PaddleOCR-VL, Qwen, Mistral | `ollama` (global backend) |
@@ -120,7 +120,7 @@ Server GPU models are usually faster and better than browser VLMs for full pages
 
 | Bucket | Engines |
 |--------|---------|
-| **In repo today** | DeepSeek-OCR, GLM-OCR (vLLM); Gemma 4 E4B (optional `vllm-gemma4`); TrOCR, Tesseract, PaliGemma (browser); Ollama catalog |
+| **In repo today** | DeepSeek-OCR, GLM-OCR (vLLM); Gemma 4 E4B (optional `vllm-gemma4`); Qwen3-VL Instruct (optional `vllm-qwen3-vl`); TrOCR, Tesseract, PaliGemma (browser); Ollama catalog |
 | **Planned (Medium four)** | — (LiteParse shipped) |
 | **In repo (LiteParse)** | LiteParse (`litparse`, local `lit` CLI, PDF + multi-format) |
 | **In repo (Chandra)** | Chandra OCR 2 (`vllm-chandra`) |
@@ -138,7 +138,8 @@ For the **same model**, Ollama is typically **~1.2–1.5× slower** than vLLM, w
 | DeepSeek-OCR | Yes | `deepseek-ocr:latest` | vLLM faster |
 | GLM-OCR | Yes | `glm-ocr:latest` | vLLM faster |
 | PaddleOCR-VL | — | Broken | See [paddleocr-vl-ollama-load-failure.md](../issues/paddleocr-vl-ollama-load-failure.md) |
-| Qwen / Mistral | — | General VLM | Slowest server path |
+| Qwen3-VL Instruct | Yes (profile `qwen3vl`) | — | Optional vLLM multimodal OCR |
+| Qwen / Mistral (general) | — | Various | Slowest server path (Ollama) |
 
 ---
 
@@ -150,7 +151,7 @@ For the **same model**, Ollama is typically **~1.2–1.5× slower** than vLLM, w
 | `fast` | Tesseract, TrOCR, LightOnOCR |
 | `medium` | DeepSeek-OCR, GLM-OCR, MinerU-Diffusion (batched) |
 | `slow` | MinerU (sequential), Chandra vLLM, PaliGemma (browser) |
-| `very_slow` | Chandra HF, Gemma 4 vLLM, Qwen/Mistral OCR, hybrid pipelines |
+| `very_slow` | Chandra HF, Gemma 4 vLLM, Qwen3-VL vLLM, Qwen/Mistral OCR (Ollama), hybrid pipelines |
 
 ---
 
@@ -183,3 +184,4 @@ For the **same model**, Ollama is typically **~1.2–1.5× slower** than vLLM, w
 | 2026-05-16 | MinerU-Diffusion in repo (`mineru-diffusion` nano_dvlm sidecar) |
 | 2026-05-16 | LiteParse in repo (`litparse`, `lit` CLI in backend, PDF uploads) |
 | 2026-05-16 | Gemma 4 optional vLLM endpoint (`google/gemma-4-E4B-it`, profile `gemma4`, port 8104) |
+| 2026-05-16 | Qwen3-VL optional vLLM service (`qwen3vl`, port 8105) |

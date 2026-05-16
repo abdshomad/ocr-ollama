@@ -13,12 +13,13 @@ class ModelTier(str, Enum):
 
 _OCR_NAME_RE = re.compile(r"ocr|paddleocr|glm-ocr|lighton|mineru|litparse|chandra", re.IGNORECASE)
 _GEMMA4_RE = re.compile(r"gemma-4", re.IGNORECASE)
+_QWEN_VL_RE = re.compile(r"qwen.*vl", re.IGNORECASE)
 
 
 def classify_model_by_name(name: str) -> ModelTier:
     if _OCR_NAME_RE.search(name):
         return ModelTier.DEDICATED_OCR
-    if _GEMMA4_RE.search(name):
+    if _GEMMA4_RE.search(name) or _QWEN_VL_RE.search(name):
         return ModelTier.VISION
     return ModelTier.TEXT_ONLY
 

@@ -9,6 +9,7 @@ MTP_TOKENS="${VLLM_MTP_SPECULATIVE_TOKENS:-1}"
 GLM_MAX_LEN="${VLLM_GLM_MAX_MODEL_LEN:-8192}"
 CHANDRA_MAX_LEN="${VLLM_CHANDRA_MAX_MODEL_LEN:-8192}"
 GEMMA4_MAX_LEN="${VLLM_GEMMA4_MAX_MODEL_LEN:-8192}"
+QWEN3_VL_MAX_LEN="${VLLM_QWEN3_VL_MAX_MODEL_LEN:-8192}"
 
 COMMON=(
   --host "0.0.0.0"
@@ -58,6 +59,16 @@ elif [[ "$model_lower" == *"gemma-4"* ]]; then
     --mm-processor-kwargs '{"max_soft_tokens": 560}' \
     --mm-processor-cache-gb 0 \
     --no-enable-prefix-caching
+elif [[ "$model_lower" == *"qwen3-vl"* ]]; then
+  # https://github.com/vllm-project/recipes/blob/main/Qwen/Qwen3-VL.md (image-only OCR path)
+  # --enforce-eager: first-load torch.compile can otherwise sit many minutes with no HTTP listener yet.
+  exec vllm serve "$MODEL" \
+    "${COMMON[@]}" \
+    --max-model-len "$QWEN3_VL_MAX_LEN" \
+    --limit-mm-per-prompt.video 0 \
+    --mm-processor-cache-gb 0 \
+    --no-enable-prefix-caching \
+    --enforce-eager
 else
   exec vllm serve "$MODEL" "${COMMON[@]}"
 fi
