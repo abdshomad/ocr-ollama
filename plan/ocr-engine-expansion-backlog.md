@@ -50,6 +50,7 @@ Treat these as **done** unless adding a second checkpoint or fixing gaps.
 | **LanyOCR** | Sidecar `lanyocr` | MIT; ONNX line-merge OCR (**EasyOCR/Paddle-style** blend); model id **`lanyocr`**, profile **`lanyocr`**, port 8280. |
 | **PaddleOCR-VL** | vLLM (`vllm-paddleocr-vl`) | Apache 2.0; model id **`PaddlePaddle/PaddleOCR-VL`**, profile **`paddleocr-vl`**, port 8107; Ollama path still broken — [paddleocr-vl-ollama-load-failure.md](../issues/paddleocr-vl-ollama-load-failure.md). |
 | **Dots.MOCR** | vLLM (`vllm-dotsmocr`, profile `dotsmocr`) | MIT; layout OCR VLM **`rednote-hilab/dots.mocr`**, port 8108 — [dots-mocr-vllm-integration.md](../issues/dots-mocr-vllm-integration.md). |
+| **Phi-4-multimodal** | vLLM (`vllm-phi4-mm`, profile `phi4mm`) | MS license; **`microsoft/Phi-4-multimodal-instruct`**, port 8109 — [phi4-multimodal-vllm-integration.md](../issues/phi4-multimodal-vllm-integration.md). |
 | Gemma 4 | Optional vLLM (`gemma4` profile) | User list: “Gemma 4 OCR”. |
 | **Hunyuan OCR** | vLLM (`vllm-hunyuanocr`, profile `hunyuanocr`) | `tencent/HunyuanOCR` ~1B VLM; Tencent license — see HF card. |
 | Qwen3-VL | Optional vLLM (`qwen3vl`) | Related to “Qwen 3 … VL OCR”. |
@@ -77,7 +78,7 @@ Treat these as **done** unless adding a second checkpoint or fixing gaps.
 | [TrOCR](https://huggingface.co/docs/transformers/en/model_doc/trocr) | Browser / Example | Apache 2.0 | **Example / research** on server; browser path exists. |
 | [LightOnOCR](https://huggingface.co/blog/lightonai/lightonocr) | vLLM | Apache 2.0 | **In repo**; track “Light On OCR 2 1B” as **model ID / prompt** updates only. |
 | Doc OWL | Research | — | Specify HF model id (e.g. DocOwl family) before design. |
-| [Phi-4-multimodal](https://huggingface.co/microsoft/Phi-4-multimodal-instruct) | vLLM | MS license | VLM OCR via chat template; **vLLM spike** + VRAM plan. |
+| [Phi-4-multimodal](https://huggingface.co/microsoft/Phi-4-multimodal-instruct) | vLLM | MS license | **In repo** — optional vLLM `vllm-phi4-mm` (`microsoft/Phi-4-multimodal-instruct`, profile `phi4mm`, port 8109) — [phi4-multimodal-vllm-integration.md](../issues/phi4-multimodal-vllm-integration.md). |
 | Smol Docling | Research | — | Pin exact HF artifact; likely vLLM or Transformers sidecar. |
 | [RolmOCR](https://huggingface.co/reducto/RolmOCR) | vLLM | Check license | Reducto weights; vLLM if architecture supported. |
 | [IBM Granite Docling WebGPU](https://huggingface.co/spaces/ibm-granite/granite-docling-258M-WebGPU) | Browser (WASM) | Apache 2.0 | Likely **browser tier** only unless IBM ships server ONNX; compare to existing PaliGemma worker cost. |
@@ -132,7 +133,7 @@ Order balances **license safety**, **engineering clarity**, and **distinct capab
 
 ### Wave 5 — New VLMs on vLLM (when distinct from existing)
 
-**Candidates:** Phi-4-multimodal, RolmOCR, Qwen3-Omni, Smol Docling (if servable), NuMarkdown-class models.
+**Candidates:** ~~Phi-4-multimodal~~ (**in repo** — vLLM `vllm-phi4-mm`, profile `phi4mm`, port 8109), RolmOCR, Qwen3-Omni, Smol Docling (if servable), NuMarkdown-class models.
 
 **Approach:** Same as LightOn/Chandra: `docker-compose` profile, `vllm-entrypoint.sh` branch, `prompts.json`, `VLLM_*` limits.
 
@@ -180,6 +181,7 @@ Use this as a **program tracker**; implementation tickets can reference wave + r
 
 | Date | Change |
 |------|--------|
+| 2026-05-16 | **Phi-4-multimodal** — optional vLLM `vllm-phi4-mm` (`microsoft/Phi-4-multimodal-instruct`, profile `phi4mm`, port 8109) |
 | 2026-05-16 | **Dots.MOCR** — optional vLLM `vllm-dotsmocr` (`rednote-hilab/dots.mocr`, profile `dotsmocr`, port 8108) |
 | 2026-05-16 | **Docling** — CPU sidecar (`docling`, profile `docling`, port 8270), model id `docling` |
 | 2026-05-16 | **LanyOCR** — CPU sidecar (`lanyocr`, profile `lanyocr`, port 8280), model id `lanyocr` |

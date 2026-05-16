@@ -11,6 +11,7 @@ LiteParse runs as a **local subprocess** (`lit parse …`) from the FastAPI back
 
 - Model **litparse** shows **Offline** in the UI: Node/global CLI missing on the host, or custom image without the `npm install -g` step.
 - **502** from `/api/ocr` with `ImageMagick is not installed`: backend image missing `imagemagick` (LiteParse uses it for raster formats). Rebuild the backend image after Dockerfile fix.
+- **PDF / PS rasterization fails** while ImageMagick is present: install **`ghostscript`** (`gs`) — the backend image includes it next to `imagemagick` for common delegates.
 - **502** with other `lit parse failed: …` messages: corrupt PDF, encrypted PDF without password, or LiteParse CLI error (see stderr in message).
 - **400** on PDF upload with a GPU model: expected — PDF is restricted to `model=litparse`.
 
@@ -27,10 +28,12 @@ LiteParse runs as a **local subprocess** (`lit parse …`) from the FastAPI back
 - **Digital PDF garbage / mojibake:** That is usually broken embedded fonts or encoding in the PDF, not OCR; LiteParse extracts the text layer. Use a GPU model on an exported image, or repair the PDF.
 - Use **Rebuild** backend image after Dockerfile changes so `lit` exists in the container.
 
-**Date changelog:** 2026-05-16 — OCR defaults: DPI 300, preserve-small-text, JSON page join (`LITEPARSE_FORMAT=json`).
+**Date changelog:** 2026-05-16 — OCR defaults: DPI 300, preserve-small-text, JSON page join (`LITEPARSE_FORMAT=json`).  
+**Date changelog:** 2026-05-16 — Backend image: **`ghostscript`** alongside ImageMagick for PS/PDF delegates used by `convert`/LiteParse paths.
 
 ## Repo impact
 
+- `backend/Dockerfile` — optional **`ghostscript`** alongside ImageMagick for delegates that shell out to `gs`.
 - OCR uploads: `application/pdf` allowed for `/api/ocr` and `/api/arena` with validation tied to `litparse`.
 - `/api/health` can report **ok** when only LiteParse is available (vLLM/Ollama down).
 - GPU page: LiteParse appears under **All OCR services** as **local_cli** (no Load/Unload).

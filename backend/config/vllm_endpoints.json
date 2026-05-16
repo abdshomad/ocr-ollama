@@ -107,6 +107,18 @@
       "gpu_device": 1,
       "port": 8108,
       "speed_tier": "medium"
+    },
+    {
+      "id": "phi4multimodal",
+      "label": "Phi-4-multimodal",
+      "models": ["microsoft/Phi-4-multimodal-instruct"],
+      "host_env": "VLLM_PHI4_MM_HOST",
+      "default_host": "http://vllm-phi4-mm:8109",
+      "compose_service": "vllm-phi4-mm",
+      "compose_profile": "phi4mm",
+      "gpu_device": 1,
+      "port": 8109,
+      "speed_tier": "very_slow"
     }
   ]
 }

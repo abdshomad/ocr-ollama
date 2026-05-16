@@ -12,6 +12,7 @@ GEMMA4_MAX_LEN="${VLLM_GEMMA4_MAX_MODEL_LEN:-8192}"
 QWEN3_VL_MAX_LEN="${VLLM_QWEN3_VL_MAX_MODEL_LEN:-8192}"
 HUNYUAN_MAX_LEN="${VLLM_HUNYUAN_OCR_MAX_MODEL_LEN:-8192}"
 DOTS_MOCR_MAX_LEN="${VLLM_DOTS_MOCR_MAX_MODEL_LEN:-8192}"
+PHI4_MM_MAX_LEN="${VLLM_PHI4_MM_MAX_MODEL_LEN:-8192}"
 
 COMMON=(
   --host "0.0.0.0"
@@ -107,6 +108,15 @@ elif [[ "$model_lower" == *"dots.mocr"* ]]; then
     --trust-remote-code \
     --chat-template-content-format string \
     --max-model-len "$DOTS_MOCR_MAX_LEN" \
+    --limit-mm-per-prompt '{"image": 1}' \
+    --no-enable-prefix-caching \
+    --mm-processor-cache-gb 0
+elif [[ "$model_lower" == *"phi-4-multimodal"* ]]; then
+  # https://docs.vllm.ai/projects/recipes/en/latest/Microsoft/Phi-4.html — vision via remote code; cap ctx for mid-GPU KV.
+  exec vllm serve "$MODEL" \
+    "${COMMON[@]}" \
+    --trust-remote-code \
+    --max-model-len "$PHI4_MM_MAX_LEN" \
     --limit-mm-per-prompt '{"image": 1}' \
     --no-enable-prefix-caching \
     --mm-processor-cache-gb 0

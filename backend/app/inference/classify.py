@@ -17,12 +17,13 @@ _OCR_NAME_RE = re.compile(
 )
 _GEMMA4_RE = re.compile(r"gemma-4", re.IGNORECASE)
 _QWEN_VL_RE = re.compile(r"qwen.*vl", re.IGNORECASE)
+_PHI4_MULTIMODAL_RE = re.compile(r"phi-4-multimodal", re.IGNORECASE)
 
 
 def classify_model_by_name(name: str) -> ModelTier:
     if _OCR_NAME_RE.search(name):
         return ModelTier.DEDICATED_OCR
-    if _GEMMA4_RE.search(name) or _QWEN_VL_RE.search(name):
+    if _GEMMA4_RE.search(name) or _QWEN_VL_RE.search(name) or _PHI4_MULTIMODAL_RE.search(name):
         return ModelTier.VISION
     return ModelTier.TEXT_ONLY
 

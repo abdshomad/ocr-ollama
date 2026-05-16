@@ -367,7 +367,8 @@ services:
       <<: *vllm-env
       VLLM_MODEL: ${VLLM_PHI4_MM_MODEL:-microsoft/Phi-4-multimodal-instruct}
       VLLM_PORT: "8109"
-      VLLM_GPU_MEMORY_UTILIZATION: ${VLLM_PHI4_MM_GPU_MEMORY_UTIL:-0.55}
+      # vLLM requires ~gpu_memory_utilization * total_mem free at init; 0.55 often fails on ~48GB GPUs with driver/OS overhead.
+      VLLM_GPU_MEMORY_UTILIZATION: ${VLLM_PHI4_MM_GPU_MEMORY_UTIL:-0.45}
       VLLM_PHI4_MM_MAX_MODEL_LEN: ${VLLM_PHI4_MM_MAX_MODEL_LEN:-8192}
     deploy:
       resources:
