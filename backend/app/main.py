@@ -22,6 +22,7 @@ from app.samples import list_sample_images, resolve_sample_path, sample_file_res
 from app.scan_service import run_browser_scan
 from app.prompts import get_prompts, remove_model_prompt, update_prompts
 from app.settings_store import get_inference_backend, get_inference_host, get_settings, update_settings
+from app.config import cors_allow_origin_regex, cors_allow_origins
 from app.vllm_compose import (
     compose_manage_enabled,
     gpu_dashboard,
@@ -33,7 +34,8 @@ app = FastAPI(title="OCR Inference API", version="0.2.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=cors_allow_origins(),
+    allow_origin_regex=cors_allow_origin_regex(),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

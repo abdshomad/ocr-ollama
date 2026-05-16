@@ -32,5 +32,19 @@ VLLM_XARGS = {
     "whitelist_token_ids": [128821, 128822],
 }
 
+
+def cors_allow_origins() -> list[str]:
+    """Origins allowed for credentialed browser API calls (dev server + split hosting)."""
+    raw = os.getenv("CORS_ALLOW_ORIGINS")
+    if raw is None:
+        return ["http://localhost:5173", "http://127.0.0.1:5173"]
+    return [o.strip() for o in raw.split(",") if o.strip()]
+
+
+def cors_allow_origin_regex() -> str | None:
+    """Optional regex (e.g. https://.*\\.example\\.com) merged with CORS_ALLOW_ORIGINS."""
+    v = os.getenv("CORS_ALLOW_ORIGIN_REGEX", "").strip()
+    return v or None
+
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 RESULT_DIR.mkdir(parents=True, exist_ok=True)
