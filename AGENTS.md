@@ -170,6 +170,7 @@ Index: [issues/README.md](issues/README.md). Primary vLLM reference: [issues/vll
 | Run vLLM (Hunyuan OCR) | `docker compose --profile hunyuanocr up -d vllm-hunyuanocr` — [issues/hunyuanocr-vllm-integration.md](issues/hunyuanocr-vllm-integration.md) |
 | Run RapidOCR (ONNX CPU) | `docker compose --profile rapidocr up -d rapidocr` — [issues/rapidocr-integration.md](issues/rapidocr-integration.md) |
 | Run OnnxTR (ONNX CPU) | `docker compose --profile onnxtr up -d onnxtr` — [issues/onnxtr-integration.md](issues/onnxtr-integration.md) |
+| Run EasyOCR (PyTorch CPU) | `docker compose --profile easyocr up -d easyocr` — [issues/easyocr-integration.md](issues/easyocr-integration.md) |
 | Native Tesseract (`tesseract` model) | No extra service — `tesseract-ocr` in **backend** image; [issues/tesseract-native-ocr-backend.md](issues/tesseract-native-ocr-backend.md) |
 | Load/unload vLLM per GPU | **GPU** page or `POST /api/vllm/services/{deepseek\|glm}/start\|stop` |
 | GPU metrics + compose control | `GET /api/gpu` (backend needs Docker socket; `COMPOSE_PROJECT_NAME` must match stack) |

@@ -29,6 +29,20 @@
       "speed_tier": "fast"
     },
     {
+      "id": "easyocr",
+      "type": "easyocr",
+      "label": "EasyOCR",
+      "models": ["easyocr"],
+      "input_modes": ["image"],
+      "host_env": "EASYOCR_HOST",
+      "default_host": "http://easyocr:8240",
+      "compose_service": "easyocr",
+      "compose_profile": "easyocr",
+      "gpu_device": -1,
+      "port": 8240,
+      "speed_tier": "medium"
+    },
+    {
       "id": "tesseract",
       "type": "tesseract",
       "label": "Tesseract (native)",

@@ -128,6 +128,8 @@ def gpu_device_for_endpoint(ep: dict[str, Any]) -> int:
         return int(os.getenv("MINERU_DIFFUSION_CUDA_DEVICE", str(ep.get("gpu_device", 0))))
     if ep_id == "nemotron-ocr-v2":
         return int(os.getenv("NEMOTRON_OCR_CUDA_DEVICE", str(ep.get("gpu_device", 0))))
+    if ep_id == "easyocr":
+        return int(os.getenv("EASYOCR_CUDA_DEVICE", str(ep.get("gpu_device", -1))))
     return int(ep.get("gpu_device", 0))
 
 
@@ -207,7 +209,7 @@ async def _probe_runtime(host: str, *, engine_type: str | None = None) -> tuple[
     base = host.rstrip("/")
     try:
         async with httpx.AsyncClient(timeout=5.0) as client:
-            if engine_type in ("nano_dvlm", "nemotron", "rapidocr", "onnxtr"):
+            if engine_type in ("nano_dvlm", "nemotron", "rapidocr", "onnxtr", "easyocr"):
                 r = await client.get(f"{base}/health")
                 if r.status_code != 200:
                     return False, []
@@ -227,7 +229,7 @@ async def _probe_runtime(host: str, *, engine_type: str | None = None) -> tuple[
 
 
 def _host_for_service(ep: dict[str, Any]) -> str:
-    if ep.get("type") in ("nano_dvlm", "nemotron", "rapidocr", "onnxtr"):
+    if ep.get("type") in ("nano_dvlm", "nemotron", "rapidocr", "onnxtr", "easyocr"):
         return host_for_engine(ep)
     return host_for_endpoint(ep)
 

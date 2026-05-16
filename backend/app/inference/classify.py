@@ -12,7 +12,7 @@ class ModelTier(str, Enum):
 
 
 _OCR_NAME_RE = re.compile(
-    r"ocr|paddleocr|glm-ocr|lighton|mineru|litparse|chandra|nemotron|rapidocr|onnxtr|hunyuan|tesseract",
+    r"ocr|paddleocr|glm-ocr|lighton|mineru|litparse|chandra|nemotron|rapidocr|onnxtr|easyocr|hunyuan|tesseract",
     re.IGNORECASE,
 )
 _GEMMA4_RE = re.compile(r"gemma-4", re.IGNORECASE)

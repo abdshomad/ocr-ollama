@@ -353,6 +353,32 @@ services:
       retries: 8
       start_period: 420s
 
+  easyocr:
+    profiles: ["easyocr"]
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.easyocr
+    image: ${EASYOCR_IMAGE:-ocr-ollama-easyocr:latest}
+    restart: unless-stopped
+    environment:
+      EASYOCR_PORT: "8240"
+      EASYOCR_MODEL_ID: easyocr
+      EASYOCR_LANGS: ${EASYOCR_LANGS:-en}
+      EASYOCR_USE_GPU: ${EASYOCR_USE_GPU:-0}
+    volumes:
+      - easyocr-model-cache:/root/.EasyOCR
+      - easyocr-torch-cache:/root/.cache
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "python3 -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8240/health')\"",
+        ]
+      interval: 30s
+      timeout: 15s
+      retries: 8
+      start_period: 900s
+
   backend:
     build:
       context: .
@@ -408,3 +434,5 @@ volumes:
   vllm-hf-cache:
   rapidocr-onnx-cache:
   onnxtr-onnx-cache:
+  easyocr-model-cache:
+  easyocr-torch-cache:
