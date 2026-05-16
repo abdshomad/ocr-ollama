@@ -50,8 +50,8 @@ export function HistoryPage() {
   const imageUrl = (filename: string) => (filename ? uploadImageUrl(filename) : "");
 
   return (
-    <>
-      <section className="card">
+    <div className={`history-layout${detail ? " history-layout--split" : ""}`}>
+      <section className="card history-pane-list">
         <h2>History</h2>
         <input
           type="search"
@@ -89,7 +89,7 @@ export function HistoryPage() {
         </ul>
       </section>
       {detail && (
-        <section className="card">
+        <section className="card history-pane-detail">
           <h2>
             {detail.kind === "arena"
               ? "Arena"
@@ -142,6 +142,6 @@ export function HistoryPage() {
           </button>
         </section>
       )}
-    </>
+    </div>
   );
 }

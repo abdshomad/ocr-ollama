@@ -342,6 +342,29 @@ nav a.active {
   color: var(--danger);
 }
 
+.history-layout {
+  display: grid;
+  gap: 1rem;
+  align-items: start;
+}
+
+@media (min-width: 900px) {
+  .history-layout--split {
+    grid-template-columns: minmax(260px, 38%) minmax(0, 1fr);
+  }
+
+  .history-layout--split .history-pane-detail {
+    position: sticky;
+    top: 1rem;
+    max-height: calc(100vh - 2rem);
+    overflow-y: auto;
+  }
+}
+
+.history-pane-list .history-item {
+  min-width: 0;
+}
+
 .history-list {
   list-style: none;
   padding: 0;
