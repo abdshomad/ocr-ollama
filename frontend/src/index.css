@@ -595,6 +595,11 @@ nav a.active {
   margin-bottom: 1rem;
 }
 
+.gpu-fit-warn {
+  color: var(--warn);
+  font-size: 0.8rem;
+}
+
 .gpu-badge.gpu-state-ready {
   background: #2a4a3a;
   color: var(--success);

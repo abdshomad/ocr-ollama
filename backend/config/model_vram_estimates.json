@@ -1,0 +1,39 @@
+{
+  "_comment": "Rough load estimates for GPU page fit planning (BF16/FP16 weights + typical KV/overhead; not measured per host).",
+  "models": {
+    "deepseek-ai/DeepSeek-OCR": { "params_b": 3.0, "vram_gib": 14, "note": "One large vLLM per GPU" },
+    "deepseek-ai/DeepSeek-OCR-2": { "params_b": 3.4, "vram_gib": 14, "note": "Tune VLLM_DEEPSEEK_OCR2_GPU_MEMORY_UTIL if tight" },
+    "zai-org/GLM-OCR": { "params_b": 2.0, "vram_gib": 12, "note": "Stop other GPU-1 vLLM services before start" },
+    "lightonai/LightOnOCR-2-1B": { "params_b": 1.0, "vram_gib": 6 },
+    "datalab-to/chandra-ocr-2": { "params_b": 5.3, "vram_gib": 18, "note": "Long context; ~17 GiB seen with neighbors on 46 GiB" },
+    "google/gemma-4-E4B-it": { "params_b": 4.0, "vram_gib": 22, "note": "Docs suggest ≥24 GiB; lower util if shared GPU" },
+    "Qwen/Qwen3-VL-2B-Instruct": { "params_b": 2.0, "vram_gib": 8 },
+    "Qwen/Qwen3-VL-4B-Instruct": { "params_b": 4.0, "vram_gib": 12 },
+    "Qwen/Qwen3-VL-8B-Instruct": { "params_b": 8.0, "vram_gib": 20, "note": "Compose default unless VLLM_QWEN3_VL_MODEL set" },
+    "tencent/HunyuanOCR": { "params_b": 1.0, "vram_gib": 10 },
+    "PaddlePaddle/PaddleOCR-VL": { "params_b": 0.9, "vram_gib": 10 },
+    "PaddlePaddle/PaddleOCR-VL-1.5": { "params_b": 0.9, "vram_gib": 10 },
+    "rednote-hilab/dots.mocr": { "params_b": 3.0, "vram_gib": 14 },
+    "microsoft/Phi-4-multimodal-instruct": { "params_b": 5.6, "vram_gib": 20, "note": "Default VLLM_PHI4_MM_GPU_MEMORY_UTIL 0.45" },
+    "reducto/RolmOCR": { "params_b": 7.0, "vram_gib": 16 },
+    "numind/NuMarkdown-8B-Thinking": { "params_b": 8.0, "vram_gib": 20 },
+    "Qwen/Qwen3-Omni-30B-A3B-Instruct": { "params_b": 30.0, "vram_gib": 40, "note": "MoE; exclusive GPU recommended" },
+    "Qwen/Qwen3-Omni-30B-A3B-Thinking": { "params_b": 30.0, "vram_gib": 40, "note": "MoE; exclusive GPU recommended" },
+    "docling-project/SmolDocling-256M-preview": { "params_b": 0.26, "vram_gib": 4 },
+    "opendatalab/MinerU-Diffusion-V1-0320-2.5B": { "params_b": 2.5, "vram_gib": 14, "note": "Exclusive VRAM on 16 GiB cards" },
+    "nvidia/nemotron-ocr-v2": { "params_b": 1.0, "vram_gib": 8 },
+    "rapidocr": { "ram_gib": 1, "note": "CPU sidecar (ONNX)" },
+    "onnxtr": { "ram_gib": 2, "note": "CPU sidecar (ONNX)" },
+    "easyocr": { "ram_gib": 3, "note": "CPU sidecar (PyTorch)" },
+    "doctr": { "ram_gib": 3, "note": "CPU sidecar (PyTorch)" },
+    "paddleocr": { "ram_gib": 3, "note": "CPU sidecar" },
+    "docling": { "ram_gib": 6, "note": "CPU layout+OCR; several GiB RAM" },
+    "lanyocr": { "ram_gib": 2, "note": "CPU sidecar (ONNX)" },
+    "tesseract": { "ram_gib": 0.5, "note": "Native backend binary" },
+    "litparse": { "ram_gib": 0.5, "note": "CLI; no GPU" }
+  },
+  "endpoint_defaults": {
+    "qwen3vl": "Qwen/Qwen3-VL-8B-Instruct",
+    "qwen3omni": "Qwen/Qwen3-Omni-30B-A3B-Instruct"
+  }
+}

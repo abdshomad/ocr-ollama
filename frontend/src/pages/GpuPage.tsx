@@ -8,7 +8,52 @@ import {
   stopVllmService,
   stopVllmServicesOnGpu,
 } from "../api/client";
-import type { GpuDashboard, GpuInfo, VllmServiceStatus } from "../types";
+import type { GpuDashboard, GpuInfo, ModelVramDetail, VllmServiceStatus } from "../types";
+
+function formatGib(n: number): string {
+  return n < 10 ? `~${n.toFixed(1)} GiB` : `~${Math.round(n)} GiB`;
+}
+
+function formatParamsB(n: number): string {
+  return n < 1 ? `${(n * 1000).toFixed(0)}M params` : `~${n % 1 === 0 ? n.toFixed(0) : n.toFixed(1)}B params`;
+}
+
+function memoryEstimateLine(svc: VllmServiceStatus): string | null {
+  if (svc.vram_estimate_gib != null) {
+    const span =
+      svc.vram_estimate_gib_min != null && svc.vram_estimate_gib_min < svc.vram_estimate_gib
+        ? `${formatGib(svc.vram_estimate_gib_min)}–${formatGib(svc.vram_estimate_gib)} VRAM`
+        : `${formatGib(svc.vram_estimate_gib)} VRAM`;
+    const params = svc.model_details?.find((d) => d.params_b != null)?.params_b;
+    return params != null ? `${span} · ${formatParamsB(params)}` : span;
+  }
+  if (svc.ram_estimate_gib != null) {
+    return `${formatGib(svc.ram_estimate_gib)} RAM (CPU)`;
+  }
+  return null;
+}
+
+function modelDetailLines(details: ModelVramDetail[] | undefined): string[] {
+  if (!details?.length) return [];
+  return details.map((d) => {
+    const parts: string[] = [];
+    if (d.vram_gib != null) parts.push(formatGib(d.vram_gib));
+    else if (d.ram_gib != null) parts.push(`${formatGib(d.ram_gib)} RAM`);
+    if (d.params_b != null) parts.push(formatParamsB(d.params_b));
+    const size = parts.length ? ` (${parts.join(", ")})` : "";
+    return `${d.id}${size}`;
+  });
+}
+
+function vramFitWarning(svc: VllmServiceStatus, gpu: GpuInfo | undefined): string | null {
+  if (!gpu || svc.gpu_device !== gpu.index || svc.vram_estimate_gib == null) return null;
+  if (isActivelyLoaded(svc)) return null;
+  const freeGib = (gpu.memory_total_mib - gpu.memory_used_mib) / 1024;
+  if (svc.vram_estimate_gib > freeGib * 0.92) {
+    return `May not fit: est. ${formatGib(svc.vram_estimate_gib)} vs ${freeGib.toFixed(0)} GiB free on this GPU`;
+  }
+  return null;
+}
 
 function memPct(g: GpuInfo): number {
   if (!g.memory_total_mib) return 0;
@@ -199,6 +244,7 @@ export function GpuPage() {
       <p className="muted" style={{ marginTop: "-0.5rem", marginBottom: "1rem" }}>
         Each OCR model can run as its own container. Stop a service to free VRAM; load when you need it. GPU index
         overrides are applied when compose starts a service (or use recycle after a change while one is loaded).
+        Model sizes are catalog estimates (weights + typical overhead), not live measurements.
         {data?.gpu_memory_utilization != null && (
           <> vLLM GPU memory target: {(data.gpu_memory_utilization * 100).toFixed(0)}%.</>
         )}
@@ -312,6 +358,9 @@ export function GpuPage() {
                 svcs.map((svc, si) => {
                   const st = stateLabel(svc);
                   const showAssign = Boolean(svc.gpu_assignment_supported && svc.compose_service);
+                  const memLine = memoryEstimateLine(svc);
+                  const fitWarn = vramFitWarning(svc, gpu);
+                  const detailLines = modelDetailLines(svc.model_details);
                   return (
                     <div
                       key={svc.id}
@@ -334,6 +383,31 @@ export function GpuPage() {
                           <span className="muted">Models: —</span>
                         )}
                         <br />
+                        {memLine && (
+                          <>
+                            <span className="muted">Est. size:</span> {memLine}
+                            <br />
+                          </>
+                        )}
+                        {detailLines.length > 1 && (
+                          <>
+                            {detailLines.map((line) => (
+                              <span key={line} style={{ display: "block" }}>
+                                {line}
+                              </span>
+                            ))}
+                          </>
+                        )}
+                        {svc.model_details?.some((d) => d.note) && (
+                          <span style={{ display: "block", fontStyle: "italic" }}>
+                            {svc.model_details.find((d) => d.note)?.note}
+                          </span>
+                        )}
+                        {fitWarn && (
+                          <span className="gpu-fit-warn" style={{ display: "block", marginTop: "0.25rem" }}>
+                            {fitWarn}
+                          </span>
+                        )}
                         Port {svc.port}
                         {svc.compose_service ? ` · ${svc.compose_service}` : " · (local CLI)"}
                       </p>
@@ -406,6 +480,7 @@ export function GpuPage() {
             {services.map((s) => {
               const st = stateLabel(s);
               const showAssign = Boolean(s.gpu_assignment_supported && s.compose_service);
+              const memLine = memoryEstimateLine(s);
               return (
                 <li key={s.id}>
                   <span>
@@ -413,6 +488,11 @@ export function GpuPage() {
                     {s.models.length > 0 && (
                       <span className="muted" style={{ display: "block", fontSize: "0.8rem", marginTop: "0.15rem" }}>
                         {s.models.join(", ")}
+                      </span>
+                    )}
+                    {memLine && (
+                      <span className="muted" style={{ display: "block", fontSize: "0.8rem" }}>
+                        {memLine}
                       </span>
                     )}
                   </span>

@@ -119,6 +119,14 @@ export interface GpuInfo {
   utilization_pct: number | null;
 }
 
+export interface ModelVramDetail {
+  id: string;
+  params_b?: number;
+  vram_gib?: number;
+  ram_gib?: number;
+  note?: string;
+}
+
 export interface VllmServiceStatus {
   id: string;
   label: string;
@@ -127,6 +135,12 @@ export interface VllmServiceStatus {
   gpu_assignment_supported?: boolean;
   port: number;
   models: string[];
+  model_details?: ModelVramDetail[];
+  /** Typical GPU memory to load (catalog estimate). */
+  vram_estimate_gib?: number;
+  vram_estimate_gib_min?: number;
+  /** CPU / sidecar RAM estimate when no GPU VRAM. */
+  ram_estimate_gib?: number;
   docker_state: string;
   health?: string | null;
   api_ready: boolean | null;

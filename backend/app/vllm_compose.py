@@ -10,6 +10,7 @@ import httpx
 
 from app import gpu_device_assignments_store
 from app.engine_registry import host_for_engine, load_all_endpoints
+from app.model_vram import model_details_for_service, service_vram_summary
 from app.vllm_registry import host_for_endpoint
 
 _DOCKER = "docker"
@@ -333,6 +334,24 @@ def _host_for_service(ep: dict[str, Any]) -> str:
     return host_for_endpoint(ep)
 
 
+def _attach_model_size_fields(
+    row: dict[str, Any],
+    ep: dict[str, Any],
+    *,
+    live_models: list[str] | None = None,
+) -> dict[str, Any]:
+    ep_id = str(ep.get("id", ""))
+    cfg = list(ep.get("models") or [])
+    details = model_details_for_service(
+        endpoint_id=ep_id,
+        configured_models=cfg,
+        live_models=live_models or [],
+    )
+    row["model_details"] = details
+    row.update(service_vram_summary(details))
+    return row
+
+
 async def _endpoint_dashboard_row(
     ep: dict[str, Any],
     *,
@@ -347,7 +366,7 @@ async def _endpoint_dashboard_row(
             ready = await asyncio.to_thread(liteparse_client.lit_cli_available)
         else:
             ready = None
-        return {
+        row = {
             "id": str(ep.get("id", "")),
             "label": str(ep.get("label") or ep.get("id") or ""),
             "compose_service": "",
@@ -360,6 +379,7 @@ async def _endpoint_dashboard_row(
             "api_ready": ready,
             "container_id": None,
         }
+        return _attach_model_size_fields(row, ep)
 
     host = _host_for_service(ep)
     cfg_models = list(ep.get("models") or [])
@@ -384,7 +404,7 @@ async def _endpoint_dashboard_row(
                 docker_state = "starting"
         elif not probe and state == "running" and health and health.lower() not in ("healthy", ""):
             docker_state = "starting"
-        return {
+        out_row = {
             "id": str(ep.get("id", "")),
             "label": str(ep.get("label") or ep.get("id") or ""),
             "compose_service": service,
@@ -397,14 +417,16 @@ async def _endpoint_dashboard_row(
             "api_ready": api_ready,
             "container_id": (str(row.get("ID") or row.get("Id") or "")) or None,
         }
+        probed_live = live_models if (state == "running" and probe) else None
+        return _attach_model_size_fields(out_row, ep, live_models=probed_live)
 
     api_ready = None
-    live_models: list[str] = []
+    probed_live: list[str] = []
     if probe:
-        probed_ready, live_models = await _probe_runtime(host, engine_type=str(ep.get("type") or ""))
+        probed_ready, probed_live = await _probe_runtime(host, engine_type=str(ep.get("type") or ""))
         api_ready = probed_ready
-    models_out = live_models if live_models else cfg_models
-    return {
+    models_out = probed_live if probed_live else cfg_models
+    out_row = {
         "id": str(ep.get("id", "")),
         "label": str(ep.get("label") or ep.get("id") or ""),
         "compose_service": str(ep.get("compose_service") or ""),
@@ -417,6 +439,7 @@ async def _endpoint_dashboard_row(
         "api_ready": api_ready,
         "container_id": None,
     }
+    return _attach_model_size_fields(out_row, ep, live_models=probed_live if probe else None)
 
 
 async def list_service_statuses_fast() -> list[dict[str, Any]]:
