@@ -51,7 +51,7 @@
 |---|-----------|---------------------------|
 | 1 | **Doc OWL** | **Triaged 2026-05-16** — pinned lineage: **`mPLUG/DocOwl2`** (primary), DocOwl1.5 variants; **Apache-2.0**; **no stock vLLM path** found — Ship needs **custom GPU sidecar** (Transformers) or future vLLM support. See [issues/doc-owl-wave-r-triage.md](../issues/doc-owl-wave-r-triage.md). |
 | 2 | **Aya Vision OCR** | **Triaged 2026-05-16** — **`CohereLabs/aya-vision-8b`** (+ **`CohereLabs/aya-vision-32B`**); **CC-BY-NC 4.0** + Cohere AUP; **HF gated** (`HF_TOKEN`); **vLLM:** `vllm serve CohereLabs/aya-vision-8b` (architecture in vLLM supported models). **Ollama:** no official library pin found. See [issues/aya-vision-ocr-wave-r-triage.md](../issues/aya-vision-ocr-wave-r-triage.md). |
-| 3 | **Dolphin** | Open **weights** + **license**; includes Dolphin-named variants in the “track upstream” inventory row. |
+| 3 | **Dolphin** | **Triaged 2026-05-16** — **ByteDance** line: **`ByteDance/Dolphin`** (v1, **MIT**); **`ByteDance/Dolphin-v2`** (**Qwen RESEARCH LICENSE**, NC). vLLM one-liner **unverified**; Transformers + [bytedance/Dolphin](https://github.com/bytedance/Dolphin) demos. See [issues/dolphin-wave-r-triage.md](../issues/dolphin-wave-r-triage.md). |
 | 4 | **owlOCR / OCR Flux / Monkey OCR / Nanonets** | **Vendor vs OSS**; many names are **marketing** — need a concrete artifact. |
 | 5 | **DocParse / OCR Docker / OpenPage / OCRbro / DocuMagnet / OCR Studio** | **Defer** until an **open inference surface** exists (documented API, container, or SDK with usable terms). |
 | 6 | **Gemma 3 OCR / Falcon OCR / Youtu-VL / ExaOCR / Col Pali / Pixl** | **Research**; **ColPali** is **retrieval** — different task unless explicitly scoped as “OCR-like”. |
@@ -122,7 +122,7 @@ Treat these as **done** unless adding a second checkpoint or fixing gaps.
 | [IBM Granite Docling WebGPU](https://huggingface.co/spaces/ibm-granite/granite-docling-258M-WebGPU) | Browser (WASM / ONNX) | Apache 2.0 | **In repo** — **`/scan`** worker engine **`granite`**, HF ONNX community build `onnx-community/granite-docling-258M-ONNX` (see [plan/granite-docling-browser.md](./granite-docling-browser.md)). |
 | Aya Vision OCR | vLLM (Ollama unverified) | **CC-BY-NC 4.0** + Cohere AUP; HF **gated** | **#2 triaged** — `CohereLabs/aya-vision-8b` / `aya-vision-32B`; **vLLM** `AyaVisionForConditionalGeneration`; Ship needs **org NC approval** + optional compose profile. [aya-vision-ocr-wave-r-triage.md](../issues/aya-vision-ocr-wave-r-triage.md). |
 | Mistral OCR / “Mistral OCR 3” | API / vLLM | **Often API-only** | If closed API, add `engine.type: http_proxy` pattern or document “out of self-host”. |
-| Dolphin (X link) | Research | — | **Next research triage (#3).** Wait for open weights + license (includes Dolphin variants in the upstream-tracking row). |
+| Dolphin (ByteDance) | Transformers / vLLM spike | **MIT** (`ByteDance/Dolphin`); **Qwen Research** (`ByteDance/Dolphin-v2` **NC**) | **#3 triaged** — document parsing VLMs; v1 permissive; v2 stronger + Qwen license. [dolphin-wave-r-triage.md](../issues/dolphin-wave-r-triage.md). |
 | [Dots.OCR](https://github.com/rednote-hilab/dots.ocr) | vLLM (primary) | MIT | **In repo** as **`rednote-hilab/dots.mocr`** on optional vLLM (`dotsmocr` profile). Newer **`dots.mocr`** line; weights on HF. |
 | [Qwen3-Omni](https://github.com/QwenLM/Qwen3-Omni) | vLLM-Omni | Qwen license | **In repo** — optional **`vllm-qwen3-omni`** (`vllm serve --omni`, default `Qwen/Qwen3-Omni-30B-A3B-Instruct`, profile **`qwen3omni`**, port **8112**) — [qwen3-omni-vllm-integration.md](../issues/qwen3-omni-vllm-integration.md). |
 | owlOCR / OCR Flux / Monkey OCR / Nanonets | Research | — | **Next research triage (#4).** Clarify vendor vs OSS; many are **marketing names**. |
@@ -130,7 +130,7 @@ Treat these as **done** unless adding a second checkpoint or fixing gaps.
 | DocParse / OCR Docker / OpenPage / OCRbro / DocuMagnet / OCR Studio | Research | — | **Next research triage (#5).** Could be products; **do not implement** until **open inference surface** exists. |
 | Gemma 3 OCR / Falcon OCR / Youtu-VL / ~~Hunyuan OCR~~ / ExaOCR / Col Pali / Pixl | Research | — | **Next research triage (#6).** **Hunyuan:** shipped as `tencent/HunyuanOCR` vLLM (`hunyuanocr` profile). **ColPali** is retrieval — different task unless scoped to “OCR-like”. |
 | Pike PDF | Research | — | **Next research triage (#7).** Clarify if **library vs model** / inference artifact. |
-| DeepSeek OCR 2 / Paddle OCR VL 1.5 / MinerU 2.5 / Dolphin v2 / Light On OCR 2 | Research | — | **Next research triage (#8).** Track upstream; integrate when **public weights + stable serve recipe** exist. |
+| DeepSeek OCR 2 / Paddle OCR VL 1.5 / MinerU 2.5 / Dolphin v2 / Light On OCR 2 | Research | — | **Next research triage (#8).** Track upstream; integrate when **public weights + stable serve recipe** exist. **Dolphin v2:** weights **`ByteDance/Dolphin-v2`** exist; **Qwen Research License** — [dolphin-wave-r-triage.md](../issues/dolphin-wave-r-triage.md). |
 | Gemini 3.0 | API | Google ToS | Only via **user API key** pattern if ever; out of default self-host stack. |
 | iFlyTek AI NOTE 2 | API / closed | Commercial | Likely **out of scope** for self-host unless legal + SDK. |
 
@@ -151,7 +151,7 @@ Order balances **license safety**, **engineering clarity**, and **distinct capab
 
 **Approach:** Spike only: HF id / license / serve command / sample output. Promote a row to **Ship** and a numbered wave only after exit criteria there are met — **do not** count Wave R as satisfying [AGENTS.md](../AGENTS.md) **`next` / `n`** until triage completes.
 
-**Progress (Wave R):** **#1 Doc OWL** — [issues/doc-owl-wave-r-triage.md](../issues/doc-owl-wave-r-triage.md). **#2 Aya Vision OCR** — [issues/aya-vision-ocr-wave-r-triage.md](../issues/aya-vision-ocr-wave-r-triage.md). **#3** onward — not started.
+**Progress (Wave R):** **#1 Doc OWL** — [issues/doc-owl-wave-r-triage.md](../issues/doc-owl-wave-r-triage.md). **#2 Aya Vision OCR** — [issues/aya-vision-ocr-wave-r-triage.md](../issues/aya-vision-ocr-wave-r-triage.md). **#3 Dolphin** — [issues/dolphin-wave-r-triage.md](../issues/dolphin-wave-r-triage.md). **#4** onward — not started.
 
 ### Wave 1 — Classical / ONNX cluster (CPU-friendly sidecars)
 
@@ -222,6 +222,7 @@ Use this as a **program tracker**; implementation tickets can reference wave + r
 
 | Date | Change |
 |------|--------|
+| 2026-05-16 | **Wave R #3 Dolphin** — [issues/dolphin-wave-r-triage.md](../issues/dolphin-wave-r-triage.md); **`ByteDance/Dolphin`** (MIT), **`ByteDance/Dolphin-v2`** (Qwen Research / NC); vLLM serve **unverified** |
 | 2026-05-16 | **Wave R #2 Aya Vision OCR** — [issues/aya-vision-ocr-wave-r-triage.md](../issues/aya-vision-ocr-wave-r-triage.md); **`CohereLabs/aya-vision-8b`** / 32B; **CC-BY-NC** + HF gate; **vLLM** serve recipe pinned |
 | 2026-05-16 | **Wave R #1 Doc OWL** — triage [issues/doc-owl-wave-r-triage.md](../issues/doc-owl-wave-r-triage.md); pinned **`mPLUG/DocOwl2`** |
 | 2026-05-16 | **GPL exclusion** — [§ Excluded engines (GPL)](#excluded-engines-gpl); Surya removed from inventory table; former GPL wave dropped; waves **5→6** renumbered to **4→6**; risk register split GPLv3 vs AGPL |
