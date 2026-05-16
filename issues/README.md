@@ -33,6 +33,7 @@ Write-ups for non-trivial bugs and integration problems. Format and when to add 
 | [aya-vision-ocr-wave-r-triage.md](aya-vision-ocr-wave-r-triage.md) | **Aya Vision OCR (Wave R)** — `CohereLabs/aya-vision-8b` / 32B; CC-BY-NC + HF gated; vLLM `AyaVisionForConditionalGeneration`; Ollama not pinned |
 | [dolphin-wave-r-triage.md](dolphin-wave-r-triage.md) | **Dolphin / ByteDance (Wave R)** — `ByteDance/Dolphin` (MIT), `Dolphin-v2` (Qwen Research NC); Transformers path; vLLM one-liner unverified |
 | [vendor-ocr-products-wave-r-triage.md](vendor-ocr-products-wave-r-triage.md) | **Wave R #5** — DocParse (Aryn commercial), DocuMagnet, OCR Studio SDK, OCRbro/n8n; bundle Ship **deferred** |
+| [wave-r-6-vlm-doc-models-triage.md](wave-r-6-vlm-doc-models-triage.md) | **Wave R #6** — Gemma 3, Falcon-OCR, Youtu-VL, ExaOCR pipeline, ColPali retrieval, Pixl API |
 | [marketing-ocr-names-wave-r-triage.md](marketing-ocr-names-wave-r-triage.md) | **Wave R #4** — owlOCR vs OlmOCR; OCRFlux (Qwen NC LICENSE); MonkeyOCR (non-commercial); Nanonets-OCR-s (license TBD) |
 | [granite-docling-browser.md](granite-docling-browser.md) | **Granite Docling 258M** — `/scan` worker, `onnx-community/granite-docling-258M-ONNX`, engine `granite`; rebuild nginx after frontend updates |
 | [vllm-lighton-gpu-compose-entrypoint-directory.md](vllm-lighton-gpu-compose-entrypoint-directory.md) | LightOn restart loop after GPU start — `/workspace` compose path created entrypoint as directory (exit 126) |
