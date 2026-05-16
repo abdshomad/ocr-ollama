@@ -13,6 +13,7 @@
     "PaddlePaddle/PaddleOCR-VL": "OCR:",
     "rednote-hilab/dots.mocr": "Extract the text content from this image.",
     "microsoft/Phi-4-multimodal-instruct": "Perform OCR on this image. Extract all visible text in reading order. Preserve line breaks, tables, and obvious paragraphs. Output only the transcribed text, no preamble.",
+    "reducto/RolmOCR": "Return the plain text representation of this document as if you were reading it naturally.\n",
     "opendatalab/MinerU-Diffusion-V1-0320-2.5B": "Text Recognition:",
     "nvidia/nemotron-ocr-v2": "",
     "rapidocr": "",

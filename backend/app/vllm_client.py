@@ -26,6 +26,7 @@ _HUNYUAN_OCR_RE = re.compile(r"hunyuanocr", re.IGNORECASE)
 _PADDLEOCR_VL_RE = re.compile(r"paddleocr-vl", re.IGNORECASE)
 _DOTS_MOCR_RE = re.compile(r"dots\.mocr|dotsmocr", re.IGNORECASE)
 _PHI4_MM_RE = re.compile(r"phi-4-multimodal", re.IGNORECASE)
+_ROLMOCR_RE = re.compile(r"rolmocr", re.IGNORECASE)
 
 
 def _mime_for_image(image_bytes: bytes) -> str:
@@ -68,12 +69,16 @@ def _max_tokens_for_model(model: str) -> int:
         return int(os.getenv("VLLM_DOTS_MOCR_MAX_TOKENS", "8192"))
     if _PHI4_MM_RE.search(model):
         return int(os.getenv("VLLM_PHI4_MM_MAX_TOKENS", "4096"))
+    if _ROLMOCR_RE.search(model):
+        return int(os.getenv("VLLM_ROLMOCR_MAX_TOKENS", "4096"))
     return VLLM_MAX_TOKENS
 
 
 def _sampling_for_model(model: str) -> dict[str, float]:
     if _CHANDRA_RE.search(model):
         return {"top_p": float(os.getenv("VLLM_CHANDRA_TOP_P", "0.1"))}
+    if _ROLMOCR_RE.search(model):
+        return {"temperature": float(os.getenv("VLLM_ROLMOCR_TEMPERATURE", "0.2"))}
     return {}
 
 
@@ -137,6 +142,9 @@ async def list_models_with_classification() -> list[dict[str, Any]]:
             available = bool(host) and (model_id in live or bool(alias and alias in live))
         elif _PHI4_MM_RE.search(model_id):
             alias = os.getenv("VLLM_PHI4_MM_CHAT_MODEL", "").strip()
+            available = bool(host) and (model_id in live or bool(alias and alias in live))
+        elif _ROLMOCR_RE.search(model_id):
+            alias = os.getenv("VLLM_ROLMOCR_CHAT_MODEL", "").strip()
             available = bool(host) and (model_id in live or bool(alias and alias in live))
         else:
             available = bool(host) and model_id in live
@@ -218,6 +226,10 @@ def _chat_model_id(model: str) -> str:
             return override
     if _PHI4_MM_RE.search(model):
         override = os.getenv("VLLM_PHI4_MM_CHAT_MODEL", "").strip()
+        if override:
+            return override
+    if _ROLMOCR_RE.search(model):
+        override = os.getenv("VLLM_ROLMOCR_CHAT_MODEL", "").strip()
         if override:
             return override
     return model

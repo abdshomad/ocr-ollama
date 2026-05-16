@@ -119,6 +119,18 @@
       "gpu_device": 1,
       "port": 8109,
       "speed_tier": "very_slow"
+    },
+    {
+      "id": "rolmocr",
+      "label": "RolmOCR",
+      "models": ["reducto/RolmOCR"],
+      "host_env": "VLLM_ROLMOCR_HOST",
+      "default_host": "http://vllm-rolmocr:8110",
+      "compose_service": "vllm-rolmocr",
+      "compose_profile": "rolmocr",
+      "gpu_device": 1,
+      "port": 8110,
+      "speed_tier": "slow"
     }
   ]
 }
