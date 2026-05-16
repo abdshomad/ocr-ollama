@@ -88,12 +88,18 @@ elif [[ "$model_lower" == *"paddleocr-vl"* ]]; then
   # https://github.com/vllm-project/recipes/blob/main/PaddlePaddle/PaddleOCR-VL.md
   PADDLE_BATCH="${VLLM_PADDLEOCR_VL_MAX_NUM_BATCHED_TOKENS:-16384}"
   SERVED_EXTRA=()
+  PADDLE_MAX_LEN_EXTRA=()
+  # HF config for -1.5 advertises a huge max length; cap KV on mid-range GPUs (override via env).
+  if [[ "$model_lower" == *"paddleocr-vl-1.5"* ]]; then
+    PADDLE_MAX_LEN_EXTRA=(--max-model-len "${VLLM_PADDLEOCR_VL_15_MAX_MODEL_LEN:-8192}")
+  fi
   if [[ -n "${VLLM_PADDLEOCR_VL_SERVED_MODEL_NAME:-}" ]]; then
     SERVED_EXTRA=(--served-model-name "${VLLM_PADDLEOCR_VL_SERVED_MODEL_NAME}")
   fi
   exec vllm serve "$MODEL" \
     "${COMMON[@]}" \
     "${SERVED_EXTRA[@]}" \
+    "${PADDLE_MAX_LEN_EXTRA[@]}" \
     --trust-remote-code \
     --max-num-batched-tokens "$PADDLE_BATCH" \
     --limit-mm-per-prompt '{"image": 1}' \

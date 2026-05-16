@@ -97,7 +97,7 @@ Server GPU models are usually faster and better than browser VLMs for full pages
 
 | Category | Engines | Planned `engine.type` |
 |----------|---------|------------------------|
-| **vLLM OpenAI** | DeepSeek / **DeepSeek-OCR-2** (optional `deepseek-ocr2`), GLM, LightOn, Chandra, Gemma 4 (optional `gemma4`), Qwen3-VL (optional `qwen3vl`), **Qwen3-Omni** (optional **`qwen3omni`**, **vLLM-Omni** image + `vllm serve --omni`), **Phi-4-multimodal** (optional `phi4mm`, `microsoft/Phi-4-multimodal-instruct`), **RolmOCR** (optional `rolmocr`, `reducto/RolmOCR`), **NuMarkdown** (optional `numarkdown`, `numind/NuMarkdown-8B-Thinking`), **Smol Docling** (optional `smoldocling`, `docling-project/SmolDocling-256M-preview`), Hunyuan OCR (optional `hunyuanocr`), **PaddleOCR-VL** (optional `paddleocr-vl`), **Dots.MOCR** (optional `dotsmocr`, `rednote-hilab/dots.mocr`) | `vllm` |
+| **vLLM OpenAI** | DeepSeek / **DeepSeek-OCR-2** (optional `deepseek-ocr2`), GLM, LightOn, Chandra, Gemma 4 (optional `gemma4`), Qwen3-VL (optional `qwen3vl`), **Qwen3-Omni** (optional **`qwen3omni`**, **vLLM-Omni** image + `vllm serve --omni`), **Phi-4-multimodal** (optional `phi4mm`, `microsoft/Phi-4-multimodal-instruct`), **RolmOCR** (optional `rolmocr`, `reducto/RolmOCR`), **NuMarkdown** (optional `numarkdown`, `numind/NuMarkdown-8B-Thinking`), **Smol Docling** (optional `smoldocling`, `docling-project/SmolDocling-256M-preview`), Hunyuan OCR (optional `hunyuanocr`), **PaddleOCR-VL** (optional `paddleocr-vl`), **PaddleOCR-VL-1.5** (optional `paddleocr-vl-15`), **Dots.MOCR** (optional `dotsmocr`, `rednote-hilab/dots.mocr`) | `vllm` |
 | **Custom GPU sidecar** | MinerU (`nano_dvlm`), Nemotron OCR v2 (`nemotron`) | `nano_dvlm`, `nemotron` |
 | **Custom CPU sidecar** | RapidOCR ONNX (`rapidocr`), OnnxTR (`onnxtr`), EasyOCR (`easyocr`), docTR (`doctr`), PaddleOCR (`paddleocr`), Docling (`docling`), LanyOCR (`lanyocr`) | `rapidocr`, `onnxtr`, `easyocr`, `doctr`, `paddleocr`, `docling`, `lanyocr` |
 | **Subprocess** | LiteParse, Tesseract (native) | `litparse`, `tesseract` |
@@ -123,13 +123,13 @@ Server GPU models are usually faster and better than browser VLMs for full pages
 
 | Bucket | Engines |
 |--------|---------|
-| **In repo today** | DeepSeek-OCR, **DeepSeek-OCR-2** (optional `vllm-deepseek-ocr2`, profile `deepseek-ocr2`, port 8114), GLM-OCR (vLLM); Gemma 4 E4B (optional `vllm-gemma4`); Qwen3-VL Instruct (optional `vllm-qwen3-vl`); **Qwen3-Omni** (optional `vllm-qwen3-omni`, **vLLM-Omni**, profile `qwen3omni`); **Phi-4-multimodal** (optional `vllm-phi4-mm`, profile `phi4mm`); **RolmOCR** (optional `vllm-rolmocr`, profile `rolmocr`); **NuMarkdown** (optional `vllm-numarkdown`, profile `numarkdown`); **Smol Docling** (optional `vllm-smoldocling`, profile `smoldocling`, `docling-project/SmolDocling-256M-preview`); Hunyuan OCR (optional `vllm-hunyuanocr`); **PaddleOCR-VL** (optional `vllm-paddleocr-vl`, profile `paddleocr-vl`); **Dots.MOCR** (optional `vllm-dotsmocr`, profile `dotsmocr`, `rednote-hilab/dots.mocr`); TrOCR, Tesseract, PaliGemma, **Granite Docling** (`granite`, ONNX on `/scan`) (browser); Tesseract (native server subprocess); Ollama catalog |
+| **In repo today** | DeepSeek-OCR, **DeepSeek-OCR-2** (optional `vllm-deepseek-ocr2`, profile `deepseek-ocr2`, port 8114), GLM-OCR (vLLM); Gemma 4 E4B (optional `vllm-gemma4`); Qwen3-VL Instruct (optional `vllm-qwen3-vl`); **Qwen3-Omni** (optional `vllm-qwen3-omni`, **vLLM-Omni**, profile `qwen3omni`); **Phi-4-multimodal** (optional `vllm-phi4-mm`, profile `phi4mm`); **RolmOCR** (optional `vllm-rolmocr`, profile `rolmocr`); **NuMarkdown** (optional `vllm-numarkdown`, profile `numarkdown`); **Smol Docling** (optional `vllm-smoldocling`, profile `smoldocling`, `docling-project/SmolDocling-256M-preview`); Hunyuan OCR (optional `vllm-hunyuanocr`); **PaddleOCR-VL** (optional `vllm-paddleocr-vl`, profile `paddleocr-vl`); **PaddleOCR-VL-1.5** (optional `vllm-paddleocr-vl-15`, profile `paddleocr-vl-15`, port 8115); **Dots.MOCR** (optional `vllm-dotsmocr`, profile `dotsmocr`, `rednote-hilab/dots.mocr`); TrOCR, Tesseract, PaliGemma, **Granite Docling** (`granite`, ONNX on `/scan`) (browser); Tesseract (native server subprocess); Ollama catalog |
 | **In repo (RapidOCR)** | RapidOCR ONNX (`rapidocr`, profile `rapidocr`, port 8220, CPU) |
 | **In repo (OnnxTR)** | OnnxTR (`onnxtr`, profile `onnxtr`, port 8230, CPU) |
 | **In repo (EasyOCR)** | EasyOCR (`easyocr`, profile `easyocr`, port 8240, PyTorch CPU image) |
 | **In repo (docTR)** | docTR (`doctr`, profile `doctr`, port 8250, PyTorch CPU image) |
 | **In repo (PaddleOCR)** | PaddleOCR PP-OCR (`paddleocr`, profile `paddleocr`, port 8260, PaddlePaddle CPU image) |
-| **In repo (PaddleOCR-VL VLM)** | PaddleOCR-VL (`PaddlePaddle/PaddleOCR-VL`, vLLM `vllm-paddleocr-vl`, profile `paddleocr-vl`, port 8107) — distinct from CPU PP-OCR sidecar |
+| **In repo (PaddleOCR-VL VLM)** | PaddleOCR-VL (`PaddlePaddle/PaddleOCR-VL`, vLLM `vllm-paddleocr-vl`, profile `paddleocr-vl`, port 8107); **PaddleOCR-VL-1.5** (`PaddlePaddle/PaddleOCR-VL-1.5`, `vllm-paddleocr-vl-15`, profile `paddleocr-vl-15`, port 8115) — distinct from CPU PP-OCR sidecar |
 | **In repo (Dots.MOCR)** | Dots.MOCR (`rednote-hilab/dots.mocr`, vLLM `vllm-dotsmocr`, profile `dotsmocr`, port 8108) |
 | **In repo (Phi-4-multimodal)** | Phi-4-multimodal (`microsoft/Phi-4-multimodal-instruct`, vLLM `vllm-phi4-mm`, profile `phi4mm`, port 8109) |
 | **In repo (RolmOCR)** | RolmOCR (`reducto/RolmOCR`, vLLM `vllm-rolmocr`, profile `rolmocr`, port 8110) |
@@ -153,7 +153,7 @@ For the **same model**, Ollama is typically **~1.2–1.5× slower** than vLLM, w
 |-------|-------------|--------|----------|
 | DeepSeek-OCR | Yes | `deepseek-ocr:latest` | vLLM faster |
 | GLM-OCR | Yes | `glm-ocr:latest` | vLLM faster |
-| PaddleOCR-VL | Yes (profile `paddleocr-vl`) | Broken | vLLM: `PaddlePaddle/PaddleOCR-VL`; Ollama: see [paddleocr-vl-ollama-load-failure.md](../issues/paddleocr-vl-ollama-load-failure.md) |
+| PaddleOCR-VL | Yes (profile `paddleocr-vl`); **1.5** yes (`paddleocr-vl-15`) | Broken | vLLM: `PaddlePaddle/PaddleOCR-VL` / **`PaddlePaddle/PaddleOCR-VL-1.5`**; Ollama: see [paddleocr-vl-ollama-load-failure.md](../issues/paddleocr-vl-ollama-load-failure.md) |
 | Qwen3-VL Instruct | Yes (profile `qwen3vl`) | — | Optional vLLM multimodal OCR |
 | Hunyuan OCR | Yes (profile `hunyuanocr`) | — | `tencent/HunyuanOCR` dedicated OCR VLM |
 | Dots.MOCR | Yes (profile `dotsmocr`) | — | `rednote-hilab/dots.mocr` via vLLM ≥ 0.11 |
@@ -169,7 +169,7 @@ For the **same model**, Ollama is typically **~1.2–1.5× slower** than vLLM, w
 | `speed_tier` | Engines |
 |--------------|---------|
 | `instant` | LiteParse (workload A only) |
-| `fast` | Tesseract (browser + native), TrOCR, LightOnOCR, Nemotron OCR v2 (sidecar), RapidOCR (`rapidocr`), OnnxTR (`onnxtr`), docTR (`doctr`), Hunyuan OCR (vLLM), **PaddleOCR-VL** (vLLM) |
+| `fast` | Tesseract (browser + native), TrOCR, LightOnOCR, Nemotron OCR v2 (sidecar), RapidOCR (`rapidocr`), OnnxTR (`onnxtr`), docTR (`doctr`), Hunyuan OCR (vLLM), **PaddleOCR-VL** / **PaddleOCR-VL-1.5** (vLLM) |
 | `medium` | EasyOCR (`easyocr`, CPU PyTorch sidecar), PaddleOCR (`paddleocr`, CPU Paddle sidecar), **Dots.MOCR** (`rednote-hilab/dots.mocr`, optional vLLM `dotsmocr`), DeepSeek-OCR, GLM-OCR, MinerU-Diffusion (batched) |
 | `slow` | MinerU (sequential), Chandra vLLM, **RolmOCR** vLLM (`rolmocr`), PaliGemma (browser) |
 | `very_slow` | Chandra HF, Gemma 4 vLLM, Qwen3-VL vLLM, **Qwen3-Omni** vLLM-Omni (`qwen3omni`), **Phi-4-multimodal** vLLM (`phi4mm`), **NuMarkdown** vLLM (`numarkdown`), Qwen/Mistral OCR (Ollama), hybrid pipelines |
@@ -208,6 +208,7 @@ For the **same model**, Ollama is typically **~1.2–1.5× slower** than vLLM, w
 | 2026-05-16 | OnnxTR ONNX CPU sidecar (`onnxtr`, profile `onnxtr`, port 8230) |
 | 2026-05-16 | EasyOCR PyTorch CPU sidecar (`easyocr`, profile `easyocr`, port 8240) |
 | 2026-05-16 | docTR PyTorch CPU sidecar (`doctr`, profile `doctr`, port 8250) |
+| 2026-05-16 | **PaddleOCR-VL-1.5** optional vLLM (`PaddlePaddle/PaddleOCR-VL-1.5`, profile `paddleocr-vl-15`, port 8115) |
 | 2026-05-16 | PaddleOCR-VL vLLM optional endpoint (`PaddlePaddle/PaddleOCR-VL`, profile `paddleocr-vl`, port 8107) |
 | 2026-05-16 | Dots.MOCR optional vLLM endpoint (`rednote-hilab/dots.mocr`, profile `dotsmocr`, port 8108) |
 | 2026-05-16 | RolmOCR optional vLLM endpoint (`reducto/RolmOCR`, profile `rolmocr`, port 8110) |

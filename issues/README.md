@@ -24,6 +24,7 @@ Write-ups for non-trivial bugs and integration problems. Format and when to add 
 | [qwen3-vl-vllm-integration.md](qwen3-vl-vllm-integration.md) | **Qwen3-VL** — `Qwen/Qwen3-VL-*-Instruct`, profile `qwen3vl`, port 8105, vision-tier OCR |
 | [hunyuanocr-vllm-integration.md](hunyuanocr-vllm-integration.md) | **Hunyuan OCR** — `tencent/HunyuanOCR`, profile `hunyuanocr`, port 8106, dedicated OCR VLM |
 | [paddleocr-vl-vllm-integration.md](paddleocr-vl-vllm-integration.md) | **PaddleOCR-VL** — `PaddlePaddle/PaddleOCR-VL`, profile `paddleocr-vl`, port 8107, vLLM (not Ollama) |
+| [paddleocr-vl-15-vllm-integration.md](paddleocr-vl-15-vllm-integration.md) | **PaddleOCR-VL-1.5** — `PaddlePaddle/PaddleOCR-VL-1.5`, profile `paddleocr-vl-15`, port 8115, optional second Paddle VLM container |
 | [dots-mocr-vllm-integration.md](dots-mocr-vllm-integration.md) | **Dots.MOCR** — `rednote-hilab/dots.mocr`, profile `dotsmocr`, port 8108, layout OCR VLM (vLLM ≥ 0.11) |
 | [phi4-multimodal-vllm-integration.md](phi4-multimodal-vllm-integration.md) | **Phi-4-multimodal** — `microsoft/Phi-4-multimodal-instruct`, profile `phi4mm`, port 8109, MS multimodal VLM |
 | [rolmocr-vllm-integration.md](rolmocr-vllm-integration.md) | **RolmOCR** — `reducto/RolmOCR`, profile `rolmocr`, port 8110, Qwen2.5-VL doc OCR (Apache 2.0) |

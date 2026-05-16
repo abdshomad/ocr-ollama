@@ -109,6 +109,18 @@
       "speed_tier": "fast"
     },
     {
+      "id": "paddleocr-vl-15",
+      "label": "PaddleOCR-VL-1.5",
+      "models": ["PaddlePaddle/PaddleOCR-VL-1.5"],
+      "host_env": "VLLM_PADDLEOCR_VL_15_HOST",
+      "default_host": "http://vllm-paddleocr-vl-15:8115",
+      "compose_service": "vllm-paddleocr-vl-15",
+      "compose_profile": "paddleocr-vl-15",
+      "gpu_device": 1,
+      "port": 8115,
+      "speed_tier": "fast"
+    },
+    {
       "id": "dotsmocr",
       "label": "Dots.MOCR",
       "models": ["rednote-hilab/dots.mocr"],

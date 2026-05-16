@@ -103,6 +103,13 @@ def _max_tokens_for_model(model: str) -> int:
         return int(os.getenv("VLLM_QWEN3_VL_MAX_TOKENS", "4096"))
     if _HUNYUAN_OCR_RE.search(model):
         return int(os.getenv("VLLM_HUNYUAN_OCR_MAX_TOKENS", "2048"))
+    if re.search(r"paddleocr-vl-1\.5", model, re.IGNORECASE):
+        return int(
+            os.getenv(
+                "VLLM_PADDLEOCR_VL_15_MAX_TOKENS",
+                os.getenv("VLLM_PADDLEOCR_VL_MAX_TOKENS", "4096"),
+            )
+        )
     if _PADDLEOCR_VL_RE.search(model):
         return int(os.getenv("VLLM_PADDLEOCR_VL_MAX_TOKENS", "4096"))
     if _DOTS_MOCR_RE.search(model):

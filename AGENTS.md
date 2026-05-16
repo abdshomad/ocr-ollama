@@ -195,6 +195,7 @@ Index: [issues/README.md](issues/README.md). Primary vLLM reference: [issues/vll
 | Run vLLM (Qwen3-VL) | `docker compose --profile qwen3vl up -d vllm-qwen3-vl` — [issues/qwen3-vl-vllm-integration.md](issues/qwen3-vl-vllm-integration.md) |
 | Run vLLM (Hunyuan OCR) | `docker compose --profile hunyuanocr up -d vllm-hunyuanocr` — [issues/hunyuanocr-vllm-integration.md](issues/hunyuanocr-vllm-integration.md) |
 | Run vLLM (PaddleOCR-VL) | `docker compose --profile paddleocr-vl up -d vllm-paddleocr-vl` — [issues/paddleocr-vl-vllm-integration.md](issues/paddleocr-vl-vllm-integration.md) |
+| Run vLLM (PaddleOCR-VL-1.5) | `docker compose --profile paddleocr-vl-15 up -d vllm-paddleocr-vl-15` — [issues/paddleocr-vl-15-vllm-integration.md](issues/paddleocr-vl-15-vllm-integration.md) |
 | Run vLLM (Dots.MOCR) | `docker compose --profile dotsmocr up -d vllm-dotsmocr` — [issues/dots-mocr-vllm-integration.md](issues/dots-mocr-vllm-integration.md) |
 | Run vLLM (Phi-4-multimodal) | `docker compose --profile phi4mm up -d vllm-phi4-mm` — [issues/phi4-multimodal-vllm-integration.md](issues/phi4-multimodal-vllm-integration.md) |
 | Run vLLM (RolmOCR) | `docker compose --profile rolmocr up -d vllm-rolmocr` — [issues/rolmocr-vllm-integration.md](issues/rolmocr-vllm-integration.md) |

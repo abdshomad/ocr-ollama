@@ -14,6 +14,7 @@
     "Qwen/Qwen3-Omni-30B-A3B-Thinking": "Perform OCR on this image. Extract all visible text in reading order. Preserve line breaks, tables, and obvious paragraphs. Put only the final transcript inside a single <answer>...</answer> section, with no other commentary.",
     "tencent/HunyuanOCR": "Extract all information from the main body of the document image and represent it in markdown format, ignoring headers and footers. Tables should be expressed in HTML format, formulas using LaTeX, organized by reading order.",
     "PaddlePaddle/PaddleOCR-VL": "OCR:",
+    "PaddlePaddle/PaddleOCR-VL-1.5": "OCR:",
     "rednote-hilab/dots.mocr": "Extract the text content from this image.",
     "microsoft/Phi-4-multimodal-instruct": "Perform OCR on this image. Extract all visible text in reading order. Preserve line breaks, tables, and obvious paragraphs. Output only the transcribed text, no preamble.",
     "reducto/RolmOCR": "Return the plain text representation of this document as if you were reading it naturally.\n",

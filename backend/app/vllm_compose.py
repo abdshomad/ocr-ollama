@@ -100,6 +100,7 @@ _CUDA_DEVICE_ENV_FOR_ENDPOINT_ID: dict[str, str] = {
     "qwen3vl": "VLLM_QWEN3_VL_CUDA_DEVICE",
     "hunyuanocr": "VLLM_HUNYUAN_OCR_CUDA_DEVICE",
     "paddleocr-vl": "VLLM_PADDLEOCR_VL_CUDA_DEVICE",
+    "paddleocr-vl-15": "VLLM_PADDLEOCR_VL_15_CUDA_DEVICE",
     "dotsmocr": "VLLM_DOTS_MOCR_CUDA_DEVICE",
     "phi4multimodal": "VLLM_PHI4_MM_CUDA_DEVICE",
     "rolmocr": "VLLM_ROLMOCR_CUDA_DEVICE",
@@ -165,6 +166,8 @@ def gpu_device_for_endpoint(ep: dict[str, Any]) -> int:
         return int(os.getenv("VLLM_HUNYUAN_OCR_CUDA_DEVICE", str(ep.get("gpu_device", 1))))
     if ep_id == "paddleocr-vl":
         return int(os.getenv("VLLM_PADDLEOCR_VL_CUDA_DEVICE", str(ep.get("gpu_device", 1))))
+    if ep_id == "paddleocr-vl-15":
+        return int(os.getenv("VLLM_PADDLEOCR_VL_15_CUDA_DEVICE", str(ep.get("gpu_device", 1))))
     if ep_id == "dotsmocr":
         return int(os.getenv("VLLM_DOTS_MOCR_CUDA_DEVICE", str(ep.get("gpu_device", 1))))
     if ep_id == "phi4multimodal":
