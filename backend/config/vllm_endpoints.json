@@ -143,6 +143,21 @@
       "gpu_device": 1,
       "port": 8111,
       "speed_tier": "very_slow"
+    },
+    {
+      "id": "qwen3omni",
+      "label": "Qwen3-Omni",
+      "models": [
+        "Qwen/Qwen3-Omni-30B-A3B-Instruct",
+        "Qwen/Qwen3-Omni-30B-A3B-Thinking"
+      ],
+      "host_env": "VLLM_QWEN3_OMNI_HOST",
+      "default_host": "http://vllm-qwen3-omni:8112",
+      "compose_service": "vllm-qwen3-omni",
+      "compose_profile": "qwen3omni",
+      "gpu_device": 1,
+      "port": 8112,
+      "speed_tier": "very_slow"
     }
   ]
 }

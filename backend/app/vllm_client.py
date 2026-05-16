@@ -28,6 +28,7 @@ _DOTS_MOCR_RE = re.compile(r"dots\.mocr|dotsmocr", re.IGNORECASE)
 _PHI4_MM_RE = re.compile(r"phi-4-multimodal", re.IGNORECASE)
 _ROLMOCR_RE = re.compile(r"rolmocr", re.IGNORECASE)
 _NUMARKDOWN_RE = re.compile(r"numarkdown|nu\s*markdown", re.IGNORECASE)
+_QWEN3_OMNI_RE = re.compile(r"qwen3-omni|qwen.*3.*omni", re.IGNORECASE)
 
 
 def _strip_numarkdown_answer(text: str) -> str:
@@ -82,6 +83,8 @@ def _max_tokens_for_model(model: str) -> int:
         return int(os.getenv("VLLM_ROLMOCR_MAX_TOKENS", "4096"))
     if _NUMARKDOWN_RE.search(model):
         return int(os.getenv("VLLM_NUMARKDOWN_MAX_TOKENS", "8192"))
+    if _QWEN3_OMNI_RE.search(model):
+        return int(os.getenv("VLLM_QWEN3_OMNI_MAX_TOKENS", "4096"))
     return VLLM_MAX_TOKENS
 
 
@@ -93,6 +96,13 @@ def _sampling_for_model(model: str) -> dict[str, float]:
     if _NUMARKDOWN_RE.search(model):
         return {"temperature": float(os.getenv("VLLM_NUMARKDOWN_TEMPERATURE", "0.4"))}
     return {}
+
+
+def _qwen3_omni_chat_extras(model: str) -> dict[str, Any]:
+    """vLLM-Omni chat completions: request text-only output for OCR runs."""
+    if not _QWEN3_OMNI_RE.search(model):
+        return {}
+    return {"modalities": ["text"]}
 
 
 def _hunyuan_ocr_extras(model: str) -> dict[str, Any]:
@@ -161,6 +171,9 @@ async def list_models_with_classification() -> list[dict[str, Any]]:
             available = bool(host) and (model_id in live or bool(alias and alias in live))
         elif _NUMARKDOWN_RE.search(model_id):
             alias = os.getenv("VLLM_NUMARKDOWN_CHAT_MODEL", "").strip()
+            available = bool(host) and (model_id in live or bool(alias and alias in live))
+        elif _QWEN3_OMNI_RE.search(model_id):
+            alias = os.getenv("VLLM_QWEN3_OMNI_CHAT_MODEL", "").strip()
             available = bool(host) and (model_id in live or bool(alias and alias in live))
         else:
             available = bool(host) and model_id in live
@@ -252,6 +265,10 @@ def _chat_model_id(model: str) -> str:
         override = os.getenv("VLLM_NUMARKDOWN_CHAT_MODEL", "").strip()
         if override:
             return override
+    if _QWEN3_OMNI_RE.search(model):
+        override = os.getenv("VLLM_QWEN3_OMNI_CHAT_MODEL", "").strip()
+        if override:
+            return override
     return model
 
 
@@ -281,6 +298,7 @@ async def ocr_chat(model: str, prompt: str, image_bytes: bytes) -> tuple[str, di
     }
     payload.update(_sampling_for_model(model))
     payload.update(_hunyuan_ocr_extras(model))
+    payload.update(_qwen3_omni_chat_extras(model))
     extra = _deepseek_extra_body(model)
     if extra:
         payload.update(extra)
@@ -305,6 +323,8 @@ async def ocr_chat(model: str, prompt: str, image_bytes: bytes) -> tuple[str, di
     choice = (data.get("choices") or [{}])[0]
     text = (choice.get("message") or {}).get("content", "") or ""
     if _NUMARKDOWN_RE.search(model):
+        text = _strip_numarkdown_answer(text)
+    elif _QWEN3_OMNI_RE.search(model) and "thinking" in model.lower():
         text = _strip_numarkdown_answer(text)
     usage = data.get("usage") or {}
     meta = {

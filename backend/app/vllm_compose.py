@@ -134,6 +134,8 @@ def gpu_device_for_endpoint(ep: dict[str, Any]) -> int:
         return int(os.getenv("VLLM_ROLMOCR_CUDA_DEVICE", str(ep.get("gpu_device", 1))))
     if ep_id == "numarkdown":
         return int(os.getenv("VLLM_NUMARKDOWN_CUDA_DEVICE", str(ep.get("gpu_device", 1))))
+    if ep_id == "qwen3omni":
+        return int(os.getenv("VLLM_QWEN3_OMNI_CUDA_DEVICE", str(ep.get("gpu_device", 1))))
     if ep_id == "mineru-diffusion":
         return int(os.getenv("MINERU_DIFFUSION_CUDA_DEVICE", str(ep.get("gpu_device", 0))))
     if ep_id == "nemotron-ocr-v2":

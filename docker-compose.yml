@@ -23,6 +23,17 @@ x-vllm-gpu: &vllm-gpu
           - driver: nvidia
             capabilities: [gpu]
 
+# vLLM-Omni image (Qwen3-Omni needs `vllm serve ... --omni`, not stock vllm-openai)
+x-vllm-omni-service: &vllm-omni-service
+  image: ${VLLM_OMNI_IMAGE:-vllm/vllm-omni:v0.20.0}
+  restart: unless-stopped
+  ipc: host
+  shm_size: "16gb"
+  entrypoint: ["/bin/bash", "/docker/vllm-omni-entrypoint.sh"]
+  volumes:
+    - vllm-hf-cache:/root/.cache/huggingface
+    - ./docker/vllm-omni-entrypoint.sh:/docker/vllm-omni-entrypoint.sh:ro
+
 services:
   # Build-only convenience for publishing CPU bases (optional profile `bases`).
   # Not intended for `up` (entrypoint exits immediately).
@@ -456,6 +467,34 @@ services:
       retries: 60
       start_period: 1800s
 
+  vllm-qwen3-omni:
+    <<: [*vllm-omni-service, *vllm-gpu]
+    profiles: ["qwen3omni"]
+    environment:
+      HF_HOME: /root/.cache/huggingface
+      HUGGING_FACE_HUB_TOKEN: ${HUGGING_FACE_HUB_TOKEN:-}
+      VLLM_GPU_MEMORY_UTILIZATION: ${VLLM_QWEN3_OMNI_GPU_MEMORY_UTIL:-0.85}
+      VLLM_QWEN3_OMNI_MAX_MODEL_LEN: ${VLLM_QWEN3_OMNI_MAX_MODEL_LEN:-8192}
+      VLLM_MODEL: ${VLLM_QWEN3_OMNI_MODEL:-Qwen/Qwen3-Omni-30B-A3B-Instruct}
+      VLLM_PORT: "8112"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ["${VLLM_QWEN3_OMNI_CUDA_DEVICE:-1}"]
+              capabilities: [gpu]
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "python3 -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8112/v1/models')\"",
+        ]
+      interval: 30s
+      timeout: 15s
+      retries: 60
+      start_period: 1800s
+
   nemotron-ocr-v2:
     profiles: ["nemotron"]
     build:
@@ -692,6 +731,7 @@ services:
       VLLM_PHI4_MM_HOST: ${VLLM_PHI4_MM_HOST:-http://vllm-phi4-mm:8109}
       VLLM_ROLMOCR_HOST: ${VLLM_ROLMOCR_HOST:-http://vllm-rolmocr:8110}
       VLLM_NUMARKDOWN_HOST: ${VLLM_NUMARKDOWN_HOST:-http://vllm-numarkdown:8111}
+      VLLM_QWEN3_OMNI_HOST: ${VLLM_QWEN3_OMNI_HOST:-http://vllm-qwen3-omni:8112}
       MINERU_DIFFUSION_HOST: ${MINERU_DIFFUSION_HOST:-http://mineru-diffusion:8200}
       NEMOTRON_OCR_HOST: ${NEMOTRON_OCR_HOST:-http://nemotron-ocr-v2:8210}
       RAPIDOCR_HOST: ${RAPIDOCR_HOST:-http://rapidocr:8220}

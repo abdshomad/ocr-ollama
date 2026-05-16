@@ -53,6 +53,7 @@ Treat these as **done** unless adding a second checkpoint or fixing gaps.
 | **Phi-4-multimodal** | vLLM (`vllm-phi4-mm`, profile `phi4mm`) | MS license; **`microsoft/Phi-4-multimodal-instruct`**, port 8109 — [phi4-multimodal-vllm-integration.md](../issues/phi4-multimodal-vllm-integration.md). |
 | **RolmOCR** | vLLM (`vllm-rolmocr`, profile `rolmocr`) | Apache 2.0; **`reducto/RolmOCR`**, port 8110 — [rolmocr-vllm-integration.md](../issues/rolmocr-vllm-integration.md). |
 | **NuMarkdown** | vLLM (`vllm-numarkdown`, profile `numarkdown`) | MIT; **`numind/NuMarkdown-8B-Thinking`**, port 8111 — [numarkdown-vllm-integration.md](../issues/numarkdown-vllm-integration.md). |
+| **Qwen3-Omni** | vLLM-Omni (`vllm-qwen3-omni`, profile `qwen3omni`) | Qwen license; **`Qwen/Qwen3-Omni-30B-A3B-*`**, port 8112 (`vllm serve --omni`) — [qwen3-omni-vllm-integration.md](../issues/qwen3-omni-vllm-integration.md). |
 | Gemma 4 | Optional vLLM (`gemma4` profile) | User list: “Gemma 4 OCR”. |
 | **Hunyuan OCR** | vLLM (`vllm-hunyuanocr`, profile `hunyuanocr`) | `tencent/HunyuanOCR` ~1B VLM; Tencent license — see HF card. |
 | Qwen3-VL | Optional vLLM (`qwen3vl`) | Related to “Qwen 3 … VL OCR”. |
@@ -88,7 +89,7 @@ Treat these as **done** unless adding a second checkpoint or fixing gaps.
 | Mistral OCR / “Mistral OCR 3” | API / vLLM | **Often API-only** | If closed API, add `engine.type: http_proxy` pattern or document “out of self-host”. |
 | Dolphin (X link) | Research | — | Wait for open weights + license. |
 | [Dots.OCR](https://github.com/rednote-hilab/dots.ocr) | vLLM (primary) | MIT | **In repo** as **`rednote-hilab/dots.mocr`** on optional vLLM (`dotsmocr` profile). Newer **`dots.mocr`** line; weights on HF. |
-| [Qwen3-Omni](https://github.com/QwenLM/Qwen3-Omni) | vLLM | Qwen license | Large multimodal; **optional profile** like Qwen3-VL. |
+| [Qwen3-Omni](https://github.com/QwenLM/Qwen3-Omni) | vLLM-Omni | Qwen license | **In repo** — optional **`vllm-qwen3-omni`** (`vllm serve --omni`, default `Qwen/Qwen3-Omni-30B-A3B-Instruct`, profile **`qwen3omni`**, port **8112**) — [qwen3-omni-vllm-integration.md](../issues/qwen3-omni-vllm-integration.md). |
 | owlOCR / OCR Flux / Monkey OCR / Nanonets | Research | — | Clarify vendor vs OSS; many are **marketing names**. |
 | [NuMarkdown](https://github.com/numindai/NuMarkdown) / [NuMarkdown-8B](https://huggingface.co/numind/NuMarkdown-8B-Thinking) | vLLM | MIT | **In repo** — optional vLLM `vllm-numarkdown` (`numind/NuMarkdown-8B-Thinking`, profile `numarkdown`, port 8111) — [numarkdown-vllm-integration.md](../issues/numarkdown-vllm-integration.md). |
 | DocParse / OCR Docker / OpenPage / OCRbro / DocuMagnet / OCR Studio | Research | — | Could be products; **do not implement** until open inference surface exists. |
@@ -135,9 +136,9 @@ Order balances **license safety**, **engineering clarity**, and **distinct capab
 
 ### Wave 5 — New VLMs on vLLM (when distinct from existing)
 
-**Candidates:** ~~Phi-4-multimodal~~ (**in repo** — vLLM `vllm-phi4-mm`, profile `phi4mm`, port 8109), ~~RolmOCR~~ (**in repo** — vLLM `vllm-rolmocr`, profile `rolmocr`, port 8110), ~~NuMarkdown~~ (**in repo** — vLLM `vllm-numarkdown`, profile `numarkdown`, port 8111), Qwen3-Omni, Smol Docling (if servable).
+**Candidates:** ~~Phi-4-multimodal~~ (**in repo** — vLLM `vllm-phi4-mm`, profile `phi4mm`, port 8109), ~~RolmOCR~~ (**in repo** — vLLM `vllm-rolmocr`, profile `rolmocr`, port 8110), ~~NuMarkdown~~ (**in repo** — vLLM `vllm-numarkdown`, profile `numarkdown`, port 8111), ~~Qwen3-Omni~~ (**in repo** — vLLM-Omni `vllm-qwen3-omni`, profile `qwen3omni`, port 8112), Smol Docling (if servable).
 
-**Approach:** Same as LightOn/Chandra: `docker-compose` profile, `vllm-entrypoint.sh` branch, `prompts.json`, `VLLM_*` limits.
+**Approach:** Compose profile + serve recipe: stock vLLM models use `vllm-entrypoint.sh`; **Qwen3-Omni** uses **`vllm/vllm-omni`** + `vllm-omni-entrypoint.sh` (`--omni`). Set `prompts.json` and `VLLM_*` limits per model family.
 
 ### Wave 6 — Browser / WebGPU demos
 
@@ -183,6 +184,7 @@ Use this as a **program tracker**; implementation tickets can reference wave + r
 
 | Date | Change |
 |------|--------|
+| 2026-05-16 | **Qwen3-Omni** — optional vLLM-Omni `vllm-qwen3-omni` (`Qwen/Qwen3-Omni-30B-A3B-Instruct` default, profile `qwen3omni`, port 8112) |
 | 2026-05-16 | **NuMarkdown** — optional vLLM `vllm-numarkdown` (`numind/NuMarkdown-8B-Thinking`, profile `numarkdown`, port 8111) |
 | 2026-05-16 | **RolmOCR** — optional vLLM `vllm-rolmocr` (`reducto/RolmOCR`, profile `rolmocr`, port 8110) |
 | 2026-05-16 | **Phi-4-multimodal** — optional vLLM `vllm-phi4-mm` (`microsoft/Phi-4-multimodal-instruct`, profile `phi4mm`, port 8109) |

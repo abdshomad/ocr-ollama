@@ -9,6 +9,8 @@
     "Qwen/Qwen3-VL-8B-Instruct": "Perform OCR on this image. Extract all visible text in reading order. Preserve line breaks, tables, and obvious paragraphs. Output only the transcribed text, no preamble.",
     "Qwen/Qwen3-VL-4B-Instruct": "Perform OCR on this image. Extract all visible text in reading order. Preserve line breaks, tables, and obvious paragraphs. Output only the transcribed text, no preamble.",
     "Qwen/Qwen3-VL-2B-Instruct": "Perform OCR on this image. Extract all visible text in reading order. Preserve line breaks, tables, and obvious paragraphs. Output only the transcribed text, no preamble.",
+    "Qwen/Qwen3-Omni-30B-A3B-Instruct": "Perform OCR on this image. Extract all visible text in reading order. Preserve line breaks, tables, and obvious paragraphs. Output only the transcribed text, no preamble.",
+    "Qwen/Qwen3-Omni-30B-A3B-Thinking": "Perform OCR on this image. Extract all visible text in reading order. Preserve line breaks, tables, and obvious paragraphs. Put only the final transcript inside a single <answer>...</answer> section, with no other commentary.",
     "tencent/HunyuanOCR": "Extract all information from the main body of the document image and represent it in markdown format, ignoring headers and footers. Tables should be expressed in HTML format, formulas using LaTeX, organized by reading order.",
     "PaddlePaddle/PaddleOCR-VL": "OCR:",
     "rednote-hilab/dots.mocr": "Extract the text content from this image.",
