@@ -2,6 +2,10 @@
 
 Guidance for AI agents working in this repository.
 
+## Karpathy / Cursor rules (submodule)
+
+**Always** read and follow the rules in [andrej-karpathy-skills/CURSOR.md](andrej-karpathy-skills/CURSOR.md). That file is maintained in the [`andrej-karpathy-skills`](andrej-karpathy-skills/) submodule and **updated periodically**—treat the latest version in the working tree as binding general guidance alongside this document. For OCR Ollama–specific requirements (plans, architecture, `next` workflow, issues), this `AGENTS.md` and linked `plan/` / `issues/` docs take precedence when they conflict with generic rules there.
+
 ## Project summary
 
 Monorepo: **Vite + React** frontend and **FastAPI** backend for OCR via **vLLM + DeepSeek-OCR** (default) or **Ollama**. Docker Compose runs `vllm`, `backend`, and `nginx` on one host port. Users upload or capture images, run OCR or **arena** compare, optional **browser scan**, and browse **history**. Inference backend and host URL are configurable in **Settings**.
