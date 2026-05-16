@@ -133,7 +133,8 @@ export function parseEntities(rawText: string, engine: string): ScanExtraction {
 
   const skuScore = Math.min(1, sku.length / 12);
   const dateScore = expiry.strength;
-  const engineBoost = engine === "paligemma" ? 0.1 : engine === "trocr" ? 0.05 : 0;
+  const engineBoost =
+    engine === "paligemma" ? 0.1 : engine === "granite" ? 0.08 : engine === "trocr" ? 0.05 : 0;
   const confidence = Math.min(1, Math.max(0.15, skuScore * 0.5 + dateScore * 0.45 + engineBoost));
 
   return {

@@ -1,6 +1,6 @@
-export type EngineId = "auto" | "trocr" | "paligemma" | "tesseract";
+export type EngineId = "auto" | "trocr" | "paligemma" | "granite" | "tesseract";
 
-export type WorkerEngine = "trocr" | "paligemma" | "tesseract";
+export type WorkerEngine = "trocr" | "paligemma" | "granite" | "tesseract";
 
 export interface ScanExtraction {
   sku: string;

@@ -12,6 +12,11 @@ const ENGINE_OPTIONS: { id: EngineId; label: string; hint: string }[] = [
   { id: "auto", label: "Auto", hint: "TrOCR on capable devices, else Tesseract" },
   { id: "trocr", label: "TrOCR", hint: "Transformers.js handwritten OCR (~100MB)" },
   { id: "paligemma", label: "PaliGemma (slow)", hint: "High quality VLM (~1–2GB download)" },
+  {
+    id: "granite",
+    label: "Granite Docling",
+    hint: "IBM Granite Docling 258M ONNX in-browser (~300MB+ download)",
+  },
   { id: "tesseract", label: "Fast scan", hint: "Tesseract.js for high-contrast text" },
 ];
 

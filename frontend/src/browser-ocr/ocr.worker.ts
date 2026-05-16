@@ -1,4 +1,5 @@
 import type { WorkerEngine, WorkerRequest, WorkerResponse } from "./types";
+import { disposeGraniteDocling, loadGraniteDocling, runGraniteDocling } from "./engines/graniteDocling";
 import { disposePaliGemma, loadPaliGemma, runPaliGemma } from "./engines/paligemma";
 import { disposeTrocr, loadTrocr, runTrocr } from "./engines/trocr";
 import { disposeTesseract, loadTesseract, runTesseract } from "./engines/tesseract";
@@ -37,6 +38,8 @@ async function initEngine(engine: WorkerEngine): Promise<void> {
     await loadTrocr(progressCb);
   } else if (engine === "paligemma") {
     await loadPaliGemma(progressCb);
+  } else if (engine === "granite") {
+    await loadGraniteDocling(progressCb);
   } else {
     await loadTesseract((p) => onProgress(undefined, Math.round(p.progress * 100), "load"));
   }
@@ -64,6 +67,8 @@ async function runInference(
     }
   } else if (engine === "paligemma") {
     rawText = await runPaliGemma(buffer, width, height);
+  } else if (engine === "granite") {
+    rawText = await runGraniteDocling(buffer, mime);
   } else {
     rawText = await runTesseract(buffer);
   }
@@ -75,6 +80,7 @@ async function runInference(
 async function disposeAll(): Promise<void> {
   disposeTrocr();
   disposePaliGemma();
+  disposeGraniteDocling();
   await disposeTesseract();
   activeEngine = null;
 }

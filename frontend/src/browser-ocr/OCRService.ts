@@ -7,7 +7,7 @@ import OcrWorker from "./ocr.worker?worker";
 const ENGINE_STORAGE_KEY = "browser-ocr-engine";
 
 export function resolveWorkerEngine(preferred: EngineId): WorkerEngine {
-  if (preferred === "trocr" || preferred === "paligemma" || preferred === "tesseract") {
+  if (preferred === "trocr" || preferred === "paligemma" || preferred === "granite" || preferred === "tesseract") {
     return preferred;
   }
   const mem = (navigator as Navigator & { deviceMemory?: number }).deviceMemory;

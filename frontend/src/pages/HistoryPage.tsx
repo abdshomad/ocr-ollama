@@ -62,29 +62,47 @@ export function HistoryPage() {
         />
         {error && <div className="error-banner">{error}</div>}
         <ul className="history-list" style={{ marginTop: "1rem" }}>
-          {filtered.map((item) => (
-            <li key={item.id} className="history-item">
-              <div>
-                <strong>
-                  {item.kind === "arena" ? "Arena" : item.kind === "browser_scan" ? "Browser scan" : "Single"}
-                </strong>
-                <span className="muted"> — {new Date(item.timestamp).toLocaleString()}</span>
-                <br />
-                <span className="muted">{item.models.join(", ")}</span>
-                <p className="muted" style={{ margin: "0.25rem 0 0" }}>
-                  {item.preview || "(no text)"}
-                </p>
-              </div>
-              <div className="row">
-                <button type="button" onClick={() => openDetail(item.id)}>
-                  Open
-                </button>
-                <button type="button" onClick={() => void onDelete(item.id)}>
-                  Delete
-                </button>
-              </div>
-            </li>
-          ))}
+          {filtered.map((item) => {
+            const selected = detail?.id === item.id;
+            return (
+              <li
+                key={item.id}
+                className={`history-item${selected ? " history-item--selected" : ""}`}
+                role="button"
+                tabIndex={0}
+                onClick={() => openDetail(item.id)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    openDetail(item.id);
+                  }
+                }}
+              >
+                <div>
+                  <strong>
+                    {item.kind === "arena" ? "Arena" : item.kind === "browser_scan" ? "Browser scan" : "Single"}
+                  </strong>
+                  <span className="muted"> — {new Date(item.timestamp).toLocaleString()}</span>
+                  <br />
+                  <span className="muted">{item.models.join(", ")}</span>
+                  <p className="muted" style={{ margin: "0.25rem 0 0" }}>
+                    {item.preview || "(no text)"}
+                  </p>
+                </div>
+                <div className="row">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      void onDelete(item.id);
+                    }}
+                  >
+                    Delete
+                  </button>
+                </div>
+              </li>
+            );
+          })}
           {filtered.length === 0 && <p className="muted">No history yet.</p>}
         </ul>
       </section>
