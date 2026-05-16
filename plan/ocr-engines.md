@@ -97,7 +97,7 @@ Server GPU models are usually faster and better than browser VLMs for full pages
 |----------|---------|------------------------|
 | **vLLM OpenAI** | DeepSeek, GLM, LightOn, Chandra, Gemma 4 (optional `gemma4`), Qwen3-VL (optional `qwen3vl`) | `vllm` |
 | **Custom GPU sidecar** | MinerU (`nano_dvlm`), Nemotron OCR v2 (`nemotron`) | `nano_dvlm`, `nemotron` |
-| **Custom CPU sidecar** | RapidOCR ONNX (`rapidocr`) | `rapidocr` |
+| **Custom CPU sidecar** | RapidOCR ONNX (`rapidocr`), OnnxTR (`onnxtr`) | `rapidocr`, `onnxtr` |
 | **Subprocess (Node)** | LiteParse | `litparse` |
 | **Ollama** | `deepseek-ocr`, `glm-ocr`, PaddleOCR-VL, Qwen, Mistral | `ollama` (global backend) |
 | **Browser worker** | TrOCR, Tesseract, PaliGemma | N/A (`POST /api/scan` only) |
@@ -123,6 +123,7 @@ Server GPU models are usually faster and better than browser VLMs for full pages
 |--------|---------|
 | **In repo today** | DeepSeek-OCR, GLM-OCR (vLLM); Gemma 4 E4B (optional `vllm-gemma4`); Qwen3-VL Instruct (optional `vllm-qwen3-vl`); TrOCR, Tesseract, PaliGemma (browser); Ollama catalog |
 | **In repo (RapidOCR)** | RapidOCR ONNX (`rapidocr`, profile `rapidocr`, port 8220, CPU) |
+| **In repo (OnnxTR)** | OnnxTR (`onnxtr`, profile `onnxtr`, port 8230, CPU) |
 | **In repo (Nemotron OCR v2)** | Nemotron OCR v2 multilingual (`nemotron-ocr-v2`, profile `nemotron`, port 8210) |
 | **Planned (Medium four)** | — (LiteParse shipped) |
 | **In repo (LiteParse)** | LiteParse (`litparse`, local `lit` CLI, PDF + multi-format) |
@@ -151,7 +152,7 @@ For the **same model**, Ollama is typically **~1.2–1.5× slower** than vLLM, w
 | `speed_tier` | Engines |
 |--------------|---------|
 | `instant` | LiteParse (workload A only) |
-| `fast` | Tesseract, TrOCR, LightOnOCR, Nemotron OCR v2 (sidecar), RapidOCR (`rapidocr`) |
+| `fast` | Tesseract, TrOCR, LightOnOCR, Nemotron OCR v2 (sidecar), RapidOCR (`rapidocr`), OnnxTR (`onnxtr`) |
 | `medium` | DeepSeek-OCR, GLM-OCR, MinerU-Diffusion (batched) |
 | `slow` | MinerU (sequential), Chandra vLLM, PaliGemma (browser) |
 | `very_slow` | Chandra HF, Gemma 4 vLLM, Qwen3-VL vLLM, Qwen/Mistral OCR (Ollama), hybrid pipelines |
@@ -187,4 +188,4 @@ For the **same model**, Ollama is typically **~1.2–1.5× slower** than vLLM, w
 | 2026-05-16 | MinerU-Diffusion in repo (`mineru-diffusion` nano_dvlm sidecar) |
 | 2026-05-16 | LiteParse in repo (`litparse`, `lit` CLI in backend, PDF uploads) |
 | 2026-05-16 | Gemma 4 optional vLLM endpoint (`google/gemma-4-E4B-it`, profile `gemma4`, port 8104) |
-| 2026-05-16 | RapidOCR ONNX CPU sidecar (`rapidocr`, profile `rapidocr`, port 8220) |
+| 2026-05-16 | OnnxTR ONNX CPU sidecar (`onnxtr`, profile `onnxtr`, port 8230) |

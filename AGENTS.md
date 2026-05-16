@@ -168,6 +168,7 @@ Index: [issues/README.md](issues/README.md). Primary vLLM reference: [issues/vll
 | Run vLLM (Gemma 4) | `docker compose --profile gemma4 up -d vllm-gemma4` — [issues/gemma4-vllm-integration.md](issues/gemma4-vllm-integration.md) |
 | Run vLLM (Qwen3-VL) | `docker compose --profile qwen3vl up -d vllm-qwen3-vl` — [issues/qwen3-vl-vllm-integration.md](issues/qwen3-vl-vllm-integration.md) |
 | Run RapidOCR (ONNX CPU) | `docker compose --profile rapidocr up -d rapidocr` — [issues/rapidocr-integration.md](issues/rapidocr-integration.md) |
+| Run OnnxTR (ONNX CPU) | `docker compose --profile onnxtr up -d onnxtr` — [issues/onnxtr-integration.md](issues/onnxtr-integration.md) |
 | Load/unload vLLM per GPU | **GPU** page or `POST /api/vllm/services/{deepseek\|glm}/start\|stop` |
 | GPU metrics + compose control | `GET /api/gpu` (backend needs Docker socket; `COMPOSE_PROJECT_NAME` must match stack) |
 

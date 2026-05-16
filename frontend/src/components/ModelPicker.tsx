@@ -23,6 +23,9 @@ function rowTitle(m: OllamaModel, up: boolean): string | undefined {
     if (m.engine_type === "rapidocr") {
       return "Start the rapidocr service (compose profile rapidocr), then refresh.";
     }
+    if (m.engine_type === "onnxtr") {
+      return "Start the onnxtr service (compose profile onnxtr), then refresh.";
+    }
     return undefined;
   }
   if (m.input_modes?.length) {

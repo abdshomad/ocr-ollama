@@ -15,6 +15,20 @@
       "speed_tier": "fast"
     },
     {
+      "id": "onnxtr",
+      "type": "onnxtr",
+      "label": "OnnxTR",
+      "models": ["onnxtr"],
+      "input_modes": ["image"],
+      "host_env": "ONNXTR_HOST",
+      "default_host": "http://onnxtr:8230",
+      "compose_service": "onnxtr",
+      "compose_profile": "onnxtr",
+      "gpu_device": -1,
+      "port": 8230,
+      "speed_tier": "fast"
+    },
+    {
       "id": "litparse",
       "type": "litparse",
       "label": "LiteParse",

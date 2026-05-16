@@ -42,6 +42,7 @@ Treat these as **done** unless adding a second checkpoint or fixing gaps.
 | LiteParse | `litparse` engine | User list: “LiteParse”. |
 | Nemotron OCR v2 | Sidecar `nemotron` | User list partially overlaps “Nemotron-Parse” naming. |
 | **RapidOCR** | Sidecar `rapidocr` | ONNX (**CPU**), Apache 2.0; model id **`rapidocr`**, profile **`rapidocr`**. |
+| **OnnxTR** | Sidecar `onnxtr` | ONNX (**CPU**), Apache 2.0; model id **`onnxtr`**, profile **`onnxtr`**. |
 | Gemma 4 | Optional vLLM (`gemma4` profile) | User list: “Gemma 4 OCR”. |
 | Qwen3-VL | Optional vLLM (`qwen3vl`) | Related to “Qwen 3 … VL OCR”. |
 | TrOCR | Browser `/scan` | User asked to **keep as example only** for server path — OK to leave browser-only. |
@@ -64,7 +65,7 @@ Treat these as **done** unless adding a second checkpoint or fixing gaps.
 | [Surya](https://github.com/VikParuchuri/surya) | Sidecar / Subproc | GPL-3.0 | **Conflicts with prior “out of scope”** in medium plan; only integrate if project **accepts GPL** in sidecar boundary. |
 | [Tesseract](https://github.com/tesseract-ocr/tesseract) (native) | Subproc | Apache 2.0 | Wrap `tesseract` binary or `pytesseract`; useful for **CPU baseline** and PDF raster fallback. |
 | [Docling](https://github.com/DS4SD/docling) | Sidecar | MIT (verify sub-deps) | Layout + OCR pipeline; likely **heavy**; good sidecar candidate. |
-| [OnnxTR](https://github.com/felixdittrich92/OnnxTR) | Subproc / Sidecar | Check LICENSE | ONNX — fits **RapidOCR / Onnx** cluster. |
+| [OnnxTR](https://github.com/felixdittrich92/OnnxTR) | Subproc / Sidecar | Apache 2.0 | ONNX — **in repo** as CPU sidecar (`onnxtr`, profile `onnxtr`, port 8230). |
 | [TrOCR](https://huggingface.co/docs/transformers/en/model_doc/trocr) | Browser / Example | Apache 2.0 | **Example / research** on server; browser path exists. |
 | [LightOnOCR](https://huggingface.co/blog/lightonai/lightonocr) | vLLM | Apache 2.0 | **In repo**; track “Light On OCR 2 1B” as **model ID / prompt** updates only. |
 | Doc OWL | Research | — | Specify HF model id (e.g. DocOwl family) before design. |
@@ -99,7 +100,7 @@ Order balances **license safety**, **engineering clarity**, and **distinct capab
 
 ### Wave 1 — Classical / ONNX cluster (CPU-friendly sidecars)
 
-**Candidates:** ~~RapidOCR~~ (**in repo**), OnnxTR, optional native **Tesseract** wrapper, docTR (if smaller variant fits CPU).
+**Candidates:** ~~RapidOCR~~ (**in repo**), ~~OnnxTR~~ (**in repo**), optional native **Tesseract** wrapper, docTR (if smaller variant fits CPU).
 
 **Approach:** Thin FastAPI sidecar in `docker/` + small adapter in `backend/app/`. Prefer **one multi-model sidecar** only if deps align; else separate images to avoid dependency hell.
 
@@ -171,4 +172,4 @@ Use this as a **program tracker**; implementation tickets can reference wave + r
 
 | Date | Change |
 |------|--------|
-| 2026-05-16 | RapidOCR CPU sidecar (`rapidocr`, profile `rapidocr`, port 8220) |
+| 2026-05-16 | OnnxTR CPU sidecar (`onnxtr`, profile `onnxtr`, port 8230) |

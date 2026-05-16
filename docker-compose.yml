@@ -296,6 +296,29 @@ services:
       retries: 8
       start_period: 300s
 
+  onnxtr:
+    profiles: ["onnxtr"]
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.onnxtr
+    image: ${ONNXTR_IMAGE:-ocr-ollama-onnxtr:latest}
+    restart: unless-stopped
+    environment:
+      ONNXTR_PORT: "8230"
+      ONNXTR_MODEL_ID: onnxtr
+    volumes:
+      - onnxtr-onnx-cache:/root/.cache
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "python3 -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8230/health')\"",
+        ]
+      interval: 30s
+      timeout: 15s
+      retries: 8
+      start_period: 420s
+
   backend:
     build:
       context: .
@@ -312,6 +335,7 @@ services:
       MINERU_DIFFUSION_HOST: ${MINERU_DIFFUSION_HOST:-http://mineru-diffusion:8200}
       NEMOTRON_OCR_HOST: ${NEMOTRON_OCR_HOST:-http://nemotron-ocr-v2:8210}
       RAPIDOCR_HOST: ${RAPIDOCR_HOST:-http://rapidocr:8220}
+      ONNXTR_HOST: ${ONNXTR_HOST:-http://onnxtr:8230}
       VLLM_HOST: ${VLLM_HOST:-http://vllm-deepseek:8100}
       VLLM_TIMEOUT: ${VLLM_TIMEOUT:-600}
       OLLAMA_HOST: ${OLLAMA_HOST:-http://host.docker.internal:11434}
@@ -346,3 +370,4 @@ services:
 volumes:
   vllm-hf-cache:
   rapidocr-onnx-cache:
+  onnxtr-onnx-cache:

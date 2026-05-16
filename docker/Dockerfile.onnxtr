@@ -1,0 +1,28 @@
+# OnnxTR — ONNX Runtime CPU sidecar (OpenCV libs on slim).
+# Upstream: https://github.com/felixdittrich92/OnnxTR
+
+FROM python:3.12-slim-bookworm
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        libgl1 \
+        libglib2.0-0 \
+        libgomp1 \
+        libxcb1 \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN pip install --no-cache-dir \
+    "onnxtr[cpu]>=0.8.1,<0.9" \
+    "uvicorn[standard]>=0.30.0" \
+    "fastapi>=0.115.0" \
+    "python-multipart>=0.0.9"
+
+ENV ONNXTR_PORT=8230 \
+    ONNXTR_MODEL_ID=onnxtr
+
+COPY docker/onnxtr/serve.py /opt/serve.py
+
+WORKDIR /opt
+EXPOSE 8230
+
+CMD ["python", "/opt/serve.py"]
