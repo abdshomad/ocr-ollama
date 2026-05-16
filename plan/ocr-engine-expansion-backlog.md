@@ -53,7 +53,7 @@
 | 2 | **Aya Vision OCR** | **Triaged 2026-05-16** — **`CohereLabs/aya-vision-8b`** (+ **`CohereLabs/aya-vision-32B`**); **CC-BY-NC 4.0** + Cohere AUP; **HF gated** (`HF_TOKEN`); **vLLM:** `vllm serve CohereLabs/aya-vision-8b` (architecture in vLLM supported models). **Ollama:** no official library pin found. See [issues/aya-vision-ocr-wave-r-triage.md](../issues/aya-vision-ocr-wave-r-triage.md). |
 | 3 | **Dolphin** | **Triaged 2026-05-16** — **ByteDance** line: **`ByteDance/Dolphin`** (v1, **MIT**); **`ByteDance/Dolphin-v2`** (**Qwen RESEARCH LICENSE**, NC). vLLM one-liner **unverified**; Transformers + [bytedance/Dolphin](https://github.com/bytedance/Dolphin) demos. See [issues/dolphin-wave-r-triage.md](../issues/dolphin-wave-r-triage.md). |
 | 4 | **owlOCR / OCR Flux / Monkey OCR / Nanonets** | **Triaged 2026-05-16** — disambiguation: **OlmOCR** `allenai/olmOCR-*` (Apache-2.0) vs Mac **OwlOCR**; **ChatDOC/OCRFlux-3B** (**Qwen Research LICENSE**, NC); **echo840/MonkeyOCR** (non-commercial per card); **nanonets/Nanonets-OCR-s** (HF license unclear; Qwen derivative). See [issues/marketing-ocr-names-wave-r-triage.md](../issues/marketing-ocr-names-wave-r-triage.md). |
-| 5 | **DocParse / OCR Docker / OpenPage / OCRbro / DocuMagnet / OCR Studio** | **Defer** until an **open inference surface** exists (documented API, container, or SDK with usable terms). |
+| 5 | **DocParse / OCR Docker / OpenPage / OCRbro / DocuMagnet / OCR Studio** | **Triaged 2026-05-16** — bundle is **mostly commercial / SDK / workflow glue** (e.g. Aryn DocParse, DocuMagnet, OCR Studio); **no** shared open HF weight for gateway Ship — **still deferred**. See [issues/vendor-ocr-products-wave-r-triage.md](../issues/vendor-ocr-products-wave-r-triage.md). |
 | 6 | **Gemma 3 OCR / Falcon OCR / Youtu-VL / ExaOCR / Col Pali / Pixl** | **Research**; **ColPali** is **retrieval** — different task unless explicitly scoped as “OCR-like”. |
 | 7 | **Pike PDF** | Clarify **library vs model** / inference entrypoint. |
 | 8 | **DeepSeek OCR 2 / Paddle OCR VL 1.5 / MinerU 2.5 / Dolphin v2 / Light On OCR 2** | **Watch upstream** until **public weights** + **stable serve recipe**; then promote to Spike/Ship. |
@@ -127,7 +127,7 @@ Treat these as **done** unless adding a second checkpoint or fixing gaps.
 | [Qwen3-Omni](https://github.com/QwenLM/Qwen3-Omni) | vLLM-Omni | Qwen license | **In repo** — optional **`vllm-qwen3-omni`** (`vllm serve --omni`, default `Qwen/Qwen3-Omni-30B-A3B-Instruct`, profile **`qwen3omni`**, port **8112**) — [qwen3-omni-vllm-integration.md](../issues/qwen3-omni-vllm-integration.md). |
 | owlOCR / OCR Flux / Monkey OCR / Nanonets | Mixed — see triage | **Varies** — OlmOCR Apache-2.0; OCRFlux Qwen Research NC; Monkey academic NC; Nanonets verify | **#4 triaged** — [marketing-ocr-names-wave-r-triage.md](../issues/marketing-ocr-names-wave-r-triage.md). |
 | [NuMarkdown](https://github.com/numindai/NuMarkdown) / [NuMarkdown-8B](https://huggingface.co/numind/NuMarkdown-8B-Thinking) | vLLM | MIT | **In repo** — optional vLLM `vllm-numarkdown` (`numind/NuMarkdown-8B-Thinking`, profile `numarkdown`, port 8111) — [numarkdown-vllm-integration.md](../issues/numarkdown-vllm-integration.md). |
-| DocParse / OCR Docker / OpenPage / OCRbro / DocuMagnet / OCR Studio | Research | — | **Next research triage (#5).** Could be products; **do not implement** until **open inference surface** exists. |
+| DocParse / OCR Docker / OpenPage / OCRbro / DocuMagnet / OCR Studio | Vendor / ambiguous | **Commercial or N/A** | **#5 triaged** — [vendor-ocr-products-wave-r-triage.md](../issues/vendor-ocr-products-wave-r-triage.md); **Ship still deferred** (no open inference artifact for bundle). |
 | Gemma 3 OCR / Falcon OCR / Youtu-VL / ~~Hunyuan OCR~~ / ExaOCR / Col Pali / Pixl | Research | — | **Next research triage (#6).** **Hunyuan:** shipped as `tencent/HunyuanOCR` vLLM (`hunyuanocr` profile). **ColPali** is retrieval — different task unless scoped to “OCR-like”. |
 | Pike PDF | Research | — | **Next research triage (#7).** Clarify if **library vs model** / inference artifact. |
 | DeepSeek OCR 2 / Paddle OCR VL 1.5 / MinerU 2.5 / Dolphin v2 / Light On OCR 2 | Research | — | **Next research triage (#8).** Track upstream; integrate when **public weights + stable serve recipe** exist. **Dolphin v2:** weights **`ByteDance/Dolphin-v2`** exist; **Qwen Research License** — [dolphin-wave-r-triage.md](../issues/dolphin-wave-r-triage.md). |
@@ -151,7 +151,7 @@ Order balances **license safety**, **engineering clarity**, and **distinct capab
 
 **Approach:** Spike only: HF id / license / serve command / sample output. Promote a row to **Ship** and a numbered wave only after exit criteria there are met — **do not** count Wave R as satisfying [AGENTS.md](../AGENTS.md) **`next` / `n`** until triage completes.
 
-**Progress (Wave R):** **#1** [issues/doc-owl-wave-r-triage.md](../issues/doc-owl-wave-r-triage.md). **#2** [issues/aya-vision-ocr-wave-r-triage.md](../issues/aya-vision-ocr-wave-r-triage.md). **#3** [issues/dolphin-wave-r-triage.md](../issues/dolphin-wave-r-triage.md). **#4** [issues/marketing-ocr-names-wave-r-triage.md](../issues/marketing-ocr-names-wave-r-triage.md). **#5** onward — not started.
+**Progress (Wave R):** **#1** [issues/doc-owl-wave-r-triage.md](../issues/doc-owl-wave-r-triage.md). **#2** [issues/aya-vision-ocr-wave-r-triage.md](../issues/aya-vision-ocr-wave-r-triage.md). **#3** [issues/dolphin-wave-r-triage.md](../issues/dolphin-wave-r-triage.md). **#4** [issues/marketing-ocr-names-wave-r-triage.md](../issues/marketing-ocr-names-wave-r-triage.md). **#5** [issues/vendor-ocr-products-wave-r-triage.md](../issues/vendor-ocr-products-wave-r-triage.md). **#6** onward — not started.
 
 ### Wave 1 — Classical / ONNX cluster (CPU-friendly sidecars)
 
@@ -222,6 +222,7 @@ Use this as a **program tracker**; implementation tickets can reference wave + r
 
 | Date | Change |
 |------|--------|
+| 2026-05-16 | **Wave R #5** vendor DocParse/OCR Docker/OpenPage/OCRbro/DocuMagnet/OCR Studio — [issues/vendor-ocr-products-wave-r-triage.md](../issues/vendor-ocr-products-wave-r-triage.md); **Ship deferred** |
 | 2026-05-16 | **Wave R #4** owlOCR/OCR Flux/Monkey/Nanonets — [issues/marketing-ocr-names-wave-r-triage.md](../issues/marketing-ocr-names-wave-r-triage.md) |
 | 2026-05-16 | **Wave R #3 Dolphin** — [issues/dolphin-wave-r-triage.md](../issues/dolphin-wave-r-triage.md); **`ByteDance/Dolphin`** (MIT), **`ByteDance/Dolphin-v2`** (Qwen Research / NC); vLLM serve **unverified** |
 | 2026-05-16 | **Wave R #2 Aya Vision OCR** — [issues/aya-vision-ocr-wave-r-triage.md](../issues/aya-vision-ocr-wave-r-triage.md); **`CohereLabs/aya-vision-8b`** / 32B; **CC-BY-NC** + HF gate; **vLLM** serve recipe pinned |
