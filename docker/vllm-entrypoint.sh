@@ -11,6 +11,7 @@ CHANDRA_MAX_LEN="${VLLM_CHANDRA_MAX_MODEL_LEN:-8192}"
 GEMMA4_MAX_LEN="${VLLM_GEMMA4_MAX_MODEL_LEN:-8192}"
 QWEN3_VL_MAX_LEN="${VLLM_QWEN3_VL_MAX_MODEL_LEN:-8192}"
 HUNYUAN_MAX_LEN="${VLLM_HUNYUAN_OCR_MAX_MODEL_LEN:-8192}"
+DOTS_MOCR_MAX_LEN="${VLLM_DOTS_MOCR_MAX_MODEL_LEN:-8192}"
 
 COMMON=(
   --host "0.0.0.0"
@@ -91,6 +92,21 @@ elif [[ "$model_lower" == *"paddleocr-vl"* ]]; then
     "${SERVED_EXTRA[@]}" \
     --trust-remote-code \
     --max-num-batched-tokens "$PADDLE_BATCH" \
+    --limit-mm-per-prompt '{"image": 1}' \
+    --no-enable-prefix-caching \
+    --mm-processor-cache-gb 0
+elif [[ "$model_lower" == *"dots.mocr"* ]]; then
+  # https://github.com/rednote-hilab/dots.mocr — vLLM ≥ 0.11; align with upstream serve line.
+  SERVED_EXTRA=()
+  if [[ -n "${VLLM_DOTS_MOCR_SERVED_MODEL_NAME:-}" ]]; then
+    SERVED_EXTRA=(--served-model-name "${VLLM_DOTS_MOCR_SERVED_MODEL_NAME}")
+  fi
+  exec vllm serve "$MODEL" \
+    "${COMMON[@]}" \
+    "${SERVED_EXTRA[@]}" \
+    --trust-remote-code \
+    --chat-template-content-format string \
+    --max-model-len "$DOTS_MOCR_MAX_LEN" \
     --limit-mm-per-prompt '{"image": 1}' \
     --no-enable-prefix-caching \
     --mm-processor-cache-gb 0

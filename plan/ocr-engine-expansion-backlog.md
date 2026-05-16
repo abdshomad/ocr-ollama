@@ -48,6 +48,7 @@ Treat these as **done** unless adding a second checkpoint or fixing gaps.
 | **PaddleOCR** (PP-OCR) | Sidecar `paddleocr` | Apache 2.0; PaddlePaddle **CPU**; model id **`paddleocr`**, profile **`paddleocr`**, port 8260 (distinct from **PaddleOCR-VL** on vLLM). |
 | **Docling** | Sidecar `docling` | MIT; layout + OCR **CPU**; model id **`docling`**, profile **`docling`**, port 8270. |
 | **PaddleOCR-VL** | vLLM (`vllm-paddleocr-vl`) | Apache 2.0; model id **`PaddlePaddle/PaddleOCR-VL`**, profile **`paddleocr-vl`**, port 8107; Ollama path still broken — [paddleocr-vl-ollama-load-failure.md](../issues/paddleocr-vl-ollama-load-failure.md). |
+| **Dots.MOCR** | vLLM (`vllm-dotsmocr`, profile `dotsmocr`) | MIT; layout OCR VLM **`rednote-hilab/dots.mocr`**, port 8108 — [dots-mocr-vllm-integration.md](../issues/dots-mocr-vllm-integration.md). |
 | Gemma 4 | Optional vLLM (`gemma4` profile) | User list: “Gemma 4 OCR”. |
 | **Hunyuan OCR** | vLLM (`vllm-hunyuanocr`, profile `hunyuanocr`) | `tencent/HunyuanOCR` ~1B VLM; Tencent license — see HF card. |
 | Qwen3-VL | Optional vLLM (`qwen3vl`) | Related to “Qwen 3 … VL OCR”. |
@@ -82,7 +83,7 @@ Treat these as **done** unless adding a second checkpoint or fixing gaps.
 | Aya Vision OCR | vLLM / Ollama | Check license | Blog comparisons only until a **single serve command** is chosen. |
 | Mistral OCR / “Mistral OCR 3” | API / vLLM | **Often API-only** | If closed API, add `engine.type: http_proxy` pattern or document “out of self-host”. |
 | Dolphin (X link) | Research | — | Wait for open weights + license. |
-| [Dots.OCR](https://github.com/rednote-hilab/dots.ocr) | Sidecar / vLLM | Check LICENSE | Newer layout OCR — spike vLLM vs custom. |
+| [Dots.OCR](https://github.com/rednote-hilab/dots.ocr) | vLLM (primary) | MIT | **In repo** as **`rednote-hilab/dots.mocr`** on optional vLLM (`dotsmocr` profile). Newer **`dots.mocr`** line; weights on HF. |
 | [Qwen3-Omni](https://github.com/QwenLM/Qwen3-Omni) | vLLM | Qwen license | Large multimodal; **optional profile** like Qwen3-VL. |
 | owlOCR / OCR Flux / Monkey OCR / Nanonets | Research | — | Clarify vendor vs OSS; many are **marketing names**. |
 | [NuMarkdown](https://github.com/numindai/NuMarkdown) / [NuMarkdown-8B](https://huggingface.co/numind/NumMarkdown-8B-Thinking) | vLLM | Check license | “Markdown thinking” VLM — may overlap OCR with **long reasoning**; high VRAM. |
@@ -118,7 +119,7 @@ Order balances **license safety**, **engineering clarity**, and **distinct capab
 
 ### Wave 3 — Layout / document AI (heavier sidecars)
 
-**Candidates:** ~~Docling~~ (**in repo** — CPU sidecar `docling`), Dots.OCR, (optional) full MinerU **after license sign-off**.
+**Candidates:** ~~Docling~~ (**in repo** — CPU sidecar `docling`), ~~Dots.OCR / Dots.MOCR~~ (**in repo** — vLLM `vllm-dotsmocr`, profile `dotsmocr`, `rednote-hilab/dots.mocr`), (optional) full MinerU **after license sign-off**.
 
 **Approach:** Reuse MinerU-Diffusion lessons: internal HTTP, batching flags, strong error messages when OOM.
 
@@ -178,6 +179,7 @@ Use this as a **program tracker**; implementation tickets can reference wave + r
 
 | Date | Change |
 |------|--------|
+| 2026-05-16 | **Dots.MOCR** — optional vLLM `vllm-dotsmocr` (`rednote-hilab/dots.mocr`, profile `dotsmocr`, port 8108) |
 | 2026-05-16 | **Docling** — CPU sidecar (`docling`, profile `docling`, port 8270), model id `docling` |
 | 2026-05-16 | **Hunyuan OCR** — `tencent/HunyuanOCR`, vLLM optional profile `hunyuanocr`, port 8106 |
 | 2026-05-16 | OnnxTR CPU sidecar (`onnxtr`, profile `onnxtr`, port 8230) |

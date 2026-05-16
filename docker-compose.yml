@@ -301,6 +301,39 @@ services:
       retries: 60
       start_period: 1800s
 
+  vllm-dotsmocr:
+    <<: [*vllm-service, *vllm-gpu]
+    profiles: ["dotsmocr"]
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.vllm-ocr
+    image: ${VLLM_OCR_IMAGE:-ocr-ollama-vllm-ocr:latest}
+    volumes:
+      - vllm-hf-cache:/root/.cache/huggingface
+    environment:
+      <<: *vllm-env
+      VLLM_MODEL: ${VLLM_DOTS_MOCR_MODEL:-rednote-hilab/dots.mocr}
+      VLLM_PORT: "8108"
+      VLLM_GPU_MEMORY_UTILIZATION: ${VLLM_DOTS_MOCR_GPU_MEMORY_UTIL:-0.55}
+      VLLM_DOTS_MOCR_MAX_MODEL_LEN: ${VLLM_DOTS_MOCR_MAX_MODEL_LEN:-8192}
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ["${VLLM_DOTS_MOCR_CUDA_DEVICE:-1}"]
+              capabilities: [gpu]
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "python3 -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8108/v1/models')\"",
+        ]
+      interval: 30s
+      timeout: 15s
+      retries: 60
+      start_period: 1800s
+
   nemotron-ocr-v2:
     profiles: ["nemotron"]
     build:
@@ -498,6 +531,7 @@ services:
       VLLM_QWEN3_VL_HOST: ${VLLM_QWEN3_VL_HOST:-http://vllm-qwen3-vl:8105}
       VLLM_HUNYUAN_OCR_HOST: ${VLLM_HUNYUAN_OCR_HOST:-http://vllm-hunyuanocr:8106}
       VLLM_PADDLEOCR_VL_HOST: ${VLLM_PADDLEOCR_VL_HOST:-http://vllm-paddleocr-vl:8107}
+      VLLM_DOTS_MOCR_HOST: ${VLLM_DOTS_MOCR_HOST:-http://vllm-dotsmocr:8108}
       MINERU_DIFFUSION_HOST: ${MINERU_DIFFUSION_HOST:-http://mineru-diffusion:8200}
       NEMOTRON_OCR_HOST: ${NEMOTRON_OCR_HOST:-http://nemotron-ocr-v2:8210}
       RAPIDOCR_HOST: ${RAPIDOCR_HOST:-http://rapidocr:8220}

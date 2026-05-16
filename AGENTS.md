@@ -169,6 +169,7 @@ Index: [issues/README.md](issues/README.md). Primary vLLM reference: [issues/vll
 | Run vLLM (Qwen3-VL) | `docker compose --profile qwen3vl up -d vllm-qwen3-vl` — [issues/qwen3-vl-vllm-integration.md](issues/qwen3-vl-vllm-integration.md) |
 | Run vLLM (Hunyuan OCR) | `docker compose --profile hunyuanocr up -d vllm-hunyuanocr` — [issues/hunyuanocr-vllm-integration.md](issues/hunyuanocr-vllm-integration.md) |
 | Run vLLM (PaddleOCR-VL) | `docker compose --profile paddleocr-vl up -d vllm-paddleocr-vl` — [issues/paddleocr-vl-vllm-integration.md](issues/paddleocr-vl-vllm-integration.md) |
+| Run vLLM (Dots.MOCR) | `docker compose --profile dotsmocr up -d vllm-dotsmocr` — [issues/dots-mocr-vllm-integration.md](issues/dots-mocr-vllm-integration.md) |
 | Run RapidOCR (ONNX CPU) | `docker compose --profile rapidocr up -d rapidocr` — [issues/rapidocr-integration.md](issues/rapidocr-integration.md) |
 | Run OnnxTR (ONNX CPU) | `docker compose --profile onnxtr up -d onnxtr` — [issues/onnxtr-integration.md](issues/onnxtr-integration.md) |
 | Run EasyOCR (PyTorch CPU) | `docker compose --profile easyocr up -d easyocr` — [issues/easyocr-integration.md](issues/easyocr-integration.md) |

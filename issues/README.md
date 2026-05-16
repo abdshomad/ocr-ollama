@@ -22,6 +22,7 @@ Write-ups for non-trivial bugs and integration problems. Format and when to add 
 | [qwen3-vl-vllm-integration.md](qwen3-vl-vllm-integration.md) | **Qwen3-VL** — `Qwen/Qwen3-VL-*-Instruct`, profile `qwen3vl`, port 8105, vision-tier OCR |
 | [hunyuanocr-vllm-integration.md](hunyuanocr-vllm-integration.md) | **Hunyuan OCR** — `tencent/HunyuanOCR`, profile `hunyuanocr`, port 8106, dedicated OCR VLM |
 | [paddleocr-vl-vllm-integration.md](paddleocr-vl-vllm-integration.md) | **PaddleOCR-VL** — `PaddlePaddle/PaddleOCR-VL`, profile `paddleocr-vl`, port 8107, vLLM (not Ollama) |
+| [dots-mocr-vllm-integration.md](dots-mocr-vllm-integration.md) | **Dots.MOCR** — `rednote-hilab/dots.mocr`, profile `dotsmocr`, port 8108, layout OCR VLM (vLLM ≥ 0.11) |
 | [vllm-lighton-gpu-compose-entrypoint-directory.md](vllm-lighton-gpu-compose-entrypoint-directory.md) | LightOn restart loop after GPU start — `/workspace` compose path created entrypoint as directory (exit 126) |
 | [vllm-compose-unhealthy.md](vllm-compose-unhealthy.md) | Compose `vllm` unhealthy — chat-template crash, GPU 0 OOM, slow first start |
 | [cors-non-localhost-ui-empty-model-picker.md](cors-non-localhost-ui-empty-model-picker.md) | Hosted UI (non-localhost) — CORS blocked `/api/models` → “No models match filter” |

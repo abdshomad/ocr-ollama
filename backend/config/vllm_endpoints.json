@@ -95,6 +95,18 @@
       "gpu_device": 1,
       "port": 8107,
       "speed_tier": "fast"
+    },
+    {
+      "id": "dotsmocr",
+      "label": "Dots.MOCR",
+      "models": ["rednote-hilab/dots.mocr"],
+      "host_env": "VLLM_DOTS_MOCR_HOST",
+      "default_host": "http://vllm-dotsmocr:8108",
+      "compose_service": "vllm-dotsmocr",
+      "compose_profile": "dotsmocr",
+      "gpu_device": 1,
+      "port": 8108,
+      "speed_tier": "medium"
     }
   ]
 }

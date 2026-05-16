@@ -24,6 +24,7 @@ _GEMMA4_RE = re.compile(r"gemma-4", re.IGNORECASE)
 _QWEN3_VL_RE = re.compile(r"qwen.*3.*vl|qwen3-vl", re.IGNORECASE)
 _HUNYUAN_OCR_RE = re.compile(r"hunyuanocr", re.IGNORECASE)
 _PADDLEOCR_VL_RE = re.compile(r"paddleocr-vl", re.IGNORECASE)
+_DOTS_MOCR_RE = re.compile(r"dots\.mocr|dotsmocr", re.IGNORECASE)
 
 
 def _mime_for_image(image_bytes: bytes) -> str:
@@ -62,6 +63,8 @@ def _max_tokens_for_model(model: str) -> int:
         return int(os.getenv("VLLM_HUNYUAN_OCR_MAX_TOKENS", "2048"))
     if _PADDLEOCR_VL_RE.search(model):
         return int(os.getenv("VLLM_PADDLEOCR_VL_MAX_TOKENS", "4096"))
+    if _DOTS_MOCR_RE.search(model):
+        return int(os.getenv("VLLM_DOTS_MOCR_MAX_TOKENS", "8192"))
     return VLLM_MAX_TOKENS
 
 
@@ -125,7 +128,12 @@ async def list_models_with_classification() -> list[dict[str, Any]]:
     result: list[dict[str, Any]] = []
     for ep, model_id in rows:
         host = host_for_endpoint(ep)
-        available = bool(host) and model_id in host_live.get(host, set())
+        live = host_live.get(host, set())
+        if _DOTS_MOCR_RE.search(model_id):
+            alias = os.getenv("VLLM_DOTS_MOCR_CHAT_MODEL", "").strip()
+            available = bool(host) and (model_id in live or bool(alias and alias in live))
+        else:
+            available = bool(host) and model_id in live
         speed = ep.get("speed_tier")
         result.append(
             model_entry(
@@ -196,6 +204,15 @@ async def check_health() -> dict[str, Any]:
     }
 
 
+def _chat_model_id(model: str) -> str:
+    """OpenAI `model` field; optional override when vLLM uses --served-model-name."""
+    if _DOTS_MOCR_RE.search(model):
+        override = os.getenv("VLLM_DOTS_MOCR_CHAT_MODEL", "").strip()
+        if override:
+            return override
+    return model
+
+
 async def ocr_chat(model: str, prompt: str, image_bytes: bytes) -> tuple[str, dict[str, Any], int]:
     host = resolve_host_for_model(model)
     if not host:
@@ -204,8 +221,9 @@ async def ocr_chat(model: str, prompt: str, image_bytes: bytes) -> tuple[str, di
     mime = _mime_for_image(image_bytes)
     b64 = base64.b64encode(image_bytes).decode("ascii")
     data_url = f"data:{mime};base64,{b64}"
+    chat_model = _chat_model_id(model)
     payload: dict[str, Any] = {
-        "model": model,
+        "model": chat_model,
         "messages": [
             {
                 "role": "user",
@@ -260,7 +278,7 @@ async def text_chat(model: str, prompt: str) -> tuple[str, dict[str, Any], int]:
         raise httpx.HTTPError(f"No vLLM endpoint configured for model '{model}'")
 
     payload: dict[str, Any] = {
-        "model": model,
+        "model": _chat_model_id(model),
         "messages": [{"role": "user", "content": prompt}],
         "max_tokens": VLLM_MAX_TOKENS,
         "temperature": 0.0,
