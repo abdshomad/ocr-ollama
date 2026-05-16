@@ -379,6 +379,29 @@ services:
       retries: 8
       start_period: 900s
 
+  doctr:
+    profiles: ["doctr"]
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.doctr
+    image: ${DOCTR_IMAGE:-ocr-ollama-doctr:latest}
+    restart: unless-stopped
+    environment:
+      DOCTR_PORT: "8250"
+      DOCTR_MODEL_ID: doctr
+    volumes:
+      - doctr-torch-cache:/root/.cache
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "python3 -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8250/health')\"",
+        ]
+      interval: 30s
+      timeout: 15s
+      retries: 8
+      start_period: 600s
+
   backend:
     build:
       context: .
@@ -397,6 +420,8 @@ services:
       NEMOTRON_OCR_HOST: ${NEMOTRON_OCR_HOST:-http://nemotron-ocr-v2:8210}
       RAPIDOCR_HOST: ${RAPIDOCR_HOST:-http://rapidocr:8220}
       ONNXTR_HOST: ${ONNXTR_HOST:-http://onnxtr:8230}
+      EASYOCR_HOST: ${EASYOCR_HOST:-http://easyocr:8240}
+      DOCTR_HOST: ${DOCTR_HOST:-http://doctr:8250}
       VLLM_HOST: ${VLLM_HOST:-http://vllm-deepseek:8100}
       VLLM_TIMEOUT: ${VLLM_TIMEOUT:-600}
       # Listing /api/models probes every vLLM host in parallel; allow slow /v1/models (cold GPU).
@@ -436,3 +461,4 @@ volumes:
   onnxtr-onnx-cache:
   easyocr-model-cache:
   easyocr-torch-cache:
+  doctr-torch-cache:

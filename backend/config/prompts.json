@@ -15,6 +15,7 @@
     "rapidocr": "",
     "onnxtr": "",
     "easyocr": "",
+    "doctr": "",
     "deepseek-ocr:latest": "Transcribe all text in this image. Output plain text only, preserving line breaks.",
     "glm-ocr:latest": "Text Recognition:",
     "MedAIBase/PaddleOCR-VL:0.9b": "Parse this document and extract all text, tables, and structured content. Output plain text preserving layout.",

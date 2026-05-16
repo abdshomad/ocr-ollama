@@ -40,6 +40,9 @@ function rowTitle(m: OllamaModel, up: boolean): string | undefined {
     if (m.engine_type === "easyocr") {
       return "Start the easyocr service (compose profile easyocr), then refresh.";
     }
+    if (m.engine_type === "doctr") {
+      return "Start the doctr service (compose profile doctr), then refresh.";
+    }
     return undefined;
   }
   if (m.input_modes?.length) {

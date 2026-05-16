@@ -44,6 +44,7 @@ Treat these as **done** unless adding a second checkpoint or fixing gaps.
 | **RapidOCR** | Sidecar `rapidocr` | ONNX (**CPU**), Apache 2.0; model id **`rapidocr`**, profile **`rapidocr`**. |
 | **OnnxTR** | Sidecar `onnxtr` | ONNX (**CPU**), Apache 2.0; model id **`onnxtr`**, profile **`onnxtr`**. |
 | **EasyOCR** | Sidecar `easyocr` | Apache 2.0; PyTorch **CPU** image in repo; model id **`easyocr`**, profile **`easyocr`**. |
+| **docTR** | Sidecar `doctr` | Apache 2.0; PyTorch **CPU**; model id **`doctr`**, profile **`doctr`**, port 8250. |
 | Gemma 4 | Optional vLLM (`gemma4` profile) | User list: “Gemma 4 OCR”. |
 | **Hunyuan OCR** | vLLM (`vllm-hunyuanocr`, profile `hunyuanocr`) | `tencent/HunyuanOCR` ~1B VLM; Tencent license — see HF card. |
 | Qwen3-VL | Optional vLLM (`qwen3vl`) | Related to “Qwen 3 … VL OCR”. |
@@ -62,7 +63,7 @@ Treat these as **done** unless adding a second checkpoint or fixing gaps.
 | [RapidOCR](https://github.com/RapidAI/RapidOCR) | Subproc / Sidecar | Apache 2.0 | ONNX-friendly; good candidate for **small sidecar** or bundled ONNX runtime. |
 | [MinerU](https://github.com/opendatalab/MinerU) (full stack) | Sidecar | **MinerU 2.5+ AGPL** (verify per release) | Repo previously marked AGPL concern; **Diffusion** path already MIT. Full MinerU needs **explicit license approval** before default compose. |
 | [EasyOCR](https://github.com/JaidedAI/EasyOCR) | Subproc / Sidecar | Apache 2.0 | PyTorch; VRAM; prefer sidecar. |
-| [docTR](https://github.com/mindee/doctr) | Subproc / Sidecar | Apache 2.0 | Good “classical + learned” middle ground. |
+| [docTR](https://github.com/mindee/doctr) | Subproc / Sidecar | Apache 2.0 | **In repo** — CPU PyTorch sidecar (`doctr`, profile `doctr`, port 8250). |
 | [Lany OCR](https://github.com/JC1DA/lanyocr) | Research / Subproc | Check repo license | Confirm maintenance and model weights distribution. |
 | [Surya](https://github.com/VikParuchuri/surya) | Sidecar / Subproc | GPL-3.0 | **Conflicts with prior “out of scope”** in medium plan; only integrate if project **accepts GPL** in sidecar boundary. |
 | [Tesseract](https://github.com/tesseract-ocr/tesseract) (native) | Subproc | Apache 2.0 | Wrap `tesseract` binary or `pytesseract`; useful for **CPU baseline** and PDF raster fallback. |
@@ -102,7 +103,7 @@ Order balances **license safety**, **engineering clarity**, and **distinct capab
 
 ### Wave 1 — Classical / ONNX cluster (CPU-friendly sidecars)
 
-**Candidates:** ~~RapidOCR~~ (**in repo**), ~~OnnxTR~~ (**in repo**), ~~optional native **Tesseract** wrapper~~ (**in repo**), docTR (if smaller variant fits CPU).
+**Candidates:** ~~RapidOCR~~ (**in repo**), ~~OnnxTR~~ (**in repo**), ~~optional native **Tesseract** wrapper~~ (**in repo**), ~~docTR~~ (**in repo**).
 
 **Approach:** Thin FastAPI sidecar in `docker/` + small adapter in `backend/app/`. Prefer **one multi-model sidecar** only if deps align; else separate images to avoid dependency hell.
 
@@ -177,3 +178,4 @@ Use this as a **program tracker**; implementation tickets can reference wave + r
 | 2026-05-16 | **Hunyuan OCR** — `tencent/HunyuanOCR`, vLLM optional profile `hunyuanocr`, port 8106 |
 | 2026-05-16 | OnnxTR CPU sidecar (`onnxtr`, profile `onnxtr`, port 8230) |
 | 2026-05-16 | **EasyOCR** — CPU PyTorch sidecar (`easyocr`, profile `easyocr`, port 8240) |
+| 2026-05-16 | **docTR** — CPU PyTorch sidecar (`doctr`, profile `doctr`, port 8250) |

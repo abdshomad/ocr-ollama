@@ -43,6 +43,20 @@
       "speed_tier": "medium"
     },
     {
+      "id": "doctr",
+      "type": "doctr",
+      "label": "docTR",
+      "models": ["doctr"],
+      "input_modes": ["image"],
+      "host_env": "DOCTR_HOST",
+      "default_host": "http://doctr:8250",
+      "compose_service": "doctr",
+      "compose_profile": "doctr",
+      "gpu_device": -1,
+      "port": 8250,
+      "speed_tier": "fast"
+    },
+    {
       "id": "tesseract",
       "type": "tesseract",
       "label": "Tesseract (native)",
