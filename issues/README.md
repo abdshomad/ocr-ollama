@@ -26,6 +26,7 @@ Write-ups for non-trivial bugs and integration problems. Format and when to add 
 | [dots-mocr-vllm-integration.md](dots-mocr-vllm-integration.md) | **Dots.MOCR** — `rednote-hilab/dots.mocr`, profile `dotsmocr`, port 8108, layout OCR VLM (vLLM ≥ 0.11) |
 | [phi4-multimodal-vllm-integration.md](phi4-multimodal-vllm-integration.md) | **Phi-4-multimodal** — `microsoft/Phi-4-multimodal-instruct`, profile `phi4mm`, port 8109, MS multimodal VLM |
 | [rolmocr-vllm-integration.md](rolmocr-vllm-integration.md) | **RolmOCR** — `reducto/RolmOCR`, profile `rolmocr`, port 8110, Qwen2.5-VL doc OCR (Apache 2.0) |
+| [numarkdown-vllm-integration.md](numarkdown-vllm-integration.md) | **NuMarkdown** — `numind/NuMarkdown-8B-Thinking`, profile `numarkdown`, port 8111, reasoning doc → markdown (MIT) |
 | [vllm-lighton-gpu-compose-entrypoint-directory.md](vllm-lighton-gpu-compose-entrypoint-directory.md) | LightOn restart loop after GPU start — `/workspace` compose path created entrypoint as directory (exit 126) |
 | [vllm-compose-unhealthy.md](vllm-compose-unhealthy.md) | Compose `vllm` unhealthy — chat-template crash, GPU 0 OOM, slow first start |
 | [cors-non-localhost-ui-empty-model-picker.md](cors-non-localhost-ui-empty-model-picker.md) | Hosted UI (non-localhost) — CORS blocked `/api/models` → “No models match filter” |

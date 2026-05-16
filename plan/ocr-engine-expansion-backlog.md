@@ -52,6 +52,7 @@ Treat these as **done** unless adding a second checkpoint or fixing gaps.
 | **Dots.MOCR** | vLLM (`vllm-dotsmocr`, profile `dotsmocr`) | MIT; layout OCR VLM **`rednote-hilab/dots.mocr`**, port 8108 — [dots-mocr-vllm-integration.md](../issues/dots-mocr-vllm-integration.md). |
 | **Phi-4-multimodal** | vLLM (`vllm-phi4-mm`, profile `phi4mm`) | MS license; **`microsoft/Phi-4-multimodal-instruct`**, port 8109 — [phi4-multimodal-vllm-integration.md](../issues/phi4-multimodal-vllm-integration.md). |
 | **RolmOCR** | vLLM (`vllm-rolmocr`, profile `rolmocr`) | Apache 2.0; **`reducto/RolmOCR`**, port 8110 — [rolmocr-vllm-integration.md](../issues/rolmocr-vllm-integration.md). |
+| **NuMarkdown** | vLLM (`vllm-numarkdown`, profile `numarkdown`) | MIT; **`numind/NuMarkdown-8B-Thinking`**, port 8111 — [numarkdown-vllm-integration.md](../issues/numarkdown-vllm-integration.md). |
 | Gemma 4 | Optional vLLM (`gemma4` profile) | User list: “Gemma 4 OCR”. |
 | **Hunyuan OCR** | vLLM (`vllm-hunyuanocr`, profile `hunyuanocr`) | `tencent/HunyuanOCR` ~1B VLM; Tencent license — see HF card. |
 | Qwen3-VL | Optional vLLM (`qwen3vl`) | Related to “Qwen 3 … VL OCR”. |
@@ -89,7 +90,7 @@ Treat these as **done** unless adding a second checkpoint or fixing gaps.
 | [Dots.OCR](https://github.com/rednote-hilab/dots.ocr) | vLLM (primary) | MIT | **In repo** as **`rednote-hilab/dots.mocr`** on optional vLLM (`dotsmocr` profile). Newer **`dots.mocr`** line; weights on HF. |
 | [Qwen3-Omni](https://github.com/QwenLM/Qwen3-Omni) | vLLM | Qwen license | Large multimodal; **optional profile** like Qwen3-VL. |
 | owlOCR / OCR Flux / Monkey OCR / Nanonets | Research | — | Clarify vendor vs OSS; many are **marketing names**. |
-| [NuMarkdown](https://github.com/numindai/NuMarkdown) / [NuMarkdown-8B](https://huggingface.co/numind/NumMarkdown-8B-Thinking) | vLLM | Check license | “Markdown thinking” VLM — may overlap OCR with **long reasoning**; high VRAM. |
+| [NuMarkdown](https://github.com/numindai/NuMarkdown) / [NuMarkdown-8B](https://huggingface.co/numind/NuMarkdown-8B-Thinking) | vLLM | MIT | **In repo** — optional vLLM `vllm-numarkdown` (`numind/NuMarkdown-8B-Thinking`, profile `numarkdown`, port 8111) — [numarkdown-vllm-integration.md](../issues/numarkdown-vllm-integration.md). |
 | DocParse / OCR Docker / OpenPage / OCRbro / DocuMagnet / OCR Studio | Research | — | Could be products; **do not implement** until open inference surface exists. |
 | Gemma 3 OCR / Falcon OCR / Youtu-VL / ~~Hunyuan OCR~~ / ExaOCR / Col Pali / Pixl | Research | — | **Hunyuan:** shipped as `tencent/HunyuanOCR` vLLM (`hunyuanocr` profile). **ColPali** is retrieval — different task unless scoped to “OCR-like”. |
 | Pike PDF | Research | — | Clarify if library vs model. |
@@ -134,7 +135,7 @@ Order balances **license safety**, **engineering clarity**, and **distinct capab
 
 ### Wave 5 — New VLMs on vLLM (when distinct from existing)
 
-**Candidates:** ~~Phi-4-multimodal~~ (**in repo** — vLLM `vllm-phi4-mm`, profile `phi4mm`, port 8109), ~~RolmOCR~~ (**in repo** — vLLM `vllm-rolmocr`, profile `rolmocr`, port 8110), Qwen3-Omni, Smol Docling (if servable), NuMarkdown-class models.
+**Candidates:** ~~Phi-4-multimodal~~ (**in repo** — vLLM `vllm-phi4-mm`, profile `phi4mm`, port 8109), ~~RolmOCR~~ (**in repo** — vLLM `vllm-rolmocr`, profile `rolmocr`, port 8110), ~~NuMarkdown~~ (**in repo** — vLLM `vllm-numarkdown`, profile `numarkdown`, port 8111), Qwen3-Omni, Smol Docling (if servable).
 
 **Approach:** Same as LightOn/Chandra: `docker-compose` profile, `vllm-entrypoint.sh` branch, `prompts.json`, `VLLM_*` limits.
 
@@ -182,6 +183,7 @@ Use this as a **program tracker**; implementation tickets can reference wave + r
 
 | Date | Change |
 |------|--------|
+| 2026-05-16 | **NuMarkdown** — optional vLLM `vllm-numarkdown` (`numind/NuMarkdown-8B-Thinking`, profile `numarkdown`, port 8111) |
 | 2026-05-16 | **RolmOCR** — optional vLLM `vllm-rolmocr` (`reducto/RolmOCR`, profile `rolmocr`, port 8110) |
 | 2026-05-16 | **Phi-4-multimodal** — optional vLLM `vllm-phi4-mm` (`microsoft/Phi-4-multimodal-instruct`, profile `phi4mm`, port 8109) |
 | 2026-05-16 | **Dots.MOCR** — optional vLLM `vllm-dotsmocr` (`rednote-hilab/dots.mocr`, profile `dotsmocr`, port 8108) |

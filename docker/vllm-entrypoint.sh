@@ -14,6 +14,7 @@ HUNYUAN_MAX_LEN="${VLLM_HUNYUAN_OCR_MAX_MODEL_LEN:-8192}"
 DOTS_MOCR_MAX_LEN="${VLLM_DOTS_MOCR_MAX_MODEL_LEN:-8192}"
 PHI4_MM_MAX_LEN="${VLLM_PHI4_MM_MAX_MODEL_LEN:-8192}"
 ROLMOCR_MAX_LEN="${VLLM_ROLMOCR_MAX_MODEL_LEN:-8192}"
+NUMARKDOWN_MAX_LEN="${VLLM_NUMARKDOWN_MAX_MODEL_LEN:-8192}"
 
 COMMON=(
   --host "0.0.0.0"
@@ -130,6 +131,18 @@ elif [[ "$model_lower" == *"rolmocr"* ]]; then
     --limit-mm-per-prompt '{"image": 1}' \
     --no-enable-prefix-caching \
     --mm-processor-cache-gb 0
+elif [[ "$model_lower" == *"numarkdown"* ]]; then
+  # https://huggingface.co/numind/NuMarkdown-8B-Thinking — Qwen2.5-VL reasoning doc → markdown (upstream vLLM serve recipe).
+  # --enforce-eager: first-load compile can otherwise sit with no HTTP listener (same class of issue as Qwen3-VL).
+  export VLLM_USE_V1="${VLLM_USE_V1:-1}"
+  exec vllm serve "$MODEL" \
+    "${COMMON[@]}" \
+    --trust-remote-code \
+    --max-model-len "$NUMARKDOWN_MAX_LEN" \
+    --limit-mm-per-prompt '{"image": 1}' \
+    --no-enable-prefix-caching \
+    --mm-processor-cache-gb 0 \
+    --enforce-eager
 else
   exec vllm serve "$MODEL" "${COMMON[@]}"
 fi

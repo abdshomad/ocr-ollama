@@ -131,6 +131,18 @@
       "gpu_device": 1,
       "port": 8110,
       "speed_tier": "slow"
+    },
+    {
+      "id": "numarkdown",
+      "label": "NuMarkdown",
+      "models": ["numind/NuMarkdown-8B-Thinking"],
+      "host_env": "VLLM_NUMARKDOWN_HOST",
+      "default_host": "http://vllm-numarkdown:8111",
+      "compose_service": "vllm-numarkdown",
+      "compose_profile": "numarkdown",
+      "gpu_device": 1,
+      "port": 8111,
+      "speed_tier": "very_slow"
     }
   ]
 }

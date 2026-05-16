@@ -422,6 +422,40 @@ services:
       retries: 60
       start_period: 1800s
 
+  vllm-numarkdown:
+    <<: [*vllm-service, *vllm-gpu]
+    profiles: ["numarkdown"]
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.vllm-ocr
+    image: ${VLLM_OCR_IMAGE:-ocr-ollama-vllm-ocr:latest}
+    volumes:
+      - vllm-hf-cache:/root/.cache/huggingface
+    environment:
+      <<: *vllm-env
+      VLLM_USE_V1: ${VLLM_USE_V1:-1}
+      VLLM_MODEL: ${VLLM_NUMARKDOWN_MODEL:-numind/NuMarkdown-8B-Thinking}
+      VLLM_PORT: "8111"
+      VLLM_GPU_MEMORY_UTILIZATION: ${VLLM_NUMARKDOWN_GPU_MEMORY_UTIL:-0.35}
+      VLLM_NUMARKDOWN_MAX_MODEL_LEN: ${VLLM_NUMARKDOWN_MAX_MODEL_LEN:-8192}
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ["${VLLM_NUMARKDOWN_CUDA_DEVICE:-1}"]
+              capabilities: [gpu]
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "python3 -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8111/v1/models')\"",
+        ]
+      interval: 30s
+      timeout: 15s
+      retries: 60
+      start_period: 1800s
+
   nemotron-ocr-v2:
     profiles: ["nemotron"]
     build:
@@ -657,6 +691,7 @@ services:
       VLLM_DOTS_MOCR_HOST: ${VLLM_DOTS_MOCR_HOST:-http://vllm-dotsmocr:8108}
       VLLM_PHI4_MM_HOST: ${VLLM_PHI4_MM_HOST:-http://vllm-phi4-mm:8109}
       VLLM_ROLMOCR_HOST: ${VLLM_ROLMOCR_HOST:-http://vllm-rolmocr:8110}
+      VLLM_NUMARKDOWN_HOST: ${VLLM_NUMARKDOWN_HOST:-http://vllm-numarkdown:8111}
       MINERU_DIFFUSION_HOST: ${MINERU_DIFFUSION_HOST:-http://mineru-diffusion:8200}
       NEMOTRON_OCR_HOST: ${NEMOTRON_OCR_HOST:-http://nemotron-ocr-v2:8210}
       RAPIDOCR_HOST: ${RAPIDOCR_HOST:-http://rapidocr:8220}
