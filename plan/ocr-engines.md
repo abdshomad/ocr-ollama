@@ -96,7 +96,7 @@ Server GPU models are usually faster and better than browser VLMs for full pages
 
 | Category | Engines | Planned `engine.type` |
 |----------|---------|------------------------|
-| **vLLM OpenAI** | DeepSeek, GLM, LightOn, Chandra, Gemma 4 (optional `gemma4`), Qwen3-VL (optional `qwen3vl`), **Qwen3-Omni** (optional **`qwen3omni`**, **vLLM-Omni** image + `vllm serve --omni`), **Phi-4-multimodal** (optional `phi4mm`, `microsoft/Phi-4-multimodal-instruct`), **RolmOCR** (optional `rolmocr`, `reducto/RolmOCR`), **NuMarkdown** (optional `numarkdown`, `numind/NuMarkdown-8B-Thinking`), Hunyuan OCR (optional `hunyuanocr`), **PaddleOCR-VL** (optional `paddleocr-vl`), **Dots.MOCR** (optional `dotsmocr`, `rednote-hilab/dots.mocr`) | `vllm` |
+| **vLLM OpenAI** | DeepSeek, GLM, LightOn, Chandra, Gemma 4 (optional `gemma4`), Qwen3-VL (optional `qwen3vl`), **Qwen3-Omni** (optional **`qwen3omni`**, **vLLM-Omni** image + `vllm serve --omni`), **Phi-4-multimodal** (optional `phi4mm`, `microsoft/Phi-4-multimodal-instruct`), **RolmOCR** (optional `rolmocr`, `reducto/RolmOCR`), **NuMarkdown** (optional `numarkdown`, `numind/NuMarkdown-8B-Thinking`), **Smol Docling** (optional `smoldocling`, `docling-project/SmolDocling-256M-preview`), Hunyuan OCR (optional `hunyuanocr`), **PaddleOCR-VL** (optional `paddleocr-vl`), **Dots.MOCR** (optional `dotsmocr`, `rednote-hilab/dots.mocr`) | `vllm` |
 | **Custom GPU sidecar** | MinerU (`nano_dvlm`), Nemotron OCR v2 (`nemotron`) | `nano_dvlm`, `nemotron` |
 | **Custom CPU sidecar** | RapidOCR ONNX (`rapidocr`), OnnxTR (`onnxtr`), EasyOCR (`easyocr`), docTR (`doctr`), PaddleOCR (`paddleocr`), Docling (`docling`), LanyOCR (`lanyocr`) | `rapidocr`, `onnxtr`, `easyocr`, `doctr`, `paddleocr`, `docling`, `lanyocr` |
 | **Subprocess** | LiteParse, Tesseract (native) | `litparse`, `tesseract` |
@@ -122,7 +122,7 @@ Server GPU models are usually faster and better than browser VLMs for full pages
 
 | Bucket | Engines |
 |--------|---------|
-| **In repo today** | DeepSeek-OCR, GLM-OCR (vLLM); Gemma 4 E4B (optional `vllm-gemma4`); Qwen3-VL Instruct (optional `vllm-qwen3-vl`); **Qwen3-Omni** (optional `vllm-qwen3-omni`, **vLLM-Omni**, profile `qwen3omni`); **Phi-4-multimodal** (optional `vllm-phi4-mm`, profile `phi4mm`); **RolmOCR** (optional `vllm-rolmocr`, profile `rolmocr`); **NuMarkdown** (optional `vllm-numarkdown`, profile `numarkdown`); Hunyuan OCR (optional `vllm-hunyuanocr`); **PaddleOCR-VL** (optional `vllm-paddleocr-vl`, profile `paddleocr-vl`); **Dots.MOCR** (optional `vllm-dotsmocr`, profile `dotsmocr`, `rednote-hilab/dots.mocr`); TrOCR, Tesseract, PaliGemma (browser); Tesseract (native server subprocess); Ollama catalog |
+| **In repo today** | DeepSeek-OCR, GLM-OCR (vLLM); Gemma 4 E4B (optional `vllm-gemma4`); Qwen3-VL Instruct (optional `vllm-qwen3-vl`); **Qwen3-Omni** (optional `vllm-qwen3-omni`, **vLLM-Omni**, profile `qwen3omni`); **Phi-4-multimodal** (optional `vllm-phi4-mm`, profile `phi4mm`); **RolmOCR** (optional `vllm-rolmocr`, profile `rolmocr`); **NuMarkdown** (optional `vllm-numarkdown`, profile `numarkdown`); **Smol Docling** (optional `vllm-smoldocling`, profile `smoldocling`, `docling-project/SmolDocling-256M-preview`); Hunyuan OCR (optional `vllm-hunyuanocr`); **PaddleOCR-VL** (optional `vllm-paddleocr-vl`, profile `paddleocr-vl`); **Dots.MOCR** (optional `vllm-dotsmocr`, profile `dotsmocr`, `rednote-hilab/dots.mocr`); TrOCR, Tesseract, PaliGemma (browser); Tesseract (native server subprocess); Ollama catalog |
 | **In repo (RapidOCR)** | RapidOCR ONNX (`rapidocr`, profile `rapidocr`, port 8220, CPU) |
 | **In repo (OnnxTR)** | OnnxTR (`onnxtr`, profile `onnxtr`, port 8230, CPU) |
 | **In repo (EasyOCR)** | EasyOCR (`easyocr`, profile `easyocr`, port 8240, PyTorch CPU image) |
@@ -134,6 +134,7 @@ Server GPU models are usually faster and better than browser VLMs for full pages
 | **In repo (RolmOCR)** | RolmOCR (`reducto/RolmOCR`, vLLM `vllm-rolmocr`, profile `rolmocr`, port 8110) |
 | **In repo (NuMarkdown)** | NuMarkdown (`numind/NuMarkdown-8B-Thinking`, vLLM `vllm-numarkdown`, profile `numarkdown`, port 8111) |
 | **In repo (Qwen3-Omni)** | Qwen3-Omni (`Qwen/Qwen3-Omni-30B-A3B-*`, vLLM-Omni `vllm-qwen3-omni`, profile `qwen3omni`, port 8112) |
+| **In repo (Smol Docling)** | Smol Docling (`docling-project/SmolDocling-256M-preview`, vLLM `vllm-smoldocling`, profile `smoldocling`, port 8113; DocTags → markdown via `docling-core`) |
 | **In repo (Nemotron OCR v2)** | Nemotron OCR v2 multilingual (`nemotron-ocr-v2`, profile `nemotron`, port 8210) |
 | **Planned (Medium four)** | — (LiteParse shipped) |
 | **In repo (LiteParse)** | LiteParse (`litparse`, local `lit` CLI, PDF + multi-format) |

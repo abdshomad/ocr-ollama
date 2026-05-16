@@ -495,6 +495,39 @@ services:
       retries: 60
       start_period: 1800s
 
+  vllm-smoldocling:
+    <<: [*vllm-service, *vllm-gpu]
+    profiles: ["smoldocling"]
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.vllm-ocr
+    image: ${VLLM_OCR_IMAGE:-ocr-ollama-vllm-ocr:latest}
+    volumes:
+      - vllm-hf-cache:/root/.cache/huggingface
+    environment:
+      <<: *vllm-env
+      VLLM_MODEL: ${VLLM_SMOLDOCLING_MODEL:-docling-project/SmolDocling-256M-preview}
+      VLLM_PORT: "8113"
+      VLLM_GPU_MEMORY_UTILIZATION: ${VLLM_SMOLDOCLING_GPU_MEMORY_UTIL:-0.25}
+      VLLM_SMOLDOCLING_MAX_MODEL_LEN: ${VLLM_SMOLDOCLING_MAX_MODEL_LEN:-8192}
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ["${VLLM_SMOLDOCLING_CUDA_DEVICE:-1}"]
+              capabilities: [gpu]
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "python3 -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8113/v1/models')\"",
+        ]
+      interval: 30s
+      timeout: 15s
+      retries: 60
+      start_period: 1800s
+
   nemotron-ocr-v2:
     profiles: ["nemotron"]
     build:
@@ -732,6 +765,7 @@ services:
       VLLM_ROLMOCR_HOST: ${VLLM_ROLMOCR_HOST:-http://vllm-rolmocr:8110}
       VLLM_NUMARKDOWN_HOST: ${VLLM_NUMARKDOWN_HOST:-http://vllm-numarkdown:8111}
       VLLM_QWEN3_OMNI_HOST: ${VLLM_QWEN3_OMNI_HOST:-http://vllm-qwen3-omni:8112}
+      VLLM_SMOLDOCLING_HOST: ${VLLM_SMOLDOCLING_HOST:-http://vllm-smoldocling:8113}
       MINERU_DIFFUSION_HOST: ${MINERU_DIFFUSION_HOST:-http://mineru-diffusion:8200}
       NEMOTRON_OCR_HOST: ${NEMOTRON_OCR_HOST:-http://nemotron-ocr-v2:8210}
       RAPIDOCR_HOST: ${RAPIDOCR_HOST:-http://rapidocr:8220}

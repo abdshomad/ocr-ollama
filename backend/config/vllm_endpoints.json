@@ -158,6 +158,18 @@
       "gpu_device": 1,
       "port": 8112,
       "speed_tier": "very_slow"
+    },
+    {
+      "id": "smoldocling",
+      "label": "Smol Docling",
+      "models": ["docling-project/SmolDocling-256M-preview"],
+      "host_env": "VLLM_SMOLDOCLING_HOST",
+      "default_host": "http://vllm-smoldocling:8113",
+      "compose_service": "vllm-smoldocling",
+      "compose_profile": "smoldocling",
+      "gpu_device": 1,
+      "port": 8113,
+      "speed_tier": "fast"
     }
   ]
 }

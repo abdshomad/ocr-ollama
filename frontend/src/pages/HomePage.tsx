@@ -27,7 +27,7 @@ export function HomePage() {
             setSelected((prev) => {
               if (prev.length === 0) return [defaultModel];
               const cur = prev[0];
-              if (r.models.some((m) => m.name === cur && m.available !== false)) return prev;
+              if (r.models.some((m) => m.name === cur && m.available === true)) return prev;
               return [defaultModel];
             });
           }

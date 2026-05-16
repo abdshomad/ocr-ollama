@@ -15,6 +15,7 @@ DOTS_MOCR_MAX_LEN="${VLLM_DOTS_MOCR_MAX_MODEL_LEN:-8192}"
 PHI4_MM_MAX_LEN="${VLLM_PHI4_MM_MAX_MODEL_LEN:-8192}"
 ROLMOCR_MAX_LEN="${VLLM_ROLMOCR_MAX_MODEL_LEN:-8192}"
 NUMARKDOWN_MAX_LEN="${VLLM_NUMARKDOWN_MAX_MODEL_LEN:-8192}"
+SMOLDOCLING_MAX_LEN="${VLLM_SMOLDOCLING_MAX_MODEL_LEN:-8192}"
 
 COMMON=(
   --host "0.0.0.0"
@@ -139,6 +140,21 @@ elif [[ "$model_lower" == *"numarkdown"* ]]; then
     "${COMMON[@]}" \
     --trust-remote-code \
     --max-model-len "$NUMARKDOWN_MAX_LEN" \
+    --limit-mm-per-prompt '{"image": 1}' \
+    --no-enable-prefix-caching \
+    --mm-processor-cache-gb 0 \
+    --enforce-eager
+elif [[ "$model_lower" == *"smoldocling"* ]]; then
+  # https://huggingface.co/docling-project/SmolDocling-256M-preview — IDEFICS3 DocTags pipeline; HF card documents vLLM serve.
+  SERVED_EXTRA=()
+  if [[ -n "${VLLM_SMOLDOCLING_SERVED_MODEL_NAME:-}" ]]; then
+    SERVED_EXTRA=(--served-model-name "${VLLM_SMOLDOCLING_SERVED_MODEL_NAME}")
+  fi
+  exec vllm serve "$MODEL" \
+    "${COMMON[@]}" \
+    "${SERVED_EXTRA[@]}" \
+    --trust-remote-code \
+    --max-model-len "$SMOLDOCLING_MAX_LEN" \
     --limit-mm-per-prompt '{"image": 1}' \
     --no-enable-prefix-caching \
     --mm-processor-cache-gb 0 \

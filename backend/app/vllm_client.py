@@ -29,6 +29,7 @@ _PHI4_MM_RE = re.compile(r"phi-4-multimodal", re.IGNORECASE)
 _ROLMOCR_RE = re.compile(r"rolmocr", re.IGNORECASE)
 _NUMARKDOWN_RE = re.compile(r"numarkdown|nu\s*markdown", re.IGNORECASE)
 _QWEN3_OMNI_RE = re.compile(r"qwen3-omni|qwen.*3.*omni", re.IGNORECASE)
+_SMOLDOCLING_RE = re.compile(r"smoldocling", re.IGNORECASE)
 
 
 def _strip_numarkdown_answer(text: str) -> str:
@@ -37,6 +38,35 @@ def _strip_numarkdown_answer(text: str) -> str:
     if m:
         return m.group(1).strip()
     return text.strip()
+
+
+def _doctags_response_to_markdown(doctags_raw: str, image_bytes: bytes) -> str:
+    """Smol Docling returns DocTags (see HF card); convert to markdown for Arena/History."""
+    from io import BytesIO
+
+    stripped = doctags_raw.strip()
+    if not stripped:
+        return stripped
+    try:
+        from PIL import Image
+
+        from docling_core.types.doc import DoclingDocument
+        from docling_core.types.doc.document import DocTagsDocument
+    except ImportError:
+        return stripped
+    try:
+        image = Image.open(BytesIO(image_bytes)).convert("RGB")
+    except Exception:
+        return stripped
+    try:
+        dt_doc = DocTagsDocument.from_doctags_and_image_pairs([stripped], [image])
+        doc = DoclingDocument.load_from_doctags(dt_doc, document_name="Page")
+        try:
+            return doc.export_to_markdown(strict_text=True).strip()
+        except TypeError:
+            return doc.export_to_markdown().strip()
+    except Exception:
+        return stripped
 
 
 def _mime_for_image(image_bytes: bytes) -> str:
@@ -85,6 +115,8 @@ def _max_tokens_for_model(model: str) -> int:
         return int(os.getenv("VLLM_NUMARKDOWN_MAX_TOKENS", "8192"))
     if _QWEN3_OMNI_RE.search(model):
         return int(os.getenv("VLLM_QWEN3_OMNI_MAX_TOKENS", "4096"))
+    if _SMOLDOCLING_RE.search(model):
+        return int(os.getenv("VLLM_SMOLDOCLING_MAX_TOKENS", "4096"))
     return VLLM_MAX_TOKENS
 
 
@@ -174,6 +206,9 @@ async def list_models_with_classification() -> list[dict[str, Any]]:
             available = bool(host) and (model_id in live or bool(alias and alias in live))
         elif _QWEN3_OMNI_RE.search(model_id):
             alias = os.getenv("VLLM_QWEN3_OMNI_CHAT_MODEL", "").strip()
+            available = bool(host) and (model_id in live or bool(alias and alias in live))
+        elif _SMOLDOCLING_RE.search(model_id):
+            alias = os.getenv("VLLM_SMOLDOCLING_CHAT_MODEL", "").strip()
             available = bool(host) and (model_id in live or bool(alias and alias in live))
         else:
             available = bool(host) and model_id in live
@@ -269,6 +304,10 @@ def _chat_model_id(model: str) -> str:
         override = os.getenv("VLLM_QWEN3_OMNI_CHAT_MODEL", "").strip()
         if override:
             return override
+    if _SMOLDOCLING_RE.search(model):
+        override = os.getenv("VLLM_SMOLDOCLING_CHAT_MODEL", "").strip()
+        if override:
+            return override
     return model
 
 
@@ -326,6 +365,8 @@ async def ocr_chat(model: str, prompt: str, image_bytes: bytes) -> tuple[str, di
         text = _strip_numarkdown_answer(text)
     elif _QWEN3_OMNI_RE.search(model) and "thinking" in model.lower():
         text = _strip_numarkdown_answer(text)
+    if _SMOLDOCLING_RE.search(model):
+        text = _doctags_response_to_markdown(text, image_bytes)
     usage = data.get("usage") or {}
     meta = {
         "completion_tokens": usage.get("completion_tokens"),

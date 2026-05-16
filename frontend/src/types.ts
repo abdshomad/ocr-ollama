@@ -10,8 +10,8 @@ export interface OllamaModel {
   has_parent_blob?: boolean;
   capabilities: string[];
   families: string[];
-  /** vLLM endpoint reachable (dual-model Compose). Omitted = available. */
-  available?: boolean;
+  /** true = online, false = offline, null = not probed yet */
+  available?: boolean | null;
   vllm_endpoint?: string;
   vllm_endpoint_label?: string;
   engine_type?: string;
@@ -128,7 +128,7 @@ export interface VllmServiceStatus {
   models: string[];
   docker_state: string;
   health?: string | null;
-  api_ready: boolean;
+  api_ready: boolean | null;
   container_id?: string | null;
 }
 

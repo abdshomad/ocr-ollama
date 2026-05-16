@@ -209,7 +209,7 @@ def all_tesseract_models() -> list[tuple[dict[str, Any], str]]:
 def model_entry(
     name: str,
     *,
-    available: bool,
+    available: bool | None,
     endpoint_id: str,
     endpoint_label: str,
     engine_type: str,

@@ -54,6 +54,7 @@ Treat these as **done** unless adding a second checkpoint or fixing gaps.
 | **RolmOCR** | vLLM (`vllm-rolmocr`, profile `rolmocr`) | Apache 2.0; **`reducto/RolmOCR`**, port 8110 — [rolmocr-vllm-integration.md](../issues/rolmocr-vllm-integration.md). |
 | **NuMarkdown** | vLLM (`vllm-numarkdown`, profile `numarkdown`) | MIT; **`numind/NuMarkdown-8B-Thinking`**, port 8111 — [numarkdown-vllm-integration.md](../issues/numarkdown-vllm-integration.md). |
 | **Qwen3-Omni** | vLLM-Omni (`vllm-qwen3-omni`, profile `qwen3omni`) | Qwen license; **`Qwen/Qwen3-Omni-30B-A3B-*`**, port 8112 (`vllm serve --omni`) — [qwen3-omni-vllm-integration.md](../issues/qwen3-omni-vllm-integration.md). |
+| **Smol Docling** | vLLM (`vllm-smoldocling`, profile `smoldocling`) | CDLA-Permissive-2.0; **`docling-project/SmolDocling-256M-preview`**, port 8113; DocTags → markdown in gateway — [smol-docling-vllm-integration.md](../issues/smol-docling-vllm-integration.md). |
 | Gemma 4 | Optional vLLM (`gemma4` profile) | User list: “Gemma 4 OCR”. |
 | **Hunyuan OCR** | vLLM (`vllm-hunyuanocr`, profile `hunyuanocr`) | `tencent/HunyuanOCR` ~1B VLM; Tencent license — see HF card. |
 | Qwen3-VL | Optional vLLM (`qwen3vl`) | Related to “Qwen 3 … VL OCR”. |
@@ -82,7 +83,7 @@ Treat these as **done** unless adding a second checkpoint or fixing gaps.
 | [LightOnOCR](https://huggingface.co/blog/lightonai/lightonocr) | vLLM | Apache 2.0 | **In repo**; track “Light On OCR 2 1B” as **model ID / prompt** updates only. |
 | Doc OWL | Research | — | Specify HF model id (e.g. DocOwl family) before design. |
 | [Phi-4-multimodal](https://huggingface.co/microsoft/Phi-4-multimodal-instruct) | vLLM | MS license | **In repo** — optional vLLM `vllm-phi4-mm` (`microsoft/Phi-4-multimodal-instruct`, profile `phi4mm`, port 8109) — [phi4-multimodal-vllm-integration.md](../issues/phi4-multimodal-vllm-integration.md). |
-| Smol Docling | Research | — | Pin exact HF artifact; likely vLLM or Transformers sidecar. |
+| Smol Docling | vLLM | CDLA Permissive v2 (**verify** HF card) | **In repo** — optional `vllm-smoldocling` (`docling-project/SmolDocling-256M-preview`, profile `smoldocling`, port **8113**) — [smol-docling-vllm-integration.md](../issues/smol-docling-vllm-integration.md). Successor **`ibm-granite/granite-docling-258M`** tracked separately if added later. |
 | [RolmOCR](https://huggingface.co/reducto/RolmOCR) | vLLM | Apache 2.0 | **In repo** — optional vLLM `vllm-rolmocr` (`reducto/RolmOCR`, profile `rolmocr`, port 8110) — [rolmocr-vllm-integration.md](../issues/rolmocr-vllm-integration.md). |
 | [IBM Granite Docling WebGPU](https://huggingface.co/spaces/ibm-granite/granite-docling-258M-WebGPU) | Browser (WASM) | Apache 2.0 | Likely **browser tier** only unless IBM ships server ONNX; compare to existing PaliGemma worker cost. |
 | Aya Vision OCR | vLLM / Ollama | Check license | Blog comparisons only until a **single serve command** is chosen. |
@@ -136,7 +137,7 @@ Order balances **license safety**, **engineering clarity**, and **distinct capab
 
 ### Wave 5 — New VLMs on vLLM (when distinct from existing)
 
-**Candidates:** ~~Phi-4-multimodal~~ (**in repo** — vLLM `vllm-phi4-mm`, profile `phi4mm`, port 8109), ~~RolmOCR~~ (**in repo** — vLLM `vllm-rolmocr`, profile `rolmocr`, port 8110), ~~NuMarkdown~~ (**in repo** — vLLM `vllm-numarkdown`, profile `numarkdown`, port 8111), ~~Qwen3-Omni~~ (**in repo** — vLLM-Omni `vllm-qwen3-omni`, profile `qwen3omni`, port 8112), Smol Docling (if servable).
+**Candidates:** ~~Phi-4-multimodal~~ (**in repo** — vLLM `vllm-phi4-mm`, profile `phi4mm`, port 8109), ~~RolmOCR~~ (**in repo** — vLLM `vllm-rolmocr`, profile `rolmocr`, port 8110), ~~NuMarkdown~~ (**in repo** — vLLM `vllm-numarkdown`, profile `numarkdown`, port 8111), ~~Qwen3-Omni~~ (**in repo** — vLLM-Omni `vllm-qwen3-omni`, profile `qwen3omni`, port 8112), ~~Smol Docling~~ (**in repo** — vLLM `vllm-smoldocling`, profile `smoldocling`, port 8113).
 
 **Approach:** Compose profile + serve recipe: stock vLLM models use `vllm-entrypoint.sh`; **Qwen3-Omni** uses **`vllm/vllm-omni`** + `vllm-omni-entrypoint.sh` (`--omni`). Set `prompts.json` and `VLLM_*` limits per model family.
 
@@ -184,6 +185,7 @@ Use this as a **program tracker**; implementation tickets can reference wave + r
 
 | Date | Change |
 |------|--------|
+| 2026-05-16 | **Smol Docling** — optional vLLM `vllm-smoldocling` (`docling-project/SmolDocling-256M-preview`, profile `smoldocling`, port 8113) |
 | 2026-05-16 | **Qwen3-Omni** — optional vLLM-Omni `vllm-qwen3-omni` (`Qwen/Qwen3-Omni-30B-A3B-Instruct` default, profile `qwen3omni`, port 8112) |
 | 2026-05-16 | **NuMarkdown** — optional vLLM `vllm-numarkdown` (`numind/NuMarkdown-8B-Thinking`, profile `numarkdown`, port 8111) |
 | 2026-05-16 | **RolmOCR** — optional vLLM `vllm-rolmocr` (`reducto/RolmOCR`, profile `rolmocr`, port 8110) |

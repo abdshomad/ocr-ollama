@@ -9,11 +9,14 @@ function memPct(g: GpuInfo): number {
 
 function stateLabel(s: VllmServiceStatus): { text: string; className: string } {
   if (s.docker_state === "local_cli") {
-    return s.api_ready
-      ? { text: "CLI ready", className: "gpu-state-ready" }
-      : { text: "CLI missing", className: "gpu-state-stopped" };
+    if (s.api_ready === true) return { text: "CLI ready", className: "gpu-state-ready" };
+    if (s.api_ready == null) return { text: "Checking…", className: "gpu-state-loading" };
+    return { text: "CLI missing", className: "gpu-state-stopped" };
   }
-  if (s.api_ready) return { text: "Ready", className: "gpu-state-ready" };
+  if (s.api_ready === true) return { text: "Ready", className: "gpu-state-ready" };
+  if (s.api_ready == null && (s.docker_state === "running" || s.docker_state === "starting")) {
+    return { text: "Checking…", className: "gpu-state-loading" };
+  }
   if (s.docker_state === "running" || s.docker_state === "starting")
     return { text: "Loading…", className: "gpu-state-loading" };
   if (s.docker_state === "exited" || s.docker_state === "stopped")

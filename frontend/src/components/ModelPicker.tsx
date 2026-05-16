@@ -52,6 +52,9 @@ function rowTitle(m: OllamaModel, up: boolean): string | undefined {
     if (m.engine_type === "lanyocr") {
       return "Start the lanyocr service (compose profile lanyocr), then refresh.";
     }
+    if (/SmolDocling/i.test(m.name)) {
+      return "Start Smol Docling (compose profile `smoldocling`, service `vllm-smoldocling`), then refresh.";
+    }
     return undefined;
   }
   if (m.input_modes?.length) {
@@ -61,13 +64,18 @@ function rowTitle(m: OllamaModel, up: boolean): string | undefined {
 }
 
 export function isModelAvailable(m: OllamaModel): boolean {
-  return m.available !== false;
+  return m.available === true;
+}
+
+export function isModelProbing(m: OllamaModel): boolean {
+  return m.available == null;
 }
 
 function sortModels(a: OllamaModel, b: OllamaModel): number {
-  const aUp = isModelAvailable(a) ? 0 : 1;
-  const bUp = isModelAvailable(b) ? 0 : 1;
-  if (aUp !== bUp) return aUp - bUp;
+  const rank = (m: OllamaModel) =>
+    isModelAvailable(m) ? 0 : isModelProbing(m) ? 1 : 2;
+  const d = rank(a) - rank(b);
+  if (d !== 0) return d;
   return a.name.localeCompare(b.name);
 }
 
@@ -81,6 +89,7 @@ interface ModelPickerProps {
 
 function ModelDetailPanel({ m }: { m: OllamaModel }) {
   const up = isModelAvailable(m);
+  const checking = isModelProbing(m);
   const hint = rowTitle(m, up);
   const sizeStr = formatModelSize(m.size);
   const detailLine = (label: string, value: string | undefined | null) =>
@@ -98,7 +107,10 @@ function ModelDetailPanel({ m }: { m: OllamaModel }) {
       aria-label={`Details for ${m.name}`}
     >
       <p className="model-detail-title">{m.name}</p>
-      {!up && (
+      {checking && (
+        <p className="model-detail-warn muted">Checking whether this engine is online…</p>
+      )}
+      {!up && !checking && (
         <p className="model-detail-warn muted">
           {hint ??
             "Offline — start this model on the GPU page, then refresh."}{" "}
@@ -132,12 +144,14 @@ function ModelCard({
   selected,
   expanded,
   onCardPress,
+  checking = false,
 }: {
   m: OllamaModel;
   multiple: boolean;
   selected: string[];
   expanded: boolean;
   onCardPress: (m: OllamaModel) => void;
+  checking?: boolean;
 }) {
   const up = isModelAvailable(m);
   const isOn = selected.includes(m.name);
@@ -148,7 +162,7 @@ function ModelCard({
       type="button"
       className={[
         "model-card",
-        up ? "" : "model-card-offline",
+        up ? "" : checking ? "model-card-probing" : "model-card-offline",
         isOn ? "model-card-selected" : "",
         expanded ? "model-card-expanded" : "",
       ]
@@ -172,7 +186,11 @@ function ModelCard({
         ) : null}
         <SpeedBadge tier={m.speed_tier} />
         <TierBadge tier={m.tier} />
-        {!up ? <span className="badge badge-offline">Offline</span> : null}
+        {checking ? (
+          <span className="badge badge-text">Checking…</span>
+        ) : !up ? (
+          <span className="badge badge-offline">Offline</span>
+        ) : null}
         {m.has_parent_blob ? (
           <span
             className="badge badge-text"
@@ -202,7 +220,8 @@ export function ModelPicker({
 
   const list = (ocrOnly ? models.filter((m) => m.ocr_capable) : models).sort(sortModels);
   const ready = list.filter(isModelAvailable);
-  const offline = list.filter((m) => !isModelAvailable(m));
+  const probing = list.filter(isModelProbing);
+  const offline = list.filter((m) => !isModelAvailable(m) && !isModelProbing(m));
 
   useEffect(() => {
     if (!multiple && selected[0]) setDetailFor(selected[0]);
@@ -249,6 +268,28 @@ export function ModelPicker({
                 selected={selected}
                 expanded={detailFor === m.name}
                 onCardPress={onCardPress}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+      {probing.length > 0 && (
+        <div className="model-picker-group model-picker-probing">
+          <p className="model-picker-heading">Checking availability ({probing.length})…</p>
+          <div
+            className="model-card-grid model-card-grid-probing"
+            role="group"
+            aria-label="OCR models — availability check in progress"
+          >
+            {probing.map((m) => (
+              <ModelCard
+                key={m.name}
+                m={m}
+                multiple={multiple}
+                selected={selected}
+                expanded={detailFor === m.name}
+                onCardPress={onCardPress}
+                checking
               />
             ))}
           </div>

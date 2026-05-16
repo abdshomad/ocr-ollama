@@ -1,15 +1,24 @@
 from __future__ import annotations
 
+import asyncio
 import json
+from contextlib import asynccontextmanager
 from typing import Literal
 
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import BackgroundTasks, FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
 from app.history import delete_result, list_history, load_result
-from app.inference.factory import check_health, list_models_with_classification
+from app.inference.factory import check_health
+from app.model_availability import (
+    availability_pending,
+    get_models_for_api,
+    refresh_gpu_api_status,
+    refresh_models_availability,
+    schedule_availability_refresh,
+)
 from app.ocr_service import (
     read_and_validate_image,
     read_and_validate_ocr_upload,
@@ -30,7 +39,14 @@ from app.vllm_compose import (
     stop_service,
 )
 
-app = FastAPI(title="OCR Inference API", version="0.2.0")
+@asynccontextmanager
+async def _lifespan(app: FastAPI):
+    asyncio.create_task(refresh_models_availability())
+    asyncio.create_task(refresh_gpu_api_status())
+    yield
+
+
+app = FastAPI(title="OCR Inference API", version="0.2.0", lifespan=_lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -79,8 +95,8 @@ async def settings_put(body: SettingsUpdate):
 
 
 @app.get("/api/gpu")
-async def gpu_get():
-    return await gpu_dashboard()
+async def gpu_get(background_tasks: BackgroundTasks):
+    return await gpu_dashboard(background_tasks=background_tasks)
 
 
 @app.post("/api/vllm/services/{service_id}/start")
@@ -125,16 +141,15 @@ async def samples_get(filename: str):
 
 
 @app.get("/api/models")
-async def models():
-    try:
-        return {
-            "models": await list_models_with_classification(),
-            "inference_backend": get_inference_backend(),
-            "inference_host": get_inference_host(),
-            "ollama_host": get_inference_host(),
-        }
-    except Exception as e:
-        raise HTTPException(status_code=503, detail=str(e)) from e
+async def models(background_tasks: BackgroundTasks):
+    schedule_availability_refresh(background_tasks)
+    return {
+        "models": get_models_for_api(),
+        "inference_backend": get_inference_backend(),
+        "inference_host": get_inference_host(),
+        "ollama_host": get_inference_host(),
+        "availability_pending": availability_pending(),
+    }
 
 
 @app.get("/api/prompts")

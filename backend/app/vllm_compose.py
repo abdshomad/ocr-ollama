@@ -136,6 +136,8 @@ def gpu_device_for_endpoint(ep: dict[str, Any]) -> int:
         return int(os.getenv("VLLM_NUMARKDOWN_CUDA_DEVICE", str(ep.get("gpu_device", 1))))
     if ep_id == "qwen3omni":
         return int(os.getenv("VLLM_QWEN3_OMNI_CUDA_DEVICE", str(ep.get("gpu_device", 1))))
+    if ep_id == "smoldocling":
+        return int(os.getenv("VLLM_SMOLDOCLING_CUDA_DEVICE", str(ep.get("gpu_device", 1))))
     if ep_id == "mineru-diffusion":
         return int(os.getenv("MINERU_DIFFUSION_CUDA_DEVICE", str(ep.get("gpu_device", 0))))
     if ep_id == "nemotron-ocr-v2":
@@ -275,12 +277,19 @@ def _host_for_service(ep: dict[str, Any]) -> str:
 
 
 async def _endpoint_dashboard_row(
-    ep: dict[str, Any], *, ps_map: dict[str, dict[str, str]] | None
+    ep: dict[str, Any],
+    *,
+    ps_map: dict[str, dict[str, str]] | None,
+    probe: bool,
 ) -> dict[str, Any]:
     from app import liteparse_client
 
     if str(ep.get("type") or "") == "litparse":
-        ready = await asyncio.to_thread(liteparse_client.lit_cli_available)
+        ready: bool | None
+        if probe:
+            ready = await asyncio.to_thread(liteparse_client.lit_cli_available)
+        else:
+            ready = None
         return {
             "id": str(ep.get("id", "")),
             "label": str(ep.get("label") or ep.get("id") or ""),
@@ -302,15 +311,21 @@ async def _endpoint_dashboard_row(
         row = ps_map.get(service, {})
         state = str(row.get("State") or "not_created").lower()
         health = str(row.get("Health") or "")
-        api_ready = False
+        api_ready: bool | None = False
         live_models: list[str] = []
         if state == "running":
-            api_ready, live_models = await _probe_runtime(host, engine_type=str(ep.get("type") or ""))
+            if probe:
+                probed_ready, live_models = await _probe_runtime(host, engine_type=str(ep.get("type") or ""))
+                api_ready = probed_ready
+            else:
+                api_ready = None
         models_out = live_models if live_models else cfg_models
         docker_state = state
-        if state == "running" and health and health.lower() not in ("healthy", ""):
+        if probe and state == "running" and health and health.lower() not in ("healthy", ""):
             if not api_ready:
                 docker_state = "starting"
+        elif not probe and state == "running" and health and health.lower() not in ("healthy", ""):
+            docker_state = "starting"
         return {
             "id": str(ep.get("id", "")),
             "label": str(ep.get("label") or ep.get("id") or ""),
@@ -324,7 +339,11 @@ async def _endpoint_dashboard_row(
             "container_id": (str(row.get("ID") or row.get("Id") or "")) or None,
         }
 
-    api_ready, live_models = await _probe_runtime(host, engine_type=str(ep.get("type") or ""))
+    api_ready = None
+    live_models: list[str] = []
+    if probe:
+        probed_ready, live_models = await _probe_runtime(host, engine_type=str(ep.get("type") or ""))
+        api_ready = probed_ready
     models_out = live_models if live_models else cfg_models
     return {
         "id": str(ep.get("id", "")),
@@ -340,10 +359,28 @@ async def _endpoint_dashboard_row(
     }
 
 
-async def list_service_statuses() -> list[dict[str, Any]]:
+async def list_service_statuses_fast() -> list[dict[str, Any]]:
     ps_map = await _compose_ps_map()
     endpoints = load_all_endpoints()
-    return list(await asyncio.gather(*[_endpoint_dashboard_row(ep, ps_map=ps_map) for ep in endpoints]))
+    return list(
+        await asyncio.gather(
+            *[_endpoint_dashboard_row(ep, ps_map=ps_map, probe=False) for ep in endpoints]
+        )
+    )
+
+
+async def list_service_statuses_probed() -> list[dict[str, Any]]:
+    ps_map = await _compose_ps_map()
+    endpoints = load_all_endpoints()
+    return list(
+        await asyncio.gather(
+            *[_endpoint_dashboard_row(ep, ps_map=ps_map, probe=True) for ep in endpoints]
+        )
+    )
+
+
+async def list_service_statuses() -> list[dict[str, Any]]:
+    return await list_service_statuses_probed()
 
 
 async def start_service(service_id: str) -> dict[str, Any]:
@@ -394,8 +431,9 @@ async def stop_service(service_id: str) -> dict[str, Any]:
     }
 
 
-async def gpu_dashboard() -> dict[str, Any]:
+async def gpu_dashboard(*, background_tasks: Any | None = None) -> dict[str, Any]:
     from app.gpu_stats import query_gpus
+    from app.model_availability import merge_gpu_services, schedule_gpu_api_refresh
 
     manage = compose_manage_enabled()
     message = None
@@ -414,7 +452,14 @@ async def gpu_dashboard() -> dict[str, Any]:
             message = "Repo mount missing at /workspace — rebuild stack from this repository."
 
     gpus, gpu_err = await query_gpus() if manage else ([], None)
-    services = await list_service_statuses() if manage else await _services_without_compose()
+    if manage:
+        fast = await list_service_statuses_fast()
+        services = merge_gpu_services(fast)
+    else:
+        fast = await _services_without_compose_fast()
+        services = merge_gpu_services(fast)
+
+    schedule_gpu_api_refresh(background_tasks)
 
     return {
         "manage_enabled": manage,
@@ -426,6 +471,19 @@ async def gpu_dashboard() -> dict[str, Any]:
     }
 
 
+async def _services_without_compose_fast() -> list[dict[str, Any]]:
+    endpoints = load_all_endpoints()
+    return list(
+        await asyncio.gather(
+            *[_endpoint_dashboard_row(ep, ps_map=None, probe=False) for ep in endpoints]
+        )
+    )
+
+
 async def _services_without_compose() -> list[dict[str, Any]]:
     endpoints = load_all_endpoints()
-    return list(await asyncio.gather(*[_endpoint_dashboard_row(ep, ps_map=None) for ep in endpoints]))
+    return list(
+        await asyncio.gather(
+            *[_endpoint_dashboard_row(ep, ps_map=None, probe=True) for ep in endpoints]
+        )
+    )

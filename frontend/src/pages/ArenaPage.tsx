@@ -25,7 +25,7 @@ export function ArenaPage() {
           setModels(r.models);
           setSelected((prev) => {
             const valid = prev.filter((id) =>
-              r.models.some((m) => m.name === id && m.available !== false)
+              r.models.some((m) => m.name === id && m.available === true)
             );
             if (valid.length >= 2) return valid;
             return pickDefaultArenaModels(r.models);

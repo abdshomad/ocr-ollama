@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 from typing import Any
 
 from app import (
@@ -39,18 +40,32 @@ def _backend() -> Backend:
     return get_inference_backend()
 
 
-async def list_models_with_classification() -> list[dict[str, Any]]:
-    tesseract_models = await tesseract_client.list_models_with_classification()
+async def probe_models_availability() -> list[dict[str, Any]]:
+    """Probe all engines in parallel (slow; use only in background)."""
     if _backend() == "ollama":
-        ollama_models = await ollama_client.list_models_with_classification()
-        rapidocr_models = await rapidocr_client.list_models_with_classification()
-        onnxtr_models = await onnxtr_client.list_models_with_classification()
-        easyocr_models = await easyocr_client.list_models_with_classification()
-        doctr_models = await doctr_client.list_models_with_classification()
-        paddleocr_models = await paddleocr_client.list_models_with_classification()
-        docling_models = await docling_client.list_models_with_classification()
-        lanyocr_models = await lanyocr_client.list_models_with_classification()
-        litparse_models = await liteparse_client.list_models_with_classification()
+        (
+            ollama_models,
+            rapidocr_models,
+            onnxtr_models,
+            easyocr_models,
+            doctr_models,
+            paddleocr_models,
+            docling_models,
+            lanyocr_models,
+            litparse_models,
+            tesseract_models,
+        ) = await asyncio.gather(
+            ollama_client.list_models_with_classification(),
+            rapidocr_client.list_models_with_classification(),
+            onnxtr_client.list_models_with_classification(),
+            easyocr_client.list_models_with_classification(),
+            doctr_client.list_models_with_classification(),
+            paddleocr_client.list_models_with_classification(),
+            docling_client.list_models_with_classification(),
+            lanyocr_client.list_models_with_classification(),
+            liteparse_client.list_models_with_classification(),
+            tesseract_client.list_models_with_classification(),
+        )
         return [
             *ollama_models,
             *rapidocr_models,
@@ -63,17 +78,33 @@ async def list_models_with_classification() -> list[dict[str, Any]]:
             *litparse_models,
             *tesseract_models,
         ]
-    vllm_models = await vllm_client.list_models_with_classification()
-    mineru_models = await mineru_client.list_models_with_classification()
-    nemotron_models = await nemotron_client.list_models_with_classification()
-    rapidocr_models = await rapidocr_client.list_models_with_classification()
-    onnxtr_models = await onnxtr_client.list_models_with_classification()
-    easyocr_models = await easyocr_client.list_models_with_classification()
-    doctr_models = await doctr_client.list_models_with_classification()
-    paddleocr_models = await paddleocr_client.list_models_with_classification()
-    docling_models = await docling_client.list_models_with_classification()
-    lanyocr_models = await lanyocr_client.list_models_with_classification()
-    litparse_models = await liteparse_client.list_models_with_classification()
+    (
+        vllm_models,
+        mineru_models,
+        nemotron_models,
+        rapidocr_models,
+        onnxtr_models,
+        easyocr_models,
+        doctr_models,
+        paddleocr_models,
+        docling_models,
+        lanyocr_models,
+        litparse_models,
+        tesseract_models,
+    ) = await asyncio.gather(
+        vllm_client.list_models_with_classification(),
+        mineru_client.list_models_with_classification(),
+        nemotron_client.list_models_with_classification(),
+        rapidocr_client.list_models_with_classification(),
+        onnxtr_client.list_models_with_classification(),
+        easyocr_client.list_models_with_classification(),
+        doctr_client.list_models_with_classification(),
+        paddleocr_client.list_models_with_classification(),
+        docling_client.list_models_with_classification(),
+        lanyocr_client.list_models_with_classification(),
+        liteparse_client.list_models_with_classification(),
+        tesseract_client.list_models_with_classification(),
+    )
     return [
         *vllm_models,
         *mineru_models,
@@ -88,6 +119,17 @@ async def list_models_with_classification() -> list[dict[str, Any]]:
         *litparse_models,
         *tesseract_models,
     ]
+
+
+async def list_models_with_classification() -> list[dict[str, Any]]:
+    """Full probe (OCR path validation). Prefer get_models_for_api() for UI."""
+    return await probe_models_availability()
+
+
+def list_models_catalog_sync() -> list[dict[str, Any]]:
+    from app.model_catalog import list_models_catalog
+
+    return list_models_catalog(backend=_backend())
 
 
 async def check_health() -> dict[str, Any]:
