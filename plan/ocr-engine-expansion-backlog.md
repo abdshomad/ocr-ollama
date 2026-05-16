@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-16  
 **Status:** Draft  
-**`next` / `n`:** This file is the **canonical queue** for the [AGENTS.md](../AGENTS.md) **Next engine** workflow — pick the next unimplemented candidate by **Suggested waves** (and workload hints from [ocr-engines.md](./ocr-engines.md) when needed).  
+**`next` / `n`:** This file is the **canonical queue** for the [AGENTS.md](../AGENTS.md) **Next engine** workflow — pick the next **Ship-ready** unimplemented candidate by **Suggested waves** (and workload hints from [ocr-engines.md](./ocr-engines.md) when needed). **`next` does not mean “research-only” rows** — use **[§ Next research triage queue](#next-research-triage-queue)** for the ordered **Research → Spike** backlog.  
 **Related:** [ocr-engines.md](./ocr-engines.md) (speed ladder + in-repo truth), [medium-four-ocr-models.md](./medium-four-ocr-models.md) (registry / adapter patterns), [browser-ocr-pipeline.md](./browser-ocr-pipeline.md), [AGENTS.md](../AGENTS.md) (architecture rules)
 
 ## Goals
@@ -15,6 +15,7 @@
 
 - Replacing [ocr-engines.md](./ocr-engines.md) as the **speed ranking** source of truth (update that file when an engine lands and is benchmarked).
 - Committing to every name on the list: some rows are **placeholders** (vague product names, unreleased weights, or X-only announcements) and stay **Research** until there is an HF repo, Docker image, or crisp API.
+- **GPL-licensed OCR engines** (e.g. **GPL-3.0**): **out of backlog scope** — no Ship waves, no promotion from Research/Spike ([§ Excluded engines (GPL)](#excluded-engines-gpl)).
 
 ## Architecture constraints (recap)
 
@@ -25,6 +26,39 @@
 | Arena sequential | Each new server engine must tolerate **queue-style** calls; document VRAM if exclusive. |
 
 **Reuse:** `backend/config/ocr_engines.json`, `engine_registry.py`, `inference/factory.py`, per-engine client modules (see `mineru_client.py`, `vllm_client.py` patterns), optional compose profile + GPU page controls.
+
+---
+
+## Excluded engines (GPL)
+
+**Policy:** Engines whose distribution terms are **GNU General Public License v3** (**GPL-3.0**) — and other **GPL-family** OCR stacks treated the same by policy — are **not integration targets** for this repo’s backlog (sidecar, subprocess, or browser worker). Do **not** route them through **`next` / `n`**, waves, or research triage toward Ship.
+
+| Engine / link | License | Notes |
+|---------------|---------|--------|
+| [Surya](https://github.com/VikParuchuri/surya) | GPL-3.0 | Was formerly listed under a GPL wave; **permanently excluded** here. |
+
+*Note:* **AGPL** (e.g. optional **full MinerU** stack row elsewhere in this doc) is **not** GPLv3 but remains a **separate license gate** — unchanged by this GPL exclusion.
+
+---
+
+## Next research triage queue
+
+**Purpose:** When **Ship-ready** wave candidates are exhausted (or for dedicated research time), **triage this list next**. Each item lacks a concrete **HF model id**, **weights**, **vendor/OSS clarity**, or **open inference surface** — clarify those before scheduling implementation. **GPL-3.0 engines are never promoted** — see [§ Excluded engines (GPL)](#excluded-engines-gpl). This queue is **not** the [AGENTS.md](../AGENTS.md) **`next` / `n`** ship workflow (that builds **one** engine end-to-end); use this list to promote rows **Research → Spike → Ship**.
+
+**Suggested triage order** (reorder when upstream publishes artifacts):
+
+| # | Candidate | Gate before design / Ship |
+|---|-----------|---------------------------|
+| 1 | **Doc OWL** | **Triaged 2026-05-16** — pinned lineage: **`mPLUG/DocOwl2`** (primary), DocOwl1.5 variants; **Apache-2.0**; **no stock vLLM path** found — Ship needs **custom GPU sidecar** (Transformers) or future vLLM support. See [issues/doc-owl-wave-r-triage.md](../issues/doc-owl-wave-r-triage.md). |
+| 2 | **Aya Vision OCR** | **License** + one reproducible **serve recipe** (vLLM or Ollama). |
+| 3 | **Dolphin** | Open **weights** + **license**; includes Dolphin-named variants in the “track upstream” inventory row. |
+| 4 | **owlOCR / OCR Flux / Monkey OCR / Nanonets** | **Vendor vs OSS**; many names are **marketing** — need a concrete artifact. |
+| 5 | **DocParse / OCR Docker / OpenPage / OCRbro / DocuMagnet / OCR Studio** | **Defer** until an **open inference surface** exists (documented API, container, or SDK with usable terms). |
+| 6 | **Gemma 3 OCR / Falcon OCR / Youtu-VL / ExaOCR / Col Pali / Pixl** | **Research**; **ColPali** is **retrieval** — different task unless explicitly scoped as “OCR-like”. |
+| 7 | **Pike PDF** | Clarify **library vs model** / inference entrypoint. |
+| 8 | **DeepSeek OCR 2 / Paddle OCR VL 1.5 / MinerU 2.5 / Dolphin v2 / Light On OCR 2** | **Watch upstream** until **public weights** + **stable serve recipe**; then promote to Spike/Ship. |
+
+**Exit criteria (promote to Spike):** HF repo or pinned container tag, license reference (**must not be GPL-3.0** per [§ Excluded engines (GPL)](#excluded-engines-gpl)), minimal serve command (vLLM/sidecar), and sample I/O suitable for `fixtures/ocr/`.
 
 ---
 
@@ -66,7 +100,7 @@ Treat these as **done** unless adding a second checkpoint or fixing gaps.
 
 ## Backlog inventory (user list + integration class)
 
-**Legend:** `vLLM` = OpenAI-compatible multimodal chat; `Sidecar` = dedicated HTTP service in Compose; `Subproc` = Python/CLI in backend container or host; `Browser` = worker + `/api/scan`; `API` = external hosted; `Research` = unclear artifact or license.
+**Legend:** `vLLM` = OpenAI-compatible multimodal chat; `Sidecar` = dedicated HTTP service in Compose; `Subproc` = Python/CLI in backend container or host; `Browser` = worker + `/api/scan`; `API` = external hosted; `Research` = unclear artifact or license. **GPLv3 OCR engines** are **not** backlog candidates — [§ Excluded engines (GPL)](#excluded-engines-gpl).
 
 | Name / link | Class | License / gate | Notes |
 |-------------|-------|----------------|--------|
@@ -76,28 +110,27 @@ Treat these as **done** unless adding a second checkpoint or fixing gaps.
 | [EasyOCR](https://github.com/JaidedAI/EasyOCR) | Subproc / Sidecar | Apache 2.0 | PyTorch; VRAM; prefer sidecar. |
 | [docTR](https://github.com/mindee/doctr) | Subproc / Sidecar | Apache 2.0 | **In repo** — CPU PyTorch sidecar (`doctr`, profile `doctr`, port 8250). |
 | [Lany OCR](https://github.com/JC1DA/lanyocr) | Sidecar | MIT | **In repo** — CPU sidecar `lanyocr`, port 8280; upstream quiet since ~2023. |
-| [Surya](https://github.com/VikParuchuri/surya) | Sidecar / Subproc | GPL-3.0 | **Conflicts with prior “out of scope”** in medium plan; only integrate if project **accepts GPL** in sidecar boundary. |
 | [Tesseract](https://github.com/tesseract-ocr/tesseract) (native) | Subproc | Apache 2.0 | Wrap `tesseract` binary or `pytesseract`; useful for **CPU baseline** and PDF raster fallback. |
 | [Docling](https://github.com/DS4SD/docling) | Sidecar | MIT (verify sub-deps) | Layout + OCR pipeline; **in repo** — CPU sidecar `docling`, profile **`docling`**, port 8270. |
 | [OnnxTR](https://github.com/felixdittrich92/OnnxTR) | Subproc / Sidecar | Apache 2.0 | ONNX — **in repo** as CPU sidecar (`onnxtr`, profile `onnxtr`, port 8230). |
 | [TrOCR](https://huggingface.co/docs/transformers/en/model_doc/trocr) | Browser / Example | Apache 2.0 | **Example / research** on server; browser path exists. |
 | [LightOnOCR](https://huggingface.co/blog/lightonai/lightonocr) | vLLM | Apache 2.0 | **In repo**; track “Light On OCR 2 1B” as **model ID / prompt** updates only. |
-| Doc OWL | Research | — | Specify HF model id (e.g. DocOwl family) before design. |
+| Doc OWL (mPLUG-DocOwl) | Spike → **Blocked (vLLM)** / sidecar candidate | Apache-2.0 (`mPLUG/DocOwl2`) | **#1 triaged** — collection [DocOwl Series](https://huggingface.co/collections/mPLUG/docowl-series); primary id **`mPLUG/DocOwl2`** (~9B, `custom_code` + Transformers); **not** in stock vLLM supported list → **optional Transformers GPU sidecar** to Ship. [doc-owl-wave-r-triage.md](../issues/doc-owl-wave-r-triage.md). |
 | [Phi-4-multimodal](https://huggingface.co/microsoft/Phi-4-multimodal-instruct) | vLLM | MS license | **In repo** — optional vLLM `vllm-phi4-mm` (`microsoft/Phi-4-multimodal-instruct`, profile `phi4mm`, port 8109) — [phi4-multimodal-vllm-integration.md](../issues/phi4-multimodal-vllm-integration.md). |
 | Smol Docling | vLLM | CDLA Permissive v2 (**verify** HF card) | **In repo** — optional `vllm-smoldocling` (`docling-project/SmolDocling-256M-preview`, profile `smoldocling`, port **8113**) — [smol-docling-vllm-integration.md](../issues/smol-docling-vllm-integration.md). Successor **`ibm-granite/granite-docling-258M`** tracked separately if added later. |
 | [RolmOCR](https://huggingface.co/reducto/RolmOCR) | vLLM | Apache 2.0 | **In repo** — optional vLLM `vllm-rolmocr` (`reducto/RolmOCR`, profile `rolmocr`, port 8110) — [rolmocr-vllm-integration.md](../issues/rolmocr-vllm-integration.md). |
 | [IBM Granite Docling WebGPU](https://huggingface.co/spaces/ibm-granite/granite-docling-258M-WebGPU) | Browser (WASM / ONNX) | Apache 2.0 | **In repo** — **`/scan`** worker engine **`granite`**, HF ONNX community build `onnx-community/granite-docling-258M-ONNX` (see [plan/granite-docling-browser.md](./granite-docling-browser.md)). |
-| Aya Vision OCR | vLLM / Ollama | Check license | Blog comparisons only until a **single serve command** is chosen. |
+| Aya Vision OCR | vLLM / Ollama | Check license | **Next research triage (#2).** Blog comparisons only until **license** + a **single serve command** are pinned. |
 | Mistral OCR / “Mistral OCR 3” | API / vLLM | **Often API-only** | If closed API, add `engine.type: http_proxy` pattern or document “out of self-host”. |
-| Dolphin (X link) | Research | — | Wait for open weights + license. |
+| Dolphin (X link) | Research | — | **Next research triage (#3).** Wait for open weights + license (includes Dolphin variants in the upstream-tracking row). |
 | [Dots.OCR](https://github.com/rednote-hilab/dots.ocr) | vLLM (primary) | MIT | **In repo** as **`rednote-hilab/dots.mocr`** on optional vLLM (`dotsmocr` profile). Newer **`dots.mocr`** line; weights on HF. |
 | [Qwen3-Omni](https://github.com/QwenLM/Qwen3-Omni) | vLLM-Omni | Qwen license | **In repo** — optional **`vllm-qwen3-omni`** (`vllm serve --omni`, default `Qwen/Qwen3-Omni-30B-A3B-Instruct`, profile **`qwen3omni`**, port **8112**) — [qwen3-omni-vllm-integration.md](../issues/qwen3-omni-vllm-integration.md). |
-| owlOCR / OCR Flux / Monkey OCR / Nanonets | Research | — | Clarify vendor vs OSS; many are **marketing names**. |
+| owlOCR / OCR Flux / Monkey OCR / Nanonets | Research | — | **Next research triage (#4).** Clarify vendor vs OSS; many are **marketing names**. |
 | [NuMarkdown](https://github.com/numindai/NuMarkdown) / [NuMarkdown-8B](https://huggingface.co/numind/NuMarkdown-8B-Thinking) | vLLM | MIT | **In repo** — optional vLLM `vllm-numarkdown` (`numind/NuMarkdown-8B-Thinking`, profile `numarkdown`, port 8111) — [numarkdown-vllm-integration.md](../issues/numarkdown-vllm-integration.md). |
-| DocParse / OCR Docker / OpenPage / OCRbro / DocuMagnet / OCR Studio | Research | — | Could be products; **do not implement** until open inference surface exists. |
-| Gemma 3 OCR / Falcon OCR / Youtu-VL / ~~Hunyuan OCR~~ / ExaOCR / Col Pali / Pixl | Research | — | **Hunyuan:** shipped as `tencent/HunyuanOCR` vLLM (`hunyuanocr` profile). **ColPali** is retrieval — different task unless scoped to “OCR-like”. |
-| Pike PDF | Research | — | Clarify if library vs model. |
-| DeepSeek OCR 2 / Paddle OCR VL 1.5 / MinerU 2.5 / Dolphin v2 / Light On OCR 2 | Research | — | Track upstream releases; integrate when **public weights + serve recipe** stabilizes. |
+| DocParse / OCR Docker / OpenPage / OCRbro / DocuMagnet / OCR Studio | Research | — | **Next research triage (#5).** Could be products; **do not implement** until **open inference surface** exists. |
+| Gemma 3 OCR / Falcon OCR / Youtu-VL / ~~Hunyuan OCR~~ / ExaOCR / Col Pali / Pixl | Research | — | **Next research triage (#6).** **Hunyuan:** shipped as `tencent/HunyuanOCR` vLLM (`hunyuanocr` profile). **ColPali** is retrieval — different task unless scoped to “OCR-like”. |
+| Pike PDF | Research | — | **Next research triage (#7).** Clarify if **library vs model** / inference artifact. |
+| DeepSeek OCR 2 / Paddle OCR VL 1.5 / MinerU 2.5 / Dolphin v2 / Light On OCR 2 | Research | — | **Next research triage (#8).** Track upstream; integrate when **public weights + stable serve recipe** exist. |
 | Gemini 3.0 | API | Google ToS | Only via **user API key** pattern if ever; out of default self-host stack. |
 | iFlyTek AI NOTE 2 | API / closed | Commercial | Likely **out of scope** for self-host unless legal + SDK. |
 
@@ -111,6 +144,14 @@ Order balances **license safety**, **engineering clarity**, and **distinct capab
 
 - Keep `ocr_engines.json` as the **catalog**; merge duplicate conceptual entries (e.g. multiple “MinerU” rows) into **one service + variants**.
 - For each new engine: **model id**, **prompt policy**, **input modes** (`image` / `pdf`), **`speed_tier`**, **`issues/<slug>.md`** if Docker or VRAM non-trivial.
+
+### Wave R — Research triage (**next** when nothing is Ship-ready)
+
+**Candidates:** Ordered list in **[§ Next research triage queue](#next-research-triage-queue)** (Doc OWL → … → upstream-tracking row).
+
+**Approach:** Spike only: HF id / license / serve command / sample output. Promote a row to **Ship** and a numbered wave only after exit criteria there are met — **do not** count Wave R as satisfying [AGENTS.md](../AGENTS.md) **`next` / `n`** until triage completes.
+
+**Progress (Wave R):** **#1 Doc OWL** — triage write-up [issues/doc-owl-wave-r-triage.md](../issues/doc-owl-wave-r-triage.md) (**pinned HF ids**; **vLLM serve N/A**; sidecar path documented). **#2** onward — not started.
 
 ### Wave 1 — Classical / ONNX cluster (CPU-friendly sidecars)
 
@@ -130,25 +171,19 @@ Order balances **license safety**, **engineering clarity**, and **distinct capab
 
 **Approach:** Reuse MinerU-Diffusion lessons: internal HTTP, batching flags, strong error messages when OOM.
 
-### Wave 4 — GPL / policy decision engines
-
-**Candidates:** Surya, any GPL stack.
-
-**Approach:** **Project decision**: either (a) keep GPL strictly inside optional **optional profile** container with SPDX + docs, or (b) drop. Do not silently bundle.
-
-### Wave 5 — New VLMs on vLLM (when distinct from existing)
+### Wave 4 — New VLMs on vLLM (when distinct from existing)
 
 **Candidates:** ~~Phi-4-multimodal~~ (**in repo** — vLLM `vllm-phi4-mm`, profile `phi4mm`, port 8109), ~~RolmOCR~~ (**in repo** — vLLM `vllm-rolmocr`, profile `rolmocr`, port 8110), ~~NuMarkdown~~ (**in repo** — vLLM `vllm-numarkdown`, profile `numarkdown`, port 8111), ~~Qwen3-Omni~~ (**in repo** — vLLM-Omni `vllm-qwen3-omni`, profile `qwen3omni`, port 8112), ~~Smol Docling~~ (**in repo** — vLLM `vllm-smoldocling`, profile `smoldocling`, port 8113).
 
 **Approach:** Compose profile + serve recipe: stock vLLM models use `vllm-entrypoint.sh`; **Qwen3-Omni** uses **`vllm/vllm-omni`** + `vllm-omni-entrypoint.sh` (`--omni`). Set `prompts.json` and `VLLM_*` limits per model family.
 
-### Wave 6 — Browser / WebGPU demos
+### Wave 5 — Browser / WebGPU demos
 
 **Candidates:** ~~IBM Granite Docling (`granite`, ONNX in Transformers.js)~~ (**in repo**), other WASM-friendly small models.
 
 **Approach:** Extend **browser worker** pipeline; results via `POST /api/scan`; label latency in UI.
 
-### Wave 7 — External APIs (optional product direction)
+### Wave 6 — External APIs (optional product direction)
 
 **Candidates:** Mistral OCR, Gemini, iFlyTek, Nanonets-hosted.
 
@@ -175,7 +210,8 @@ Use this as a **program tracker**; implementation tickets can reference wave + r
 | Risk | Mitigation |
 |------|------------|
 | Dependency / image size explosion | Prefer **one concern per Dockerfile**; share base stages where safe. |
-| AGPL / GPL in default compose | Keep AGPL/GPL images behind **explicit profiles**; document in plan + README. |
+| **GPL-3.0 OCR engines** | **Excluded** from backlog — no Ship path ([§ Excluded engines (GPL)](#excluded-engines-gpl)). |
+| AGPL (e.g. optional full MinerU stack) | Keep behind **explicit profiles** + organizational approval; never default compose — distinct from GPLv3 exclusion above. |
 | “Name-only” models | Require HF ID or container tag before scheduling work. |
 | Mistral / Google **API-only** | Do not pretend self-hosted; use cloud adapter or defer. |
 | Arena fairness | Shared preprocess (`normalize_page_image`) for raster inputs; PDF engines compared only on PDF-capable rows. |
@@ -186,6 +222,9 @@ Use this as a **program tracker**; implementation tickets can reference wave + r
 
 | Date | Change |
 |------|--------|
+| 2026-05-16 | **Wave R #1 Doc OWL** — triage [issues/doc-owl-wave-r-triage.md](../issues/doc-owl-wave-r-triage.md); pinned **`mPLUG/DocOwl2`** + DocOwl1.5 family; Ship **blocked** on stock vLLM; **sidecar** path noted |
+| 2026-05-16 | **GPL exclusion** — [§ Excluded engines (GPL)](#excluded-engines-gpl); Surya removed from inventory table; former GPL wave dropped; waves **5→6** renumbered to **4→6**; risk register split GPLv3 vs AGPL |
+| 2026-05-16 | **Next research triage queue** — ordered Research candidates (Doc OWL … upstream-tracking row); **Wave R**; clarified **`next` / `n`** vs research-only rows |
 | 2026-05-16 | **Granite Docling 258M (browser)** — `/scan` engine `granite`, `onnx-community/granite-docling-258M-ONNX`; nginx image must be rebuilt to refresh static assets |
 | 2026-05-16 | **Smol Docling** — optional vLLM `vllm-smoldocling` (`docling-project/SmolDocling-256M-preview`, profile `smoldocling`, port 8113) |
 | 2026-05-16 | **Qwen3-Omni** — optional vLLM-Omni `vllm-qwen3-omni` (`Qwen/Qwen3-Omni-30B-A3B-Instruct` default, profile `qwen3omni`, port 8112) |

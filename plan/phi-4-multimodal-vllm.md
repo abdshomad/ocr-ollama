@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-16  
 **Status:** Implemented  
-**Related:** [issues/phi4-multimodal-vllm-integration.md](../issues/phi4-multimodal-vllm-integration.md), [vLLM Phi-4 recipe](https://docs.vllm.ai/projects/recipes/en/latest/Microsoft/Phi-4.html), [ocr-engine-expansion-backlog.md](./ocr-engine-expansion-backlog.md) (Wave 5)
+**Related:** [issues/phi4-multimodal-vllm-integration.md](../issues/phi4-multimodal-vllm-integration.md), [vLLM Phi-4 recipe](https://docs.vllm.ai/projects/recipes/en/latest/Microsoft/Phi-4.html), [ocr-engine-expansion-backlog.md](./ocr-engine-expansion-backlog.md) (Wave 4)
 
 ## Goals
 

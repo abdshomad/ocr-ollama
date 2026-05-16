@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-16  
 **Status:** Implemented  
-**Related:** [browser-ocr-pipeline.md](./browser-ocr-pipeline.md), [ocr-engine-expansion-backlog.md](./ocr-engine-expansion-backlog.md) (Wave 6), [issues/granite-docling-browser.md](../issues/granite-docling-browser.md)
+**Related:** [browser-ocr-pipeline.md](./browser-ocr-pipeline.md), [ocr-engine-expansion-backlog.md](./ocr-engine-expansion-backlog.md) (Wave 5), [issues/granite-docling-browser.md](../issues/granite-docling-browser.md)
 
 ## Goals
 

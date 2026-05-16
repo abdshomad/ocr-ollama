@@ -46,13 +46,13 @@ When the user sends **`next`** or **`n`** alone (or clearly means “ship the ne
 **How to pick the engine**
 
 1. Open [plan/ocr-engine-expansion-backlog.md](plan/ocr-engine-expansion-backlog.md) — this is the **canonical queue** for `next` / `n`.
-2. Choose the **next unimplemented** candidate by **Suggested waves** (Wave 1 → 7), unless the user’s context clearly targets one workload (then see step 4). Within a wave, prefer rows that are **not** listed under **Already in repo** in that doc.
-3. Skip engines **already in the repo** (backlog § “Already in repo”, plus **In repo** / **Yes** in [plan/ocr-engines.md](plan/ocr-engines.md) ladders). Skip backlog rows still in **Research** or **Blocked** (license, no weights, API-only with no adapter) until triaged to a concrete **Ship** path — if the next wave is all blocked, run a **spike** documented in `issues/` and update the backlog row.
+2. Choose the **next unimplemented** candidate by **Suggested waves** (Wave 1 → 6), unless the user’s context clearly targets one workload (then see step 4). Within a wave, prefer rows that are **not** listed under **Already in repo** in that doc.
+3. Skip engines **already in the repo** (backlog § “Already in repo”, plus **In repo** / **Yes** in [plan/ocr-engines.md](plan/ocr-engines.md) ladders). Skip **GPL-3.0** engines ([plan/ocr-engine-expansion-backlog.md](plan/ocr-engine-expansion-backlog.md) § Excluded engines (GPL)). Skip backlog rows still in **Research** or **Blocked** (license, no weights, API-only with no adapter) until triaged to a concrete **Ship** path — if the next wave is all blocked, run a **spike** documented in `issues/` and update the backlog row.
 4. Use [plan/ocr-engines.md](plan/ocr-engines.md) **workload ladders** to disambiguate when several backlog candidates are ready:
    - **Default:** workload **B** (scanned page, server `/api/ocr` / Arena).
    - **PDF / digital text focus:** workload **A** (pick the next backlog engine that fits **digital PDF / extraction**, e.g. parser-class tools).
    - **Browser `/scan` only:** workload **C** (pick the next backlog engine tagged **Browser** / WebGPU in the backlog table).
-5. If a candidate was historically **out of scope** in [plan/medium-four-ocr-models.md](plan/medium-four-ocr-models.md) but is **in scope** in the backlog (e.g. GPL sidecar with explicit profile), follow the **backlog** license/mitigation notes.
+5. If a candidate was historically **out of scope** in [plan/medium-four-ocr-models.md](plan/medium-four-ocr-models.md) but is **in scope** in the backlog (e.g. AGPL-gated optional stack with explicit profile), follow the **backlog** license/mitigation notes. **GPL-3.0 OCR engines** are **excluded** from the backlog — [plan/ocr-engine-expansion-backlog.md](plan/ocr-engine-expansion-backlog.md) § Excluded engines (GPL).
 
 **How to implement**
 
