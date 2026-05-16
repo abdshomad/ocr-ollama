@@ -43,7 +43,7 @@
 
 ## Next research triage queue
 
-**Purpose:** When **Ship-ready** wave candidates are exhausted (or for dedicated research time), **triage this list next**. Each item lacks a concrete **HF model id**, **weights**, **vendor/OSS clarity**, or **open inference surface** — clarify those before scheduling implementation. **GPL-3.0 engines are never promoted** — see [§ Excluded engines (GPL)](#excluded-engines-gpl). This queue is **not** the [AGENTS.md](../AGENTS.md) **`next` / `n`** ship workflow (that builds **one** engine end-to-end); use this list to promote rows **Research → Spike → Ship**.
+**Purpose:** When **Ship-ready** wave candidates are exhausted (or for dedicated research time), **triage this list next**. Each item lacks a concrete **HF model id**, **weights**, **vendor/OSS clarity**, or **open inference surface** — clarify those before scheduling implementation. **GPL-3.0 engines are never promoted** — see [§ Excluded engines (GPL)](#excluded-engines-gpl). This queue is **not** the [AGENTS.md](../AGENTS.md) **`next` / `n`** ship workflow (that builds **one** engine end-to-end); use this list to promote rows **Research → Spike → Ship**. **As of 2026-05-16**, items **#1–#8** are **triaged** — append new rows for fresh Research topics; ships still require Spikes that meet **exit criteria** below.
 
 **Suggested triage order** (reorder when upstream publishes artifacts):
 
@@ -55,8 +55,8 @@
 | 4 | **owlOCR / OCR Flux / Monkey OCR / Nanonets** | **Triaged 2026-05-16** — disambiguation: **OlmOCR** `allenai/olmOCR-*` (Apache-2.0) vs Mac **OwlOCR**; **ChatDOC/OCRFlux-3B** (**Qwen Research LICENSE**, NC); **echo840/MonkeyOCR** (non-commercial per card); **nanonets/Nanonets-OCR-s** (HF license unclear; Qwen derivative). See [issues/marketing-ocr-names-wave-r-triage.md](../issues/marketing-ocr-names-wave-r-triage.md). |
 | 5 | **DocParse / OCR Docker / OpenPage / OCRbro / DocuMagnet / OCR Studio** | **Triaged 2026-05-16** — bundle is **mostly commercial / SDK / workflow glue** (e.g. Aryn DocParse, DocuMagnet, OCR Studio); **no** shared open HF weight for gateway Ship — **still deferred**. See [issues/vendor-ocr-products-wave-r-triage.md](../issues/vendor-ocr-products-wave-r-triage.md). |
 | 6 | **Gemma 3 OCR / Falcon OCR / Youtu-VL / ExaOCR / Col Pali / Pixl** | **Triaged 2026-05-16** — **Gemma 3** `google/gemma-3-*-it` (vLLM **Gemma3** MM); **Falcon-OCR** `tiiuae/Falcon-OCR`; **Youtu-VL** `tencent/Youtu-VL-4B-Instruct`; **ExaOCR** pipeline repo; **ColPali** = retrieval not Run OCR; **Pixl** = commercial API. See [issues/wave-r-6-vlm-doc-models-triage.md](../issues/wave-r-6-vlm-doc-models-triage.md). |
-| 7 | **Pike PDF** | Clarify **library vs model** / inference entrypoint. |
-| 8 | **DeepSeek OCR 2 / Paddle OCR VL 1.5 / MinerU 2.5 / Dolphin v2 / Light On OCR 2** | **Watch upstream** until **public weights** + **stable serve recipe**; then promote to Spike/Ship. |
+| 7 | **Pike PDF** | **Triaged 2026-05-16** — **[pikepdf](https://github.com/pikepdf/pikepdf)** Python PDF library (**QPDF**); **not** an OCR model / **no** `vllm serve`. **MPL-2.0.** See [issues/pikepdf-wave-r-triage.md](../issues/pikepdf-wave-r-triage.md). |
+| 8 | **DeepSeek OCR 2 / Paddle OCR VL 1.5 / MinerU 2.5 / Dolphin v2 / Light On OCR 2** | **Triaged 2026-05-16** — **DeepSeek-OCR-2** + **PaddleOCR-VL-1.5** have public HF weights; **Spike** vLLM/serve on this repo’s images. **MinerU** AGPL; **Dolphin-v2** Qwen NC; **LightOnOCR-2-1B** **already in repo**. [issues/wave-r-8-upstream-watchlist-triage.md](../issues/wave-r-8-upstream-watchlist-triage.md). |
 
 **Exit criteria (promote to Spike):** HF repo or pinned container tag, license reference (**must not be GPL-3.0** per [§ Excluded engines (GPL)](#excluded-engines-gpl)), minimal serve command (vLLM/sidecar), and sample I/O suitable for `fixtures/ocr/`.
 
@@ -129,8 +129,8 @@ Treat these as **done** unless adding a second checkpoint or fixing gaps.
 | [NuMarkdown](https://github.com/numindai/NuMarkdown) / [NuMarkdown-8B](https://huggingface.co/numind/NuMarkdown-8B-Thinking) | vLLM | MIT | **In repo** — optional vLLM `vllm-numarkdown` (`numind/NuMarkdown-8B-Thinking`, profile `numarkdown`, port 8111) — [numarkdown-vllm-integration.md](../issues/numarkdown-vllm-integration.md). |
 | DocParse / OCR Docker / OpenPage / OCRbro / DocuMagnet / OCR Studio | Vendor / ambiguous | **Commercial or N/A** | **#5 triaged** — [vendor-ocr-products-wave-r-triage.md](../issues/vendor-ocr-products-wave-r-triage.md); **Ship still deferred** (no open inference artifact for bundle). |
 | Gemma 3 OCR / Falcon OCR / Youtu-VL / ~~Hunyuan OCR~~ / ExaOCR / Col Pali / Pixl | vLLM / pipeline / API / retrieval | **Varies** (Gemma ToU; Tencent; TII verify; Pixl commercial) | **#6 triaged** — [wave-r-6-vlm-doc-models-triage.md](../issues/wave-r-6-vlm-doc-models-triage.md). **Hunyuan:** in repo. **ColPali:** retrieval. |
-| Pike PDF | Research | — | **Next research triage (#7).** Clarify if **library vs model** / inference artifact. |
-| DeepSeek OCR 2 / Paddle OCR VL 1.5 / MinerU 2.5 / Dolphin v2 / Light On OCR 2 | Research | — | **Next research triage (#8).** Track upstream; integrate when **public weights + stable serve recipe** exist. **Dolphin v2:** weights **`ByteDance/Dolphin-v2`** exist; **Qwen Research License** — [dolphin-wave-r-triage.md](../issues/dolphin-wave-r-triage.md). |
+| Pike PDF (pikepdf) | Library (not OCR) | **MPL-2.0** | **#7 triaged** — Python PDF I/O, optional plumbing only. [pikepdf-wave-r-triage.md](../issues/pikepdf-wave-r-triage.md). |
+| DeepSeek OCR 2 / PaddleOCR-VL-1.5 / MinerU 2.5+ / Dolphin v2 / LightOnOCR “2” | vLLM / AGPL / NC / **done** | Apache / Qwen NC / AGPL / Apache | **#8 triaged** — DS-OCR-2 + PaddleOCR-VL-1.5 pin on HF; **LightOnOCR-2-1B** already shipped (`vllm-lighton`). [wave-r-8-upstream-watchlist-triage.md](../issues/wave-r-8-upstream-watchlist-triage.md). |
 | Gemini 3.0 | API | Google ToS | Only via **user API key** pattern if ever; out of default self-host stack. |
 | iFlyTek AI NOTE 2 | API / closed | Commercial | Likely **out of scope** for self-host unless legal + SDK. |
 
@@ -151,7 +151,7 @@ Order balances **license safety**, **engineering clarity**, and **distinct capab
 
 **Approach:** Spike only: HF id / license / serve command / sample output. Promote a row to **Ship** and a numbered wave only after exit criteria there are met — **do not** count Wave R as satisfying [AGENTS.md](../AGENTS.md) **`next` / `n`** until triage completes.
 
-**Progress (Wave R):** **#1** [issues/doc-owl-wave-r-triage.md](../issues/doc-owl-wave-r-triage.md). **#2** [issues/aya-vision-ocr-wave-r-triage.md](../issues/aya-vision-ocr-wave-r-triage.md). **#3** [issues/dolphin-wave-r-triage.md](../issues/dolphin-wave-r-triage.md). **#4** [issues/marketing-ocr-names-wave-r-triage.md](../issues/marketing-ocr-names-wave-r-triage.md). **#5** [issues/vendor-ocr-products-wave-r-triage.md](../issues/vendor-ocr-products-wave-r-triage.md). **#6** [issues/wave-r-6-vlm-doc-models-triage.md](../issues/wave-r-6-vlm-doc-models-triage.md). **#7** onward — not started.
+**Progress (Wave R):** **#1** [issues/doc-owl-wave-r-triage.md](../issues/doc-owl-wave-r-triage.md). **#2** [issues/aya-vision-ocr-wave-r-triage.md](../issues/aya-vision-ocr-wave-r-triage.md). **#3** [issues/dolphin-wave-r-triage.md](../issues/dolphin-wave-r-triage.md). **#4** [issues/marketing-ocr-names-wave-r-triage.md](../issues/marketing-ocr-names-wave-r-triage.md). **#5** [issues/vendor-ocr-products-wave-r-triage.md](../issues/vendor-ocr-products-wave-r-triage.md). **#6** [issues/wave-r-6-vlm-doc-models-triage.md](../issues/wave-r-6-vlm-doc-models-triage.md). **#7** [issues/pikepdf-wave-r-triage.md](../issues/pikepdf-wave-r-triage.md). **#8** [issues/wave-r-8-upstream-watchlist-triage.md](../issues/wave-r-8-upstream-watchlist-triage.md). **Ordered queue complete** — add new rows above when fresh Research topics appear.
 
 ### Wave 1 — Classical / ONNX cluster (CPU-friendly sidecars)
 
@@ -222,6 +222,8 @@ Use this as a **program tracker**; implementation tickets can reference wave + r
 
 | Date | Change |
 |------|--------|
+| 2026-05-16 | **Wave R #8** upstream bundle (DeepSeek-OCR-2, PaddleOCR-VL-1.5, MinerU, Dolphin-v2, LightOnOCR-2) — [issues/wave-r-8-upstream-watchlist-triage.md](../issues/wave-r-8-upstream-watchlist-triage.md); **ordered research queue complete** |
+| 2026-05-16 | **Wave R #7 Pike PDF** — [pikepdf](https://github.com/pikepdf/pikepdf) library (**MPL-2.0**), not an OCR engine — [issues/pikepdf-wave-r-triage.md](../issues/pikepdf-wave-r-triage.md) |
 | 2026-05-16 | **Wave R #6** Gemma3/Falcon-OCR/Youtu-VL/ExaOCR/ColPali/Pixl — [issues/wave-r-6-vlm-doc-models-triage.md](../issues/wave-r-6-vlm-doc-models-triage.md) |
 | 2026-05-16 | **Wave R #5** vendor DocParse/OCR Docker/OpenPage/OCRbro/DocuMagnet/OCR Studio — [issues/vendor-ocr-products-wave-r-triage.md](../issues/vendor-ocr-products-wave-r-triage.md); **Ship deferred** |
 | 2026-05-16 | **Wave R #4** owlOCR/OCR Flux/Monkey/Nanonets — [issues/marketing-ocr-names-wave-r-triage.md](../issues/marketing-ocr-names-wave-r-triage.md) |

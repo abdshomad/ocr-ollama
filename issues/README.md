@@ -35,6 +35,8 @@ Write-ups for non-trivial bugs and integration problems. Format and when to add 
 | [vendor-ocr-products-wave-r-triage.md](vendor-ocr-products-wave-r-triage.md) | **Wave R #5** — DocParse (Aryn commercial), DocuMagnet, OCR Studio SDK, OCRbro/n8n; bundle Ship **deferred** |
 | [wave-r-6-vlm-doc-models-triage.md](wave-r-6-vlm-doc-models-triage.md) | **Wave R #6** — Gemma 3, Falcon-OCR, Youtu-VL, ExaOCR pipeline, ColPali retrieval, Pixl API |
 | [marketing-ocr-names-wave-r-triage.md](marketing-ocr-names-wave-r-triage.md) | **Wave R #4** — owlOCR vs OlmOCR; OCRFlux (Qwen NC LICENSE); MonkeyOCR (non-commercial); Nanonets-OCR-s (license TBD) |
+| [pikepdf-wave-r-triage.md](pikepdf-wave-r-triage.md) | **Wave R #7** — “Pike PDF” = **pikepdf** Python PDF library (MPL-2.0), not an HF/vLLM OCR model |
+| [wave-r-8-upstream-watchlist-triage.md](wave-r-8-upstream-watchlist-triage.md) | **Wave R #8** — DeepSeek-OCR-2 / PaddleOCR-VL-1.5 HF pins; MinerU AGPL; Dolphin-v2 NC; LightOnOCR-2-1B in repo |
 | [granite-docling-browser.md](granite-docling-browser.md) | **Granite Docling 258M** — `/scan` worker, `onnx-community/granite-docling-258M-ONNX`, engine `granite`; rebuild nginx after frontend updates |
 | [vllm-lighton-gpu-compose-entrypoint-directory.md](vllm-lighton-gpu-compose-entrypoint-directory.md) | LightOn restart loop after GPU start — `/workspace` compose path created entrypoint as directory (exit 126) |
 | [vllm-compose-unhealthy.md](vllm-compose-unhealthy.md) | Compose `vllm` unhealthy — chat-template crash, GPU 0 OOM, slow first start |
