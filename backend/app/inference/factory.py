@@ -6,6 +6,7 @@ from app import (
     docling_client,
     doctr_client,
     easyocr_client,
+    lanyocr_client,
     liteparse_client,
     mineru_client,
     nemotron_client,
@@ -20,6 +21,7 @@ from app.engine_registry import (
     is_docling_model,
     is_doctr_model,
     is_easyocr_model,
+    is_lanyocr_model,
     is_litparse_model,
     is_mineru_model,
     is_nemotron_model,
@@ -47,6 +49,7 @@ async def list_models_with_classification() -> list[dict[str, Any]]:
         doctr_models = await doctr_client.list_models_with_classification()
         paddleocr_models = await paddleocr_client.list_models_with_classification()
         docling_models = await docling_client.list_models_with_classification()
+        lanyocr_models = await lanyocr_client.list_models_with_classification()
         litparse_models = await liteparse_client.list_models_with_classification()
         return [
             *ollama_models,
@@ -56,6 +59,7 @@ async def list_models_with_classification() -> list[dict[str, Any]]:
             *doctr_models,
             *paddleocr_models,
             *docling_models,
+            *lanyocr_models,
             *litparse_models,
             *tesseract_models,
         ]
@@ -68,6 +72,7 @@ async def list_models_with_classification() -> list[dict[str, Any]]:
     doctr_models = await doctr_client.list_models_with_classification()
     paddleocr_models = await paddleocr_client.list_models_with_classification()
     docling_models = await docling_client.list_models_with_classification()
+    lanyocr_models = await lanyocr_client.list_models_with_classification()
     litparse_models = await liteparse_client.list_models_with_classification()
     return [
         *vllm_models,
@@ -79,6 +84,7 @@ async def list_models_with_classification() -> list[dict[str, Any]]:
         *doctr_models,
         *paddleocr_models,
         *docling_models,
+        *lanyocr_models,
         *litparse_models,
         *tesseract_models,
     ]
@@ -94,6 +100,7 @@ async def check_health() -> dict[str, Any]:
         doctr_status, doctr_up, doctr_errors = await doctr_client.check_health_slice()
         paddleocr_status, paddleocr_up, paddleocr_errors = await paddleocr_client.check_health_slice()
         docling_status, docling_up, docling_errors = await docling_client.check_health_slice()
+        lanyocr_status, lanyocr_up, lanyocr_errors = await lanyocr_client.check_health_slice()
         litparse_status, litparse_up, litparse_errors = await liteparse_client.check_health_slice()
         raw["vllm_endpoints"] = [
             *list(raw.get("vllm_endpoints") or []),
@@ -103,6 +110,7 @@ async def check_health() -> dict[str, Any]:
             *doctr_status,
             *paddleocr_status,
             *docling_status,
+            *lanyocr_status,
             *litparse_status,
             *tesseract_status,
         ]
@@ -113,6 +121,7 @@ async def check_health() -> dict[str, Any]:
             or doctr_up
             or paddleocr_up
             or docling_up
+            or lanyocr_up
             or litparse_up
             or tesseract_up
         ):
@@ -125,6 +134,7 @@ async def check_health() -> dict[str, Any]:
             *doctr_errors,
             *paddleocr_errors,
             *docling_errors,
+            *lanyocr_errors,
             *litparse_errors,
             *tesseract_errors,
         ]
@@ -140,6 +150,7 @@ async def check_health() -> dict[str, Any]:
     doctr_status, doctr_up, doctr_errors = await doctr_client.check_health_slice()
     paddleocr_status, paddleocr_up, paddleocr_errors = await paddleocr_client.check_health_slice()
     docling_status, docling_up, docling_errors = await docling_client.check_health_slice()
+    lanyocr_status, lanyocr_up, lanyocr_errors = await lanyocr_client.check_health_slice()
     litparse_status, litparse_up, litparse_errors = await liteparse_client.check_health_slice()
     endpoints = list(raw.get("vllm_endpoints") or [])
     endpoints.extend(mineru_status)
@@ -150,6 +161,7 @@ async def check_health() -> dict[str, Any]:
     endpoints.extend(doctr_status)
     endpoints.extend(paddleocr_status)
     endpoints.extend(docling_status)
+    endpoints.extend(lanyocr_status)
     endpoints.extend(litparse_status)
     endpoints.extend(tesseract_status)
     raw["vllm_endpoints"] = endpoints
@@ -162,6 +174,7 @@ async def check_health() -> dict[str, Any]:
         or doctr_up
         or paddleocr_up
         or docling_up
+        or lanyocr_up
         or litparse_up
         or tesseract_up
     ):
@@ -177,6 +190,7 @@ async def check_health() -> dict[str, Any]:
         *doctr_errors,
         *paddleocr_errors,
         *docling_errors,
+        *lanyocr_errors,
         *litparse_errors,
         *tesseract_errors,
     ]
@@ -203,6 +217,8 @@ async def ocr_chat(model: str, prompt: str, image_bytes: bytes) -> tuple[str, di
             return await paddleocr_client.ocr_chat(model, prompt, image_bytes)
         if is_docling_model(model):
             return await docling_client.ocr_chat(model, prompt, image_bytes)
+        if is_lanyocr_model(model):
+            return await lanyocr_client.ocr_chat(model, prompt, image_bytes)
         return await ollama_client.ocr_chat(model, prompt, image_bytes)
     if is_litparse_model(model):
         return await liteparse_client.ocr_chat(model, prompt, image_bytes)
@@ -222,6 +238,8 @@ async def ocr_chat(model: str, prompt: str, image_bytes: bytes) -> tuple[str, di
         return await paddleocr_client.ocr_chat(model, prompt, image_bytes)
     if is_docling_model(model):
         return await docling_client.ocr_chat(model, prompt, image_bytes)
+    if is_lanyocr_model(model):
+        return await lanyocr_client.ocr_chat(model, prompt, image_bytes)
     return await vllm_client.ocr_chat(model, prompt, image_bytes)
 
 

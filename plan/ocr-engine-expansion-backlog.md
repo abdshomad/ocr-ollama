@@ -47,6 +47,7 @@ Treat these as **done** unless adding a second checkpoint or fixing gaps.
 | **docTR** | Sidecar `doctr` | Apache 2.0; PyTorch **CPU**; model id **`doctr`**, profile **`doctr`**, port 8250. |
 | **PaddleOCR** (PP-OCR) | Sidecar `paddleocr` | Apache 2.0; PaddlePaddle **CPU**; model id **`paddleocr`**, profile **`paddleocr`**, port 8260 (distinct from **PaddleOCR-VL** on vLLM). |
 | **Docling** | Sidecar `docling` | MIT; layout + OCR **CPU**; model id **`docling`**, profile **`docling`**, port 8270. |
+| **LanyOCR** | Sidecar `lanyocr` | MIT; ONNX line-merge OCR (**EasyOCR/Paddle-style** blend); model id **`lanyocr`**, profile **`lanyocr`**, port 8280. |
 | **PaddleOCR-VL** | vLLM (`vllm-paddleocr-vl`) | Apache 2.0; model id **`PaddlePaddle/PaddleOCR-VL`**, profile **`paddleocr-vl`**, port 8107; Ollama path still broken — [paddleocr-vl-ollama-load-failure.md](../issues/paddleocr-vl-ollama-load-failure.md). |
 | **Dots.MOCR** | vLLM (`vllm-dotsmocr`, profile `dotsmocr`) | MIT; layout OCR VLM **`rednote-hilab/dots.mocr`**, port 8108 — [dots-mocr-vllm-integration.md](../issues/dots-mocr-vllm-integration.md). |
 | Gemma 4 | Optional vLLM (`gemma4` profile) | User list: “Gemma 4 OCR”. |
@@ -68,7 +69,7 @@ Treat these as **done** unless adding a second checkpoint or fixing gaps.
 | [MinerU](https://github.com/opendatalab/MinerU) (full stack) | Sidecar | **MinerU 2.5+ AGPL** (verify per release) | Repo previously marked AGPL concern; **Diffusion** path already MIT. Full MinerU needs **explicit license approval** before default compose. |
 | [EasyOCR](https://github.com/JaidedAI/EasyOCR) | Subproc / Sidecar | Apache 2.0 | PyTorch; VRAM; prefer sidecar. |
 | [docTR](https://github.com/mindee/doctr) | Subproc / Sidecar | Apache 2.0 | **In repo** — CPU PyTorch sidecar (`doctr`, profile `doctr`, port 8250). |
-| [Lany OCR](https://github.com/JC1DA/lanyocr) | Research / Subproc | Check repo license | Confirm maintenance and model weights distribution. |
+| [Lany OCR](https://github.com/JC1DA/lanyocr) | Sidecar | MIT | **In repo** — CPU sidecar `lanyocr`, port 8280; upstream quiet since ~2023. |
 | [Surya](https://github.com/VikParuchuri/surya) | Sidecar / Subproc | GPL-3.0 | **Conflicts with prior “out of scope”** in medium plan; only integrate if project **accepts GPL** in sidecar boundary. |
 | [Tesseract](https://github.com/tesseract-ocr/tesseract) (native) | Subproc | Apache 2.0 | Wrap `tesseract` binary or `pytesseract`; useful for **CPU baseline** and PDF raster fallback. |
 | [Docling](https://github.com/DS4SD/docling) | Sidecar | MIT (verify sub-deps) | Layout + OCR pipeline; **in repo** — CPU sidecar `docling`, profile **`docling`**, port 8270. |
@@ -113,7 +114,7 @@ Order balances **license safety**, **engineering clarity**, and **distinct capab
 
 ### Wave 2 — PyTorch “OCR libraries” (GPU sidecars)
 
-**Candidates:** ~~PaddleOCR~~ (**in repo** — CPU Paddle sidecar `paddleocr`), ~~EasyOCR~~ (**in repo** as CPU PyTorch sidecar), Lany OCR (if active).
+**Candidates:** ~~PaddleOCR~~ (**in repo** — CPU Paddle sidecar `paddleocr`), ~~EasyOCR~~ (**in repo** as CPU PyTorch sidecar), ~~Lany OCR~~ (**in repo** — CPU sidecar `lanyocr`, upstream maintenance limited).
 
 **Approach:** Dedicated Dockerfiles, **one model family per container**, strict timeouts, return plain text + optional boxes in JSON for Arena parity.
 
@@ -181,6 +182,7 @@ Use this as a **program tracker**; implementation tickets can reference wave + r
 |------|--------|
 | 2026-05-16 | **Dots.MOCR** — optional vLLM `vllm-dotsmocr` (`rednote-hilab/dots.mocr`, profile `dotsmocr`, port 8108) |
 | 2026-05-16 | **Docling** — CPU sidecar (`docling`, profile `docling`, port 8270), model id `docling` |
+| 2026-05-16 | **LanyOCR** — CPU sidecar (`lanyocr`, profile `lanyocr`, port 8280), model id `lanyocr` |
 | 2026-05-16 | **Hunyuan OCR** — `tencent/HunyuanOCR`, vLLM optional profile `hunyuanocr`, port 8106 |
 | 2026-05-16 | OnnxTR CPU sidecar (`onnxtr`, profile `onnxtr`, port 8230) |
 | 2026-05-16 | **EasyOCR** — CPU PyTorch sidecar (`easyocr`, profile `easyocr`, port 8240) |

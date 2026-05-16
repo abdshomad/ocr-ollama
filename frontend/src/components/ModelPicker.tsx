@@ -49,6 +49,9 @@ function rowTitle(m: OllamaModel, up: boolean): string | undefined {
     if (m.engine_type === "docling") {
       return "Start the docling service (compose profile docling), then refresh.";
     }
+    if (m.engine_type === "lanyocr") {
+      return "Start the lanyocr service (compose profile lanyocr), then refresh.";
+    }
     return undefined;
   }
   if (m.input_modes?.length) {

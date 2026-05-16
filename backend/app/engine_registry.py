@@ -86,6 +86,11 @@ def is_docling_model(model: str) -> bool:
     return ep is not None and str(ep.get("type")) == "docling"
 
 
+def is_lanyocr_model(model: str) -> bool:
+    ep = ocr_engine_for_model(model)
+    return ep is not None and str(ep.get("type")) == "lanyocr"
+
+
 def is_tesseract_model(model: str) -> bool:
     ep = ocr_engine_for_model(model)
     return ep is not None and str(ep.get("type")) == "tesseract"
@@ -175,6 +180,16 @@ def all_docling_models() -> list[tuple[dict[str, Any], str]]:
     out: list[tuple[dict[str, Any], str]] = []
     for ep in load_ocr_engines():
         if str(ep.get("type")) != "docling":
+            continue
+        for name in ep.get("models") or []:
+            out.append((ep, str(name)))
+    return out
+
+
+def all_lanyocr_models() -> list[tuple[dict[str, Any], str]]:
+    out: list[tuple[dict[str, Any], str]] = []
+    for ep in load_ocr_engines():
+        if str(ep.get("type")) != "lanyocr":
             continue
         for name in ep.get("models") or []:
             out.append((ep, str(name)))

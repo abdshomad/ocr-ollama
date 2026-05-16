@@ -85,6 +85,20 @@
       "speed_tier": "slow"
     },
     {
+      "id": "lanyocr",
+      "type": "lanyocr",
+      "label": "LanyOCR",
+      "models": ["lanyocr"],
+      "input_modes": ["image"],
+      "host_env": "LANYOCR_HOST",
+      "default_host": "http://lanyocr:8280",
+      "compose_service": "lanyocr",
+      "compose_profile": "lanyocr",
+      "gpu_device": -1,
+      "port": 8280,
+      "speed_tier": "medium"
+    },
+    {
       "id": "tesseract",
       "type": "tesseract",
       "label": "Tesseract (native)",

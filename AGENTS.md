@@ -176,6 +176,7 @@ Index: [issues/README.md](issues/README.md). Primary vLLM reference: [issues/vll
 | Run docTR (PyTorch CPU) | `docker compose --profile doctr up -d doctr` — [issues/doctr-integration.md](issues/doctr-integration.md) |
 | Run PaddleOCR (PaddlePaddle CPU) | `docker compose --profile paddleocr up -d paddleocr` — [issues/paddleocr-integration.md](issues/paddleocr-integration.md) |
 | Run Docling (layout + OCR CPU) | `docker compose --profile docling up -d docling` — [issues/docling-integration.md](issues/docling-integration.md) |
+| Run LanyOCR (ONNX CPU line-merge OCR) | `docker compose --profile lanyocr up -d lanyocr` — [issues/lanyocr-integration.md](issues/lanyocr-integration.md) |
 | Native Tesseract (`tesseract` model) | No extra service — `tesseract-ocr` in **backend** image; [issues/tesseract-native-ocr-backend.md](issues/tesseract-native-ocr-backend.md) |
 | Load/unload vLLM per GPU | **GPU** page or `POST /api/vllm/services/{deepseek\|glm}/start\|stop` |
 | GPU metrics + compose control | `GET /api/gpu` (backend needs Docker socket; `COMPOSE_PROJECT_NAME` must match stack) |

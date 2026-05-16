@@ -1,0 +1,35 @@
+# LanyOCR — CPU sidecar (optional profile `lanyocr`).
+# Upstream: https://github.com/JC1DA/lanyocr (MIT; EasyOCR + Paddle-style ONNX models)
+
+FROM python:3.12-slim-bookworm
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        libgl1 \
+        libglib2.0-0 \
+        libgomp1 \
+        libxcb1 \
+    && rm -rf /var/lib/apt/lists/*
+
+# `lanyocr` may pull onnxruntime-gpu; replace with CPU runtime for this image.
+RUN pip install --no-cache-dir \
+    "lanyocr>=0.1.8,<0.2" \
+    "uvicorn[standard]>=0.30.0" \
+    "fastapi>=0.115.0" \
+    "python-multipart>=0.0.9" \
+    && pip uninstall -y onnxruntime-gpu 2>/dev/null || true \
+    && pip install --no-cache-dir "onnxruntime>=1.19.0,<2"
+
+ENV LANYOCR_PORT=8280 \
+    LANYOCR_MODEL_ID=lanyocr \
+    LANYOCR_MERGE_ROTATED=1 \
+    LANYOCR_MERGE_VERTICAL=1 \
+    LANYOCR_MERGE_BOXES_INFERENCE=1 \
+    LANYOCR_USE_GPU=0
+
+COPY docker/lanyocr/serve.py /opt/serve.py
+
+WORKDIR /opt
+EXPOSE 8280
+
+CMD ["python", "/opt/serve.py"]
