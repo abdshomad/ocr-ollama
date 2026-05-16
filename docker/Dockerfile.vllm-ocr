@@ -1,5 +1,7 @@
+# syntax=docker/dockerfile:1.4
 # LightOnOCR / Chandra need transformers >= 5.x (see HF LightOnOCR-2-1B card).
 FROM vllm/vllm-openai:latest
-RUN pip install --no-cache-dir "transformers>=5.4.0"
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --no-cache-dir "transformers>=5.4.0" scipy
 COPY docker/vllm-entrypoint.sh /docker/vllm-entrypoint.sh
 RUN chmod +x /docker/vllm-entrypoint.sh

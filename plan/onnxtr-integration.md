@@ -12,7 +12,7 @@
 
 ## Approach
 
-- **Docker:** `docker/Dockerfile.onnxtr` — Python 3.12 slim, apt libs for OpenCV, `onnxtr[cpu]`, FastAPI + uvicorn.
+- **Docker:** `docker/Dockerfile.cpu-ocr-sidecars` (target `onnxtr`) — Python 3.12 slim, apt libs for OpenCV, `onnxtr[cpu]`, FastAPI + uvicorn.
 - **Sidecar:** `docker/onnxtr/serve.py` — `ocr_predictor()` at startup; `Document.render()` for plain text.
 - **Registry:** `backend/config/ocr_engines.json` — `type: onnxtr`, model id **`onnxtr`**, profile **`onnxtr`**, port **8230**.
 - **Backend:** `onnxtr_client.py`, `engine_registry.py`, `inference/factory.py`, `vllm_compose.py` (`/health` + `model_loaded`).

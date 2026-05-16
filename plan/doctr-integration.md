@@ -11,7 +11,7 @@
 
 ## Approach
 
-- **Docker:** `docker/Dockerfile.doctr` — slim + OpenCV libs, CPU `torch`/`torchvision`, `python-doctr`, FastAPI + uvicorn.
+- **Docker:** `docker/Dockerfile.cpu-ocr-sidecars` (target `doctr`) — slim + OpenCV libs, CPU `torch`/`torchvision`, `python-doctr`, FastAPI + uvicorn.
 - **Sidecar:** `docker/doctr/serve.py` — `ocr_predictor(pretrained=True)` at startup; `Document.render()` for plain text.
 - **Registry:** `ocr_engines.json` — `type: doctr`, model id **`doctr`**, profile **`doctr`**, port **8250**, `DOCTR_HOST`.
 - **Backend:** `doctr_client.py`, `engine_registry.py`, `inference/factory.py`, `vllm_compose.py` (`/health` + `model_loaded`).

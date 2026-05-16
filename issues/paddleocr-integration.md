@@ -14,7 +14,7 @@
 
 ## Analysis / evidence
 
-- Sidecar startup failed with `ImportError: libGL.so.1` until **`libgl1`** was added to `docker/Dockerfile.paddleocr` (OpenCV via `paddleocr`).
+- Sidecar startup failed with `ImportError: libGL.so.1` until **`libgl1`** was added to the shared CPU sidecar base / `paddleocr` target in `docker/Dockerfile.cpu-ocr-sidecars` (OpenCV via `paddleocr`).
 
 ## Resolution
 
@@ -33,6 +33,6 @@ Language (PaddleOCR `lang` code, default `en`):
 
 ## Repo impact
 
-- `docker/Dockerfile.paddleocr`, `docker/paddleocr/serve.py`
+- `docker/Dockerfile.cpu-ocr-sidecars` (build target `paddleocr`), `docker/paddleocr/serve.py`
 - `docker-compose.yml` service `paddleocr`, volumes `paddleocr-model-cache` / `paddleocr-paddle-cache`, backend `PADDLEOCR_HOST`
 - `backend/config/ocr_engines.json` (`type`: **`paddleocr`**), `paddleocr_client.py`, `engine_registry.py`, `inference/factory.py`, `vllm_compose.py`

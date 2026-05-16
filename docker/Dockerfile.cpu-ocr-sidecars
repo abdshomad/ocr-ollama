@@ -1,0 +1,153 @@
+# syntax=docker/dockerfile:1.4
+# Multi-target CPU OCR sidecars. Each service = compose `build.target`.
+# Stages `ocr-base-cv` / `ocr-base-torch-cpu` mirror docker/Dockerfile.base-cv and
+# docker/Dockerfile.base-torch-cpu — keep RUN blocks aligned when editing.
+
+FROM python:3.12-slim-bookworm AS ocr-base-cv
+ENV DEBIAN_FRONTEND=noninteractive \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update \
+    && apt-get install -y --no-install-recommends \
+        libgl1 \
+        libglib2.0-0 \
+        libgomp1 \
+        libxcb1 \
+    && rm -rf /var/lib/apt/lists/*
+
+FROM ocr-base-cv AS ocr-base-torch-cpu
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --no-cache-dir \
+        torch \
+        torchvision \
+        --index-url https://download.pytorch.org/whl/cpu
+
+# ----------------------------------------------------------------------------- onnxtr
+# Upstream: https://github.com/felixdittrich92/OnnxTR
+FROM ocr-base-cv AS onnxtr
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --no-cache-dir \
+        "onnxtr[cpu]>=0.8.1,<0.9" \
+        "uvicorn[standard]>=0.30.0" \
+        "fastapi>=0.115.0" \
+        "python-multipart>=0.0.9"
+ENV ONNXTR_PORT=8230 \
+    ONNXTR_MODEL_ID=onnxtr
+COPY docker/onnxtr/serve.py /opt/serve.py
+WORKDIR /opt
+EXPOSE 8230
+CMD ["python", "/opt/serve.py"]
+
+# ----------------------------------------------------------------------------- rapidocr
+# Upstream: https://github.com/RapidAI/RapidOCR
+FROM ocr-base-cv AS rapidocr
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --no-cache-dir \
+        "rapidocr-onnxruntime>=1.4.0" \
+        "uvicorn[standard]>=0.30.0" \
+        "fastapi>=0.115.0" \
+        "python-multipart>=0.0.9"
+ENV RAPIDOCR_PORT=8220 \
+    RAPIDOCR_MODEL_ID=rapidocr
+COPY docker/rapidocr/serve.py /opt/serve.py
+WORKDIR /opt
+EXPOSE 8220
+CMD ["python", "/opt/serve.py"]
+
+# ----------------------------------------------------------------------------- easyocr
+# Upstream: https://github.com/JaidedAI/EasyOCR
+FROM ocr-base-torch-cpu AS easyocr
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --no-cache-dir \
+        "easyocr>=1.7.0,<2" \
+        "opencv-python-headless>=4.8.0,<5" \
+        "uvicorn[standard]>=0.30.0" \
+        "fastapi>=0.115.0" \
+        "python-multipart>=0.0.9"
+ENV EASYOCR_PORT=8240 \
+    EASYOCR_MODEL_ID=easyocr \
+    EASYOCR_LANGS=en
+COPY docker/easyocr/serve.py /opt/serve.py
+WORKDIR /opt
+EXPOSE 8240
+CMD ["python", "/opt/serve.py"]
+
+# ----------------------------------------------------------------------------- doctr
+# Upstream: https://github.com/mindee/doctr
+FROM ocr-base-torch-cpu AS doctr
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --no-cache-dir \
+        "python-doctr>=1.0.0,<2" \
+        "opencv-python-headless>=4.8.0,<5" \
+        "uvicorn[standard]>=0.30.0" \
+        "fastapi>=0.115.0" \
+        "python-multipart>=0.0.9"
+ENV DOCTR_PORT=8250 \
+    DOCTR_MODEL_ID=doctr
+COPY docker/doctr/serve.py /opt/serve.py
+WORKDIR /opt
+EXPOSE 8250
+CMD ["python", "/opt/serve.py"]
+
+# ----------------------------------------------------------------------------- paddleocr
+# Upstream: https://github.com/PaddlePaddle/PaddleOCR
+FROM ocr-base-cv AS paddleocr
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --no-cache-dir \
+        "paddlepaddle==3.3.0" \
+        -i https://www.paddlepaddle.org.cn/packages/stable/cpu/
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --no-cache-dir \
+        "paddleocr>=2.7.3,<3" \
+        "opencv-python-headless>=4.8.0,<5" \
+        "uvicorn[standard]>=0.30.0" \
+        "fastapi>=0.115.0" \
+        "python-multipart>=0.0.9"
+ENV PADDLEOCR_PORT=8260 \
+    PADDLEOCR_MODEL_ID=paddleocr \
+    PADDLEOCR_LANG=en \
+    DISABLE_MODEL_SOURCE_CHECK=True
+COPY docker/paddleocr/serve.py /opt/serve.py
+WORKDIR /opt
+EXPOSE 8260
+CMD ["python", "/opt/serve.py"]
+
+# ----------------------------------------------------------------------------- docling
+# Upstream: https://github.com/docling-project/docling
+FROM ocr-base-torch-cpu AS docling
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --no-cache-dir \
+        "docling>=2.20.0,<3" \
+        "uvicorn[standard]>=0.30.0" \
+        "fastapi>=0.115.0" \
+        "python-multipart>=0.0.9"
+ENV DOCLING_PORT=8270 \
+    DOCLING_MODEL_ID=docling
+COPY docker/docling/serve.py /opt/serve.py
+WORKDIR /opt
+EXPOSE 8270
+CMD ["python", "/opt/serve.py"]
+
+# ----------------------------------------------------------------------------- lanyocr
+# Upstream: https://github.com/JC1DA/lanyocr
+FROM ocr-base-cv AS lanyocr
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --no-cache-dir \
+        "lanyocr>=0.1.8,<0.2" \
+        "uvicorn[standard]>=0.30.0" \
+        "fastapi>=0.115.0" \
+        "python-multipart>=0.0.9" \
+    && pip uninstall -y onnxruntime-gpu 2>/dev/null || true \
+    && pip install --no-cache-dir "onnxruntime>=1.19.0,<2"
+ENV LANYOCR_PORT=8280 \
+    LANYOCR_MODEL_ID=lanyocr \
+    LANYOCR_MERGE_ROTATED=1 \
+    LANYOCR_MERGE_VERTICAL=1 \
+    LANYOCR_MERGE_BOXES_INFERENCE=1 \
+    LANYOCR_USE_GPU=0
+COPY docker/lanyocr/serve.py /opt/serve.py
+WORKDIR /opt
+EXPOSE 8280
+CMD ["python", "/opt/serve.py"]

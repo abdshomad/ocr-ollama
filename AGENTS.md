@@ -4,7 +4,7 @@ Guidance for AI agents working in this repository.
 
 ## Karpathy / Cursor rules (submodule)
 
-**Always** read and follow the rules in [andrej-karpathy-skills/CURSOR.md](andrej-karpathy-skills/CURSOR.md). That file is maintained in the [`andrej-karpathy-skills`](andrej-karpathy-skills/) submodule and **updated periodically**—treat the latest version in the working tree as binding general guidance alongside this document. For OCR Ollama–specific requirements (plans, architecture, `next` workflow, issues), this `AGENTS.md` and linked `plan/` / `issues/` docs take precedence when they conflict with generic rules there.
+**Always** read and follow the rules in [andrej-karpathy-skills/CURSOR.md](andrej-karpathy-skills/CURSOR.md). That file is maintained in the [`andrej-karpathy-skills`](andrej-karpathy-skills/) submodule and **updated periodically**—treat the latest version in the working tree as binding general guidance alongside this document. For OCR Ollama–specific requirements (plans, architecture, `next` / `test` workflows, issues), this `AGENTS.md` and linked `plan/` / `issues/` docs take precedence when they conflict with generic rules there.
 
 ## Project summary
 
@@ -67,6 +67,30 @@ When the user sends **`next`** or **`n`** alone (or clearly means “ship the ne
 
 **When the backlog has no further Ship-ready engines**, reply briefly that the queue is empty (or only Research/Blocked items remain) and point at [plan/ocr-engine-expansion-backlog.md](plan/ocr-engine-expansion-backlog.md) and [plan/ocr-engines.md](plan/ocr-engines.md).
 
+## Verify engine (`test` / `t`)
+
+When the user sends **`test`** or **`t`** alone (or clearly means “verify the OCR engine we just added or are working on”), **do not** pick a new backlog engine or expand scope. **Test and verify** that the engine in context produces real OCR / extraction in the UI.
+
+**Which engine**
+
+- Prefer the **model / engine from the current conversation** (the one the user or prior agent just implemented or fixed).
+- If the user names a model or registry id, use that.
+- If ambiguous, ask once which engine to verify.
+
+**How to verify (browser required)**
+
+1. Ensure the app and any sidecar inference services that engine needs are running (`docker compose` with the right profile, or dev frontend + backend). Use `http://localhost:${PORT}` from `.env` (default **3036**).
+
+2. Use the **Cursor IDE browser** MCP: open **Run** (`/`), select that engine in the model picker, upload **at least one** sample with readable content from **`fixtures/ocr/`** (add or extend fixtures if the repo has none suitable). Run OCR / extraction and confirm **non-empty plausible text** in the result panel (capture a fresh **snapshot**; screenshot optional).
+
+3. Match the **`next`** workflow depth where it applies: for **Arena**-centric engines, optionally run a compare including this model; for **browser-tier** engines (`/scan`), repeat on **Scan** with the same samples.
+
+4. **LiteParse (`litparse`):** Same rule as in **`next`** — verify on **Run** with **all applicable samples** under `fixtures/ocr/` (at minimum a small **digital PDF** with embedded text, plus any PNG/JPEG the build accepts for LiteParse). Expected text must appear in the result panel.
+
+5. If the stack cannot run or browser automation is blocked (login, missing GPU, etc.), state the blocker and attach the best alternative evidence (e.g. `curl` to `/api/ocr`, `/api/health`, `/api/models`, or logs).
+
+This workflow is **manual browser proof** for the engine in context; routine automated checks stay under [Testing expectations](#testing-expectations).
+
 ## Issue documentation (`issues/`)
 
 **Always** persist non-trivial problems, investigations, **and their solutions** under **`issues/`** — do not leave diagnosis or fixes only in chat. If you resolved something, the **`issues/*.md` file must record how** (commands, env vars, compose/service actions), not only what went wrong.
@@ -123,7 +147,8 @@ Index: [issues/README.md](issues/README.md). Primary vLLM reference: [issues/vll
 
 ## Docker
 
-- `docker compose up --build` — **`vllm`** (GPU, DeepSeek-OCR), **`backend`**, **`nginx`** on `${PORT:-3036}`.
+- `docker compose up --build` — **`vllm`** (GPU, DeepSeek-OCR), **`backend`**, **`nginx`** on `${PORT:-3036}`. Optional image overrides: `BACKEND_IMAGE`, `NGINX_IMAGE` (see `.env.example`).
+- **CPU OCR sidecars** (RapidOCR, OnnxTR, EasyOCR, docTR, PaddleOCR, Docling, LanyOCR) share [docker/Dockerfile.cpu-ocr-sidecars](docker/Dockerfile.cpu-ocr-sidecars) (Compose `build.target` = service name). Publishable layers: [docker/Dockerfile.base-cv](docker/Dockerfile.base-cv), [docker/Dockerfile.base-torch-cpu](docker/Dockerfile.base-torch-cpu); profile **`bases`** builds those tags; ordered multi-image build: `docker buildx bake -f docker-bake.hcl cpu-sidecars` (set `REGISTRY_PREFIX` for your CR).
 - Copy `backend/pyproject.toml` + **`uv.lock`** in Dockerfile before `uv sync --frozen --no-dev --no-install-project`.
 - Do not publish backend `8000` or vLLM `8100` on the host by default (avoids port conflicts). Backend uses `http://vllm:8100` on the Compose network. Optional host publish: `docker-compose.vllm-publish.yml` (port **18100**).
 - **vLLM services:** `vllm-deepseek` + `vllm-glm` (dual GPU). Routing: `backend/config/vllm_endpoints.json` + `vllm_registry.py`. `/api/models` lists both with `available` + `vllm_endpoint_label`; frontend `ModelPicker` radio/checkbox. `docker/vllm-entrypoint.sh` sets per-model serve flags.
@@ -170,6 +195,7 @@ Index: [issues/README.md](issues/README.md). Primary vLLM reference: [issues/vll
 | Run vLLM (Hunyuan OCR) | `docker compose --profile hunyuanocr up -d vllm-hunyuanocr` — [issues/hunyuanocr-vllm-integration.md](issues/hunyuanocr-vllm-integration.md) |
 | Run vLLM (PaddleOCR-VL) | `docker compose --profile paddleocr-vl up -d vllm-paddleocr-vl` — [issues/paddleocr-vl-vllm-integration.md](issues/paddleocr-vl-vllm-integration.md) |
 | Run vLLM (Dots.MOCR) | `docker compose --profile dotsmocr up -d vllm-dotsmocr` — [issues/dots-mocr-vllm-integration.md](issues/dots-mocr-vllm-integration.md) |
+| Run vLLM (Phi-4-multimodal) | `docker compose --profile phi4mm up -d vllm-phi4-mm` — [issues/phi4-multimodal-vllm-integration.md](issues/phi4-multimodal-vllm-integration.md) |
 | Run RapidOCR (ONNX CPU) | `docker compose --profile rapidocr up -d rapidocr` — [issues/rapidocr-integration.md](issues/rapidocr-integration.md) |
 | Run OnnxTR (ONNX CPU) | `docker compose --profile onnxtr up -d onnxtr` — [issues/onnxtr-integration.md](issues/onnxtr-integration.md) |
 | Run EasyOCR (PyTorch CPU) | `docker compose --profile easyocr up -d easyocr` — [issues/easyocr-integration.md](issues/easyocr-integration.md) |

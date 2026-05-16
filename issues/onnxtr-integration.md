@@ -31,6 +31,6 @@ From the **GPU** page, start service **`onnxtr`** (compose controls use the same
 
 ## Repo impact
 
-- `docker/Dockerfile.onnxtr`, `docker/onnxtr/serve.py`
+- `docker/Dockerfile.cpu-ocr-sidecars` (build target `onnxtr`), `docker/onnxtr/serve.py`
 - `docker-compose.yml` service `onnxtr`, volume `onnxtr-onnx-cache`, backend `ONNXTR_HOST`
 - `backend/config/ocr_engines.json` (`type`: **`onnxtr`**), `onnxtr_client.py`, `engine_registry.py`, `inference/factory.py`, `vllm_compose.py`

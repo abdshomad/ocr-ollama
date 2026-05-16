@@ -37,7 +37,7 @@
 
 ## Repo impact
 
-- `docker/Dockerfile.lanyocr`, `docker/lanyocr/serve.py`
+- `docker/Dockerfile.cpu-ocr-sidecars` (build target `lanyocr`), `docker/lanyocr/serve.py`
 - `docker-compose.yml` service `lanyocr` (profile `lanyocr`), volume `lanyocr-cache`
 - `backend/config/ocr_engines.json` — `type` **`lanyocr`**, model id **`lanyocr`**
 - `backend/app/lanyocr_client.py`, `engine_registry.py`, `inference/factory.py`, `vllm_compose.py`

@@ -1,0 +1,20 @@
+# syntax=docker/dockerfile:1.4
+# Shared Python + OpenCV-style runtime libs for CPU OCR sidecars.
+# Publish as ocr-ollama-base-cv:bookworm or use docker/docker-bake.hcl target ocr-base-cv.
+# Keep RUN in sync with the `ocr-base-cv` stage in docker/Dockerfile.cpu-ocr-sidecars.
+
+FROM python:3.12-slim-bookworm
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update \
+    && apt-get install -y --no-install-recommends \
+        libgl1 \
+        libglib2.0-0 \
+        libgomp1 \
+        libxcb1 \
+    && rm -rf /var/lib/apt/lists/*

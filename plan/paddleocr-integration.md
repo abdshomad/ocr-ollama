@@ -11,7 +11,7 @@
 
 ## Approach
 
-- **Docker:** `docker/Dockerfile.paddleocr` — PaddlePaddle CPU wheels (official mirror), `paddleocr` 2.x, FastAPI + uvicorn.
+- **Docker:** `docker/Dockerfile.cpu-ocr-sidecars` (target `paddleocr`) — PaddlePaddle CPU wheels (official mirror), `paddleocr` 2.x, FastAPI + uvicorn.
 - **Sidecar:** `docker/paddleocr/serve.py` — `PaddleOCR` at startup; `ocr()` on uploaded image (temp file); flatten line texts with newlines.
 - **Registry:** `ocr_engines.json` — `type: paddleocr`, model id **`paddleocr`**, profile **`paddleocr`**, port **8260**, `PADDLEOCR_HOST`.
 - **Backend:** `paddleocr_client.py`, `engine_registry.py`, `inference/factory.py`, `vllm_compose.py` (`/health` + `model_loaded`).

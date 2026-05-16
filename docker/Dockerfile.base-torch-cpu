@@ -1,0 +1,17 @@
+# syntax=docker/dockerfile:1.4
+# ocr-base-cv + CPU PyTorch (shared by easyocr / doctr / docling sidecars).
+# Build after ocr-base-cv (same tag as OCR_BASE_CV_IMAGE). See docker/docker-bake.hcl.
+# Keep torch RUN in sync with the `ocr-base-torch-cpu` stage in docker/Dockerfile.cpu-ocr-sidecars.
+
+ARG OCR_BASE_CV_IMAGE=ocr-ollama-base-cv:bookworm
+FROM ${OCR_BASE_CV_IMAGE}
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --no-cache-dir \
+        torch \
+        torchvision \
+        --index-url https://download.pytorch.org/whl/cpu

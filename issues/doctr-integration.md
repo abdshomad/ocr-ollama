@@ -34,6 +34,6 @@ From the **GPU** page, start service **`doctr`** (same compose controls as other
 
 ## Repo impact
 
-- `docker/Dockerfile.doctr`, `docker/doctr/serve.py`
+- `docker/Dockerfile.cpu-ocr-sidecars` (build target `doctr`), `docker/doctr/serve.py`
 - `docker-compose.yml` service `doctr`, volume `doctr-torch-cache`, backend `DOCTR_HOST` (+ `EASYOCR_HOST`)
 - `backend/config/ocr_engines.json` (`type`: **`doctr`**), `doctr_client.py`, `engine_registry.py`, `inference/factory.py`, `vllm_compose.py`

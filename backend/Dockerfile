@@ -1,6 +1,14 @@
-FROM python:3.12-slim
+# syntax=docker/dockerfile:1.4
+FROM python:3.12-slim-bookworm
 
-RUN apt-get update \
+ENV DEBIAN_FRONTEND=noninteractive \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    npm_config_cache=/root/.cache/npm
+
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates curl gnupg nodejs npm \
     && install -m 0755 -d /etc/apt/keyrings \
     && curl -fsSL https://download.docker.com/linux/debian/gpg \
@@ -13,7 +21,8 @@ RUN apt-get update \
       tesseract-ocr tesseract-ocr-eng \
     && rm -rf /var/lib/apt/lists/*
 
-RUN npm install -g @llamaindex/liteparse \
+RUN --mount=type=cache,target=/root/.cache/npm \
+    npm install -g @llamaindex/liteparse \
     && command -v lit
 
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
@@ -21,7 +30,8 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 WORKDIR /app/backend
 
 COPY backend/pyproject.toml backend/uv.lock ./
-RUN uv sync --frozen --no-dev --no-install-project
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-dev --no-install-project
 
 COPY backend/ .
 

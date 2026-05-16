@@ -12,7 +12,7 @@
 
 ## Approach
 
-- **Docker:** `docker/Dockerfile.easyocr` — slim + OpenCV system libs, CPU `torch`/`torchvision`, `easyocr`, FastAPI + uvicorn.
+- **Docker:** `docker/Dockerfile.cpu-ocr-sidecars` (target `easyocr`) — slim + OpenCV system libs, CPU `torch`/`torchvision`, `easyocr`, FastAPI + uvicorn.
 - **Sidecar:** `docker/easyocr/serve.py` — `easyocr.Reader` at startup; `readtext` on uploaded image (temp file); join line texts with newlines.
 - **Registry:** `ocr_engines.json` — `type: easyocr`, model id **`easyocr`**, profile **`easyocr`**, port **8240**, `EASYOCR_HOST`.
 - **Backend:** `easyocr_client.py`, `engine_registry.py`, `inference/factory.py`, `vllm_compose.py` (`/health` + `model_loaded`).

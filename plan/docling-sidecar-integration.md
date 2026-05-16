@@ -13,12 +13,12 @@
 - **HTTP sidecar** `docker/docling/serve.py`: `DocumentConverter`, temp file from upload, `export_to_markdown(strict_text=True)` for plain-ish text suitable for comparison.
 - **Catalog:** `backend/config/ocr_engines.json` — `type: docling`, model id `docling`, port **8270**, profile `docling`.
 - **Backend:** `docling_client.py` + `engine_registry` + `inference/factory.py` + `vllm_compose.py` probe tuples.
-- **Docker:** `Dockerfile.docling` — `pip install docling` (pulls torch + layout stack; first run downloads HF artifacts).
+- **Docker:** `docker/Dockerfile.cpu-ocr-sidecars` (target `docling`) — `pip install docling` (pulls torch + layout stack; first run downloads HF artifacts).
 
 ## Tasks
 
 - [x] Plan (this file)
-- [x] `docker/docling/serve.py`, `Dockerfile.docling`, Compose service + volume + `DOCLING_HOST`
+- [x] `docker/docling/serve.py`, `Dockerfile.cpu-ocr-sidecars` (target `docling`), Compose service + volume + `DOCLING_HOST`
 - [x] Registry, client, factory, compose probes, classify regex
 - [x] `.env.example`, `AGENTS.md`, `issues/docling-integration.md`, backlog + `ocr-engines.md`
 - [x] Smoke: Docker `docling` image build + `/v1/ocr`; browser Run with **`docling`** + sample **1.jpeg** → result heading **Result — docling** with non-empty text (~43s first warm cache).

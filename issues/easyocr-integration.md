@@ -31,6 +31,6 @@ GPU inside the container is **not** enabled in the default Dockerfile (CPU torch
 
 ## Repo impact
 
-- `docker/Dockerfile.easyocr`, `docker/easyocr/serve.py`
+- `docker/Dockerfile.cpu-ocr-sidecars` (build target `easyocr`), `docker/easyocr/serve.py`
 - `docker-compose.yml` service `easyocr`, volumes `easyocr-model-cache` / `easyocr-torch-cache`, backend `EASYOCR_HOST`
 - `backend/config/ocr_engines.json` (`type`: **`easyocr`**), `easyocr_client.py`, `engine_registry.py`, `inference/factory.py`, `vllm_compose.py`

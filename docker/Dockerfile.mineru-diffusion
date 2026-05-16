@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1.4
 # MinerU-Diffusion nano_dvlm sidecar — multi-stage for smaller runtime image.
 # See issues/mineru-diffusion-nano-dvlm-integration.md
 
@@ -12,7 +13,9 @@ ENV DEBIAN_FRONTEND=noninteractive \
     VIRTUAL_ENV=/opt/venv \
     PATH=/opt/venv/bin:$PATH
 
-RUN apt-get update \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update \
     && apt-get install -y --no-install-recommends \
         ca-certificates curl git python3 python3-venv \
     && rm -rf /var/lib/apt/lists/*
@@ -33,19 +36,23 @@ RUN git clone --depth 1 https://github.com/opendatalab/MinerU-Diffusion.git Mine
 WORKDIR /opt/MinerU-Diffusion
 
 # Split pip layers for rebuild cache; torch is the largest layer.
-RUN pip install \
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install \
     torch==2.8.0 torchvision==0.23.0 torchaudio==2.8.0 \
     --index-url https://download.pytorch.org/whl/cu128
 
 ARG FLASH_ATTN_WHL=flash_attn-2.8.3+cu12torch2.8cxx11abiFALSE-cp312-cp312-linux_x86_64.whl
-RUN curl -fsSL -o "/tmp/${FLASH_ATTN_WHL}" \
+RUN --mount=type=cache,target=/root/.cache/pip \
+    curl -fsSL -o "/tmp/${FLASH_ATTN_WHL}" \
         "https://github.com/Dao-AILab/flash-attention/releases/download/v2.8.3/${FLASH_ATTN_WHL}" \
     && pip install "/tmp/${FLASH_ATTN_WHL}" \
     && rm -f "/tmp/${FLASH_ATTN_WHL}"
 
-RUN pip install -r requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install -r requirements.txt
 
-RUN pip install fastapi "uvicorn[standard]" python-multipart huggingface_hub
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install fastapi "uvicorn[standard]" python-multipart huggingface_hub
 
 RUN find /opt/venv /opt/MinerU-Diffusion -depth -type d -name __pycache__ -exec rm -rf {} + \
     && find /opt/venv /opt/MinerU-Diffusion -name "*.pyc" -delete
@@ -62,7 +69,9 @@ ENV DEBIAN_FRONTEND=noninteractive \
     VIRTUAL_ENV=/opt/venv \
     PATH=/opt/venv/bin:$PATH
 
-RUN apt-get update \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update \
     && apt-get install -y --no-install-recommends \
         ca-certificates python3 libpython3.12 python3-dev \
         build-essential \

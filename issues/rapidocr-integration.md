@@ -30,6 +30,6 @@ From the **GPU** page, start service **`rapidocr`** (same compose controls as ot
 
 ## Repo impact
 
-- `docker/Dockerfile.rapidocr`, `docker/rapidocr/serve.py`
+- `docker/Dockerfile.cpu-ocr-sidecars` (build target `rapidocr`), `docker/rapidocr/serve.py`
 - `docker-compose.yml` service `rapidocr`, volume `rapidocr-onnx-cache`, backend `RAPIDOCR_HOST`
 - `backend/config/ocr_engines.json` (`type`: **`rapidocr`**), `rapidocr_client.py`, `inference/factory.py`, `vllm_compose.py`

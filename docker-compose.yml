@@ -24,6 +24,26 @@ x-vllm-gpu: &vllm-gpu
             capabilities: [gpu]
 
 services:
+  # Build-only convenience for publishing CPU bases (optional profile `bases`).
+  # Not intended for `up` (entrypoint exits immediately).
+  ocr-base-cv:
+    image: ${OCR_BASE_CV_IMAGE:-ocr-ollama-base-cv:bookworm}
+    profiles: ["bases"]
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.base-cv
+    entrypoint: ["/bin/true"]
+
+  ocr-base-torch-cpu:
+    image: ${OCR_BASE_TORCH_CPU_IMAGE:-ocr-ollama-base-torch-cpu:bookworm}
+    profiles: ["bases"]
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.base-torch-cpu
+      args:
+        OCR_BASE_CV_IMAGE: ${OCR_BASE_CV_IMAGE:-ocr-ollama-base-cv:bookworm}
+    entrypoint: ["/bin/true"]
+
   vllm-deepseek:
     <<: [*vllm-service, *vllm-gpu]
     environment:
@@ -334,6 +354,39 @@ services:
       retries: 60
       start_period: 1800s
 
+  vllm-phi4-mm:
+    <<: [*vllm-service, *vllm-gpu]
+    profiles: ["phi4mm"]
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.vllm-ocr
+    image: ${VLLM_OCR_IMAGE:-ocr-ollama-vllm-ocr:latest}
+    volumes:
+      - vllm-hf-cache:/root/.cache/huggingface
+    environment:
+      <<: *vllm-env
+      VLLM_MODEL: ${VLLM_PHI4_MM_MODEL:-microsoft/Phi-4-multimodal-instruct}
+      VLLM_PORT: "8109"
+      VLLM_GPU_MEMORY_UTILIZATION: ${VLLM_PHI4_MM_GPU_MEMORY_UTIL:-0.55}
+      VLLM_PHI4_MM_MAX_MODEL_LEN: ${VLLM_PHI4_MM_MAX_MODEL_LEN:-8192}
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ["${VLLM_PHI4_MM_CUDA_DEVICE:-1}"]
+              capabilities: [gpu]
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "python3 -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8109/v1/models')\"",
+        ]
+      interval: 30s
+      timeout: 15s
+      retries: 60
+      start_period: 1800s
+
   nemotron-ocr-v2:
     profiles: ["nemotron"]
     build:
@@ -376,7 +429,8 @@ services:
     profiles: ["rapidocr"]
     build:
       context: .
-      dockerfile: docker/Dockerfile.rapidocr
+      dockerfile: docker/Dockerfile.cpu-ocr-sidecars
+      target: rapidocr
     image: ${RAPIDOCR_IMAGE:-ocr-ollama-rapidocr:latest}
     restart: unless-stopped
     environment:
@@ -399,7 +453,8 @@ services:
     profiles: ["onnxtr"]
     build:
       context: .
-      dockerfile: docker/Dockerfile.onnxtr
+      dockerfile: docker/Dockerfile.cpu-ocr-sidecars
+      target: onnxtr
     image: ${ONNXTR_IMAGE:-ocr-ollama-onnxtr:latest}
     restart: unless-stopped
     environment:
@@ -422,7 +477,8 @@ services:
     profiles: ["easyocr"]
     build:
       context: .
-      dockerfile: docker/Dockerfile.easyocr
+      dockerfile: docker/Dockerfile.cpu-ocr-sidecars
+      target: easyocr
     image: ${EASYOCR_IMAGE:-ocr-ollama-easyocr:latest}
     restart: unless-stopped
     environment:
@@ -448,7 +504,8 @@ services:
     profiles: ["doctr"]
     build:
       context: .
-      dockerfile: docker/Dockerfile.doctr
+      dockerfile: docker/Dockerfile.cpu-ocr-sidecars
+      target: doctr
     image: ${DOCTR_IMAGE:-ocr-ollama-doctr:latest}
     restart: unless-stopped
     environment:
@@ -471,7 +528,8 @@ services:
     profiles: ["paddleocr"]
     build:
       context: .
-      dockerfile: docker/Dockerfile.paddleocr
+      dockerfile: docker/Dockerfile.cpu-ocr-sidecars
+      target: paddleocr
     image: ${PADDLEOCR_IMAGE:-ocr-ollama-paddleocr:latest}
     restart: unless-stopped
     environment:
@@ -497,7 +555,8 @@ services:
     profiles: ["docling"]
     build:
       context: .
-      dockerfile: docker/Dockerfile.docling
+      dockerfile: docker/Dockerfile.cpu-ocr-sidecars
+      target: docling
     image: ${DOCLING_IMAGE:-ocr-ollama-docling:latest}
     restart: unless-stopped
     environment:
@@ -520,7 +579,8 @@ services:
     profiles: ["lanyocr"]
     build:
       context: .
-      dockerfile: docker/Dockerfile.lanyocr
+      dockerfile: docker/Dockerfile.cpu-ocr-sidecars
+      target: lanyocr
     image: ${LANYOCR_IMAGE:-ocr-ollama-lanyocr:latest}
     restart: unless-stopped
     environment:
@@ -544,6 +604,7 @@ services:
       start_period: 600s
 
   backend:
+    image: ${BACKEND_IMAGE:-ocr-ollama-backend:latest}
     build:
       context: .
       dockerfile: backend/Dockerfile
@@ -559,6 +620,7 @@ services:
       VLLM_HUNYUAN_OCR_HOST: ${VLLM_HUNYUAN_OCR_HOST:-http://vllm-hunyuanocr:8106}
       VLLM_PADDLEOCR_VL_HOST: ${VLLM_PADDLEOCR_VL_HOST:-http://vllm-paddleocr-vl:8107}
       VLLM_DOTS_MOCR_HOST: ${VLLM_DOTS_MOCR_HOST:-http://vllm-dotsmocr:8108}
+      VLLM_PHI4_MM_HOST: ${VLLM_PHI4_MM_HOST:-http://vllm-phi4-mm:8109}
       MINERU_DIFFUSION_HOST: ${MINERU_DIFFUSION_HOST:-http://mineru-diffusion:8200}
       NEMOTRON_OCR_HOST: ${NEMOTRON_OCR_HOST:-http://nemotron-ocr-v2:8210}
       RAPIDOCR_HOST: ${RAPIDOCR_HOST:-http://rapidocr:8220}
@@ -592,6 +654,7 @@ services:
       - "host.docker.internal:host-gateway"
 
   nginx:
+    image: ${NGINX_IMAGE:-ocr-ollama-nginx:latest}
     build:
       context: .
       dockerfile: nginx/Dockerfile

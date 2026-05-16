@@ -12,7 +12,7 @@
 
 ## Approach
 
-- **Docker:** `docker/Dockerfile.rapidocr` — Python 3.12 slim, apt libs for OpenCV (`libgl1`, `libxcb1`, …), `rapidocr-onnxruntime`, FastAPI + uvicorn.
+- **Docker:** `docker/Dockerfile.cpu-ocr-sidecars` (target `rapidocr`) — Python 3.12 slim, apt libs for OpenCV (`libgl1`, `libxcb1`, …), `rapidocr-onnxruntime`, FastAPI + uvicorn.
 - **Sidecar:** `docker/rapidocr/serve.py` — load `RapidOCR()` at startup; join line texts with newlines.
 - **Registry:** `backend/config/ocr_engines.json` — `type: rapidocr`, model id **`rapidocr`**, profile **`rapidocr`**, port **8220**.
 - **Backend:** `rapidocr_client.py`, `engine_registry.py`, `inference/factory.py`, `vllm_compose.py` (`/health` + `model_loaded`).
