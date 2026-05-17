@@ -16,6 +16,10 @@ export default defineConfig({
       "Cross-Origin-Embedder-Policy": "require-corp",
     },
     proxy: {
+      "/api/arena/stream": {
+        target: "http://127.0.0.1:8000",
+        changeOrigin: true,
+      },
       "/api": {
         target: "http://127.0.0.1:8000",
         changeOrigin: true,

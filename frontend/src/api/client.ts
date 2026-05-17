@@ -2,6 +2,7 @@ import type { ScanExtraction } from "../browser-ocr/types";
 import type {
   AppSettings,
   ArenaResult,
+  ArenaSseEvent,
   BrowserScanResult,
   BulkVllmStopResult,
   GpuAssignmentsPutBody,
@@ -148,6 +149,121 @@ export function runArena(
     body: form,
     signal: longRunningOcrSignal(),
   });
+}
+
+function arenaStreamSignals(user?: AbortSignal): AbortSignal | undefined {
+  const t =
+    typeof AbortSignal !== "undefined" && typeof AbortSignal.timeout === "function"
+      ? AbortSignal.timeout(600_000)
+      : undefined;
+  const anyFn = (
+    AbortSignal as typeof AbortSignal & { any?: (signals: AbortSignal[]) => AbortSignal }
+  ).any;
+  if (user && t && typeof anyFn === "function") {
+    return anyFn([user, t]);
+  }
+  if (user) return user;
+  return t;
+}
+
+function isAbortError(e: unknown): boolean {
+  if (e instanceof DOMException && e.name === "AbortError") return true;
+  if (e instanceof Error && e.name === "AbortError") return true;
+  return false;
+}
+
+/**
+ * Arena with SSE progress. Resolves to the final record, or `null` if cancelled (client or server).
+ * Throws on HTTP or JSON errors.
+ */
+export async function runArenaStream(
+  image: File | Blob,
+  models: string[],
+  opts: {
+    extractionMode?: "text" | "product";
+    promptOverrides?: Record<string, string>;
+    signal?: AbortSignal;
+    onEvent: (e: ArenaSseEvent) => void;
+  }
+): Promise<ArenaResult | null> {
+  const form = new FormData();
+  form.append("image", image, image instanceof File ? image.name : "capture.jpg");
+  form.append("models", JSON.stringify(models));
+  form.append("extraction_mode", opts.extractionMode ?? "text");
+  if (opts.promptOverrides && Object.keys(opts.promptOverrides).length > 0) {
+    form.append("prompt_overrides", JSON.stringify(opts.promptOverrides));
+  }
+
+  let res: Response;
+  try {
+    res = await fetch("/api/arena/stream", {
+      method: "POST",
+      body: form,
+      signal: arenaStreamSignals(opts.signal),
+    });
+  } catch (e) {
+    if (isAbortError(e)) return null;
+    throw e;
+  }
+
+  if (!res.ok) {
+    let detail = res.statusText;
+    try {
+      const body = (await res.json()) as { detail?: string | unknown };
+      detail =
+        typeof body.detail === "string" ? body.detail : JSON.stringify(body.detail ?? body);
+    } catch {
+      /* ignore */
+    }
+    throw new Error(detail);
+  }
+
+  if (!res.body) {
+    throw new Error("No response body");
+  }
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  try {
+    while (true) {
+      let chunk: ReadableStreamReadResult<Uint8Array>;
+      try {
+        chunk = await reader.read();
+      } catch (e) {
+        if (isAbortError(e)) return null;
+        throw e;
+      }
+      const { done, value } = chunk;
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const parts = buffer.split("\n\n");
+      buffer = parts.pop() ?? "";
+      for (const part of parts) {
+        const line = part.split("\n").find((l) => l.startsWith("data: "));
+        if (!line) continue;
+        const raw = line.slice(6).trim();
+        let evt: ArenaSseEvent;
+        try {
+          evt = JSON.parse(raw) as ArenaSseEvent;
+        } catch {
+          throw new Error("Invalid arena stream event");
+        }
+        opts.onEvent(evt);
+        if (evt.type === "arena_complete") {
+          return evt.record;
+        }
+        if (evt.type === "arena_cancelled") {
+          return null;
+        }
+      }
+    }
+  } finally {
+    reader.releaseLock();
+  }
+
+  return null;
 }
 
 export function getHistory(offset = 0, limit = 50) {

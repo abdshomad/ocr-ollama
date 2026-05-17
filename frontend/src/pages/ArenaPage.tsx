@@ -1,22 +1,71 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { getModels, runArena } from "../api/client";
+import { getModels, runArenaStream } from "../api/client";
 import { ArenaGrid } from "../components/ArenaGrid";
+import { ArenaProgressTimeline, type ArenaTimelineStep } from "../components/ArenaProgressTimeline";
 import { ImageCapture } from "../components/ImageCapture";
 import { ModelPicker } from "../components/ModelPicker";
 import { useImage } from "../context/ImageContext";
-import type { ArenaResult, OllamaModel } from "../types";
+import type { ArenaResult, ArenaSseEvent, OllamaModel } from "../types";
 import { pickDefaultArenaModels } from "../utils/models";
+
+function applyArenaStreamEvent(
+  prev: ArenaTimelineStep[],
+  e: ArenaSseEvent
+): ArenaTimelineStep[] {
+  if (e.type === "arena_model") {
+    const next = prev.map((s) => ({ ...s }));
+    const idx = next.findIndex((s) => s.model === e.model);
+    if (idx < 0) return prev;
+    if (e.phase === "running") {
+      next[idx] = { ...next[idx], state: "running" };
+    } else if (e.phase === "finished" && e.entry) {
+      next[idx] = {
+        ...next[idx],
+        state: e.entry.error ? "error" : "done",
+        entry: e.entry,
+      };
+    }
+    return next;
+  }
+  if (e.type === "arena_cancelled") {
+    return prev.map((s, i) => {
+      const p = e.partial_results[i];
+      if (p) {
+        return { model: s.model, state: p.error ? "error" : "done", entry: p };
+      }
+      if (i >= e.next_index) {
+        return { ...s, state: "skipped" };
+      }
+      return s;
+    });
+  }
+  if (e.type === "arena_complete") {
+    return e.record.results.map((entry, i) => ({
+      model: prev[i]?.model ?? entry.model,
+      state: entry.error ? "error" : "done",
+      entry,
+    }));
+  }
+  return prev;
+}
 
 export function ArenaPage() {
   const { file } = useImage();
   const [models, setModels] = useState<OllamaModel[]>([]);
   const [selected, setSelected] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
-  const [progress, setProgress] = useState<string | null>(null);
+  const [timeline, setTimeline] = useState<ArenaTimelineStep[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<ArenaResult | null>(null);
   const [productMode, setProductMode] = useState(false);
+  const arenaAbortRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    return () => {
+      arenaAbortRef.current?.abort();
+    };
+  }, []);
 
   useEffect(() => {
     const load = () => {
@@ -40,19 +89,50 @@ export function ArenaPage() {
 
   const run = async () => {
     if (!file || selected.length < 2) return;
+    arenaAbortRef.current?.abort();
+    const ac = new AbortController();
+    arenaAbortRef.current = ac;
+
     setLoading(true);
     setError(null);
     setResult(null);
-    setProgress(`Running 0 / ${selected.length}…`);
+    setTimeline(selected.map((m) => ({ model: m, state: "queued" as const })));
+
+    const serverCancelledRef = { current: false };
+
     try {
-      const res = await runArena(file, selected, undefined, productMode ? "product" : "text");
-      setResult(res);
-      setProgress(null);
+      const res = await runArenaStream(file, selected, {
+        extractionMode: productMode ? "product" : "text",
+        signal: ac.signal,
+        onEvent: (e) => {
+          if (e.type === "arena_cancelled") {
+            serverCancelledRef.current = true;
+          }
+          setTimeline((prev) => applyArenaStreamEvent(prev, e));
+        },
+      });
+      if (res) {
+        setResult(res);
+      } else if (serverCancelledRef.current) {
+        /* timeline already reflects partial + skipped */
+      } else if (ac.signal.aborted) {
+        setTimeline((prev) =>
+          prev.map((s) =>
+            s.state === "queued" || s.state === "running"
+              ? { ...s, state: s.state === "running" ? "cancelled" : "skipped" }
+              : s
+          )
+        );
+      } else {
+        setError("Arena stream ended before completion.");
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Arena failed");
-      setProgress(null);
     } finally {
       setLoading(false);
+      if (arenaAbortRef.current === ac) {
+        arenaAbortRef.current = null;
+      }
     }
   };
 
@@ -86,8 +166,8 @@ export function ArenaPage() {
         />
       </section>
       {error && <div className="error-banner">{error}</div>}
-      {progress && <p className="muted">{progress}</p>}
-      <div className="row">
+      <ArenaProgressTimeline steps={timeline} />
+      <div className="row" style={{ flexWrap: "wrap", gap: "0.5rem" }}>
         <button
           type="button"
           className="primary"
@@ -101,6 +181,14 @@ export function ArenaPage() {
           ) : (
             `Run arena (${selected.length} models)`
           )}
+        </button>
+        <button
+          type="button"
+          disabled={!loading}
+          onClick={() => arenaAbortRef.current?.abort()}
+          aria-label="Cancel arena run"
+        >
+          Cancel
         </button>
       </div>
       {result && (

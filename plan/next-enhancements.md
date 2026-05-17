@@ -56,7 +56,7 @@ Canonical queue for **`next`** / **`n`** work. Each item uses **Idea**, **Descri
 
 **Description:** Extend the Arena UI with a stepped timeline (Queued → Running → Done/Error per modelName) wired to streamed or polled status if feasible; minimally, client-side placeholders between sequential `fetch` completions. Surface **AbortController** cancellation for the outstanding request batch when the user navigates away or clicks Cancel, matching backend sequential semantics without parallelizing inference.
 
-**Status:** pending
+**Status:** completed
 
 ---
 

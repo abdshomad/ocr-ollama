@@ -5,9 +5,9 @@ import json
 from contextlib import asynccontextmanager
 from typing import Literal
 
-from fastapi import BackgroundTasks, FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import BackgroundTasks, FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel, Field
 
 from app.history import delete_result, list_history, load_result
@@ -20,6 +20,7 @@ from app.model_availability import (
     schedule_availability_refresh,
 )
 from app.ocr_service import (
+    iter_arena_sse_events,
     read_and_validate_image,
     read_and_validate_ocr_upload,
     run_arena,
@@ -307,6 +308,56 @@ async def arena_endpoint(
         overrides,
         content_type=content_type,
         extraction_mode=extraction_mode.strip().lower(),
+    )
+
+
+@app.post("/api/arena/stream")
+async def arena_stream_endpoint(
+    request: Request,
+    image: UploadFile = File(...),
+    models: str = Form(...),
+    prompt_overrides: str | None = Form(None),
+    extraction_mode: str = Form("text"),
+):
+    """Server-Sent Events: per-model running/finished, then complete arena record (same persistence as POST /api/arena)."""
+    image_bytes, ext, content_type = await read_and_validate_ocr_upload(image)
+    try:
+        model_list = json.loads(models)
+    except json.JSONDecodeError as e:
+        raise HTTPException(status_code=400, detail="models must be a JSON array of strings") from e
+    if not isinstance(model_list, list):
+        raise HTTPException(status_code=400, detail="models must be a JSON array")
+    overrides = None
+    if prompt_overrides:
+        try:
+            overrides = json.loads(prompt_overrides)
+        except json.JSONDecodeError as e:
+            raise HTTPException(status_code=400, detail="prompt_overrides must be JSON object") from e
+    em = extraction_mode.strip().lower()
+
+    async def disconnect_check() -> bool:
+        return await request.is_disconnected()
+
+    async def event_bytes():
+        async for evt in iter_arena_sse_events(
+            disconnect_check,
+            image_bytes,
+            ext,
+            model_list,
+            overrides,
+            content_type=content_type,
+            extraction_mode=em,
+        ):
+            yield f"data: {json.dumps(evt)}\n\n".encode("utf-8")
+
+    return StreamingResponse(
+        event_bytes(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
     )
 
 

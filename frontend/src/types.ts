@@ -71,6 +71,12 @@ export interface ArenaResult {
   results: ArenaResultEntry[];
 }
 
+/** SSE payloads from POST /api/arena/stream */
+export type ArenaSseEvent =
+  | { type: "arena_model"; model: string; phase: "running" | "finished"; entry?: ArenaResultEntry }
+  | { type: "arena_cancelled"; next_index: number; partial_results: ArenaResultEntry[] }
+  | { type: "arena_complete"; record: ArenaResult };
+
 export interface BrowserScanResult {
   id: string;
   kind: "browser_scan";
