@@ -28,7 +28,7 @@ Canonical queue for **`next`** / **`n`** work. Each item uses **Idea**, **Descri
 
 **Description:** After model list loads, show non-blocking hints: last-seen **`duration_ms`** or a rolling average per model tier (from History or lightweight client cache keyed by session), optional **max_tokens** tooltip from backend settings, and a clear “warming up” label when **`/api/health`** or model availability flips during GPU load/unload. Reduces accidental long runs without adding new persistence requirements beyond existing history payloads.
 
-**Status:** pending
+**Status:** completed
 
 ---
 

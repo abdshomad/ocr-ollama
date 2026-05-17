@@ -10,7 +10,7 @@ import type {
   HealthResponse,
   HistorySummary,
   InferenceBackend,
-  OllamaModel,
+  ModelsListResponse,
   PromptsConfig,
   RunResult,
   SettingsUpdateResponse,
@@ -97,9 +97,7 @@ export function updateSettings(inference_backend: InferenceBackend, inference_ho
 }
 
 export function getModels() {
-  return request<{ models: OllamaModel[]; inference_backend: InferenceBackend; inference_host: string }>(
-    "/api/models"
-  );
+  return request<ModelsListResponse>("/api/models");
 }
 
 export function getPrompts() {

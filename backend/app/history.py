@@ -50,19 +50,38 @@ def list_history(offset: int = 0, limit: int = 50) -> tuple[list[dict[str, Any]]
 
 def _to_summary(data: dict[str, Any]) -> dict[str, Any]:
     kind = data.get("kind", "single")
+    duration_ms: int | None = None
+    model_duration_ms: dict[str, int] | None = None
+
     if kind == "browser_scan":
         engine = data.get("engine", "unknown")
         models = [f"browser:{engine}"]
         sku = data.get("sku", "")
         expiry = data.get("expiry_date") or "—"
         preview = f"SKU: {sku} | Exp: {expiry}"[:120]
+        raw_d = data.get("duration_ms")
+        if isinstance(raw_d, (int, float)) and raw_d > 0:
+            duration_ms = int(raw_d)
     elif kind == "product_scan":
         models = [data.get("model", "unknown")]
         sku = data.get("sku", "")
         expiry = data.get("expiry_date") or "—"
         preview = f"SKU: {sku} | Exp: {expiry}"[:120]
+        raw_d = data.get("duration_ms")
+        if isinstance(raw_d, (int, float)) and raw_d > 0:
+            duration_ms = int(raw_d)
     elif kind == "arena":
         models = [r.get("model") for r in data.get("results", [])]
+        per_model: dict[str, int] = {}
+        for r in data.get("results", []) or []:
+            m = r.get("model")
+            raw_d = r.get("duration_ms")
+            if not m or not isinstance(raw_d, (int, float)) or raw_d <= 0:
+                continue
+            d = int(raw_d)
+            per_model[m] = max(per_model.get(m, 0), d)
+        if per_model:
+            model_duration_ms = per_model
         if data.get("extraction_mode") == "product":
             first = next((r for r in data.get("results", []) if r.get("sku")), {})
             sku = first.get("sku", "")
@@ -73,6 +92,9 @@ def _to_summary(data: dict[str, Any]) -> dict[str, Any]:
     else:
         models = [data.get("model")]
         preview = (data.get("text") or "")[:120]
+        raw_d = data.get("duration_ms")
+        if isinstance(raw_d, (int, float)) and raw_d > 0:
+            duration_ms = int(raw_d)
     image_path = data.get("image_path", "")
     filename = Path(image_path).name if image_path else ""
     summary: dict[str, Any] = {
@@ -85,6 +107,10 @@ def _to_summary(data: dict[str, Any]) -> dict[str, Any]:
     }
     if kind == "arena":
         summary["extraction_mode"] = data.get("extraction_mode")
+        if model_duration_ms is not None:
+            summary["model_duration_ms"] = model_duration_ms
+    elif duration_ms is not None:
+        summary["duration_ms"] = duration_ms
     return summary
 
 

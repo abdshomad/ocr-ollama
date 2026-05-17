@@ -110,6 +110,21 @@ export interface HistorySummary {
   preview: string;
   /** Present when kind === "arena". */
   extraction_mode?: ArenaResult["extraction_mode"];
+  /** Single / product_scan / browser_scan — wall-clock OCR duration when stored in result JSON. */
+  duration_ms?: number;
+  /** Arena runs — max duration_ms observed per model in that compare. */
+  model_duration_ms?: Record<string, number>;
+}
+
+/** GET /api/models */
+export interface ModelsListResponse {
+  models: OllamaModel[];
+  inference_backend: InferenceBackend;
+  inference_host: string;
+  ollama_host?: string;
+  availability_pending?: boolean;
+  /** Backend default output cap when inference_backend === vllm (from VLLM_MAX_TOKENS). */
+  vllm_max_output_tokens?: number | null;
 }
 
 export interface HealthResponse {

@@ -318,6 +318,37 @@ nav a.active {
   gap: 0.75rem;
 }
 
+.run-idle-hints {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+.run-idle-hints-line {
+  margin: 0.35rem 0 0;
+  font-size: 0.9rem;
+}
+
+.run-idle-hints-warn {
+  color: var(--warn);
+}
+
+.run-idle-hints-warm {
+  margin: 0 0 0.5rem;
+  padding: 0.5rem 0.65rem;
+  border-radius: 8px;
+  border: 1px solid var(--warn);
+  background: color-mix(in srgb, var(--warn) 10%, transparent);
+  font-size: 0.9rem;
+}
+
+.run-idle-hints-warm-label {
+  display: inline-block;
+  margin-right: 0.5rem;
+  font-weight: 600;
+  color: var(--warn);
+}
+
 .model-card-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));

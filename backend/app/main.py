@@ -31,7 +31,7 @@ from app.samples import list_sample_images, resolve_sample_path, sample_file_res
 from app.scan_service import run_browser_scan
 from app.prompts import get_prompts, remove_model_prompt, update_prompts
 from app.settings_store import get_inference_backend, get_inference_host, get_settings, update_settings
-from app.config import cors_allow_origin_regex, cors_allow_origins
+from app.config import VLLM_MAX_TOKENS, cors_allow_origin_regex, cors_allow_origins
 from app.engine_registry import load_all_endpoints
 from app.gpu_device_assignments_store import load_assignments, merge_assignments
 from app.vllm_compose import (
@@ -219,13 +219,16 @@ async def samples_get(filename: str):
 @app.get("/api/models")
 async def models(background_tasks: BackgroundTasks):
     schedule_availability_refresh(background_tasks)
-    return {
+    backend = get_inference_backend()
+    payload: dict[str, object] = {
         "models": get_models_for_api(),
-        "inference_backend": get_inference_backend(),
+        "inference_backend": backend,
         "inference_host": get_inference_host(),
         "ollama_host": get_inference_host(),
         "availability_pending": availability_pending(),
+        "vllm_max_output_tokens": VLLM_MAX_TOKENS if backend == "vllm" else None,
     }
+    return payload
 
 
 @app.get("/api/prompts")
