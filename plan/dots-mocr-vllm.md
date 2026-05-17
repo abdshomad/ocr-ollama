@@ -13,7 +13,7 @@
 
 - `vllm_endpoints.json` + `docker-compose.yml` (`vllm-dotsmocr`, profile `dotsmocr`, port **8108**).
 - `docker/vllm-entrypoint.sh`: `--trust-remote-code`, `--chat-template-content-format string`, image limit, caps `max-model-len` for shared GPUs.
-- `vllm_client.py`: higher default `max_tokens` for long layout output; optional `VLLM_DOTS_MOCR_CHAT_MODEL` when `--served-model-name` differs from the HF id.
+- `vllm_client.py`: default `max_tokens` **below** serve `max_model_len` so multimodal input fits (`VLLM_DOTS_MOCR_MAX_TOKENS`, default **2048**); optional `VLLM_DOTS_MOCR_CHAT_MODEL` when `--served-model-name` differs from the HF id.
 - `prompts.json`: default `prompt_ocr`-style string (override for full layout JSON via UI).
 
 ## Tasks

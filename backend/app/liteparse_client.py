@@ -55,6 +55,34 @@ def liteparse_preserve_small_text() -> bool:
     return _env_flag("LITEPARSE_PRESERVE_SMALL_TEXT", True)
 
 
+_LIT_NODE_OPTIONS_STRIP = frozenset(
+    {
+        "--warnings-as-errors",
+        "--throw-deprecation",
+    }
+)
+
+
+def _lit_subprocess_env() -> dict[str, str]:
+    """Env for `lit` subprocess.
+
+    LiteParse pulls deps that may emit Node ExperimentalWarning (JSON imports). Inherited
+    NODE_OPTIONS such as --warnings-as-errors (common in CI) turns those into exit code 1
+    and surfaces as 502. Silence process warnings and drop strict warning flags.
+    """
+    env = os.environ.copy()
+    env["NODE_NO_WARNINGS"] = "1"
+    opts_raw = (env.get("NODE_OPTIONS") or "").strip()
+    if not opts_raw:
+        return env
+    parts = [p for p in opts_raw.split() if p not in _LIT_NODE_OPTIONS_STRIP]
+    if parts:
+        env["NODE_OPTIONS"] = " ".join(parts)
+    else:
+        env.pop("NODE_OPTIONS", None)
+    return env
+
+
 def lit_cli_available() -> bool:
     exe = liteparse_bin()
     path = Path(exe)
@@ -71,6 +99,7 @@ def lit_cli_available() -> bool:
             capture_output=True,
             text=True,
             timeout=8.0,
+            env=_lit_subprocess_env(),
         )
         return r.returncode == 0
     except (OSError, subprocess.TimeoutExpired):
@@ -113,8 +142,26 @@ def _lit_parse_command(file_path: Path) -> list[str]:
     return cmd
 
 
+def _strip_node_stdout_noise(stdout: str) -> str:
+    """Remove leading Node warning lines if they leak onto stdout (unlikely but defensive)."""
+    lines = (stdout or "").splitlines()
+    while lines:
+        l = lines[0].strip()
+        if (
+            l.startswith("(node:")
+            or "ExperimentalWarning" in lines[0]
+            or l.startswith("Warning:")
+        ):
+            lines.pop(0)
+            continue
+        break
+    while lines and not lines[0].strip():
+        lines.pop(0)
+    return "\n".join(lines)
+
+
 def _normalized_lit_stdout(stdout: str) -> str:
-    raw = (stdout or "").strip()
+    raw = _strip_node_stdout_noise((stdout or "").strip())
     if not raw or liteparse_output_format() == "text":
         return raw
     try:
@@ -140,7 +187,7 @@ def _run_lit_parse(file_path: Path, timeout: float) -> str:
         capture_output=True,
         text=True,
         timeout=timeout,
-        env=os.environ.copy(),
+        env=_lit_subprocess_env(),
     )
     if r.returncode != 0:
         err = (r.stderr or r.stdout or "").strip() or f"exit {r.returncode}"

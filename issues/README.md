@@ -19,6 +19,7 @@ Write-ups for non-trivial bugs and integration problems. Format and when to add 
 | [tesseract-native-ocr-backend.md](tesseract-native-ocr-backend.md) | **Tesseract (native)** — `model=tesseract`, CLI in backend container |
 | [nemotron-ocr-v2-integration.md](nemotron-ocr-v2-integration.md) | **Nemotron OCR v2** — PyTorch sidecar, profile `nemotron`, port 8210, `nvidia/nemotron-ocr-v2` |
 | [liteparse-cli-integration.md](liteparse-cli-integration.md) | **LiteParse** — `lit` CLI subprocess, PDF + documents, `model=litparse`, Docker image installs `@llamaindex/liteparse` |
+| [liteparse-imagemagick-policy-fix.md](liteparse-imagemagick-policy-fix.md) | **LiteParse 502 error** — Fixed ImageMagick security policy blocking PDF operations needed by LiteParse |
 | [chandra-vllm-integration.md](chandra-vllm-integration.md) | **Chandra OCR 2** — `datalab-to/chandra-ocr-2`, profile `chandra`, port 8103 |
 | [gemma4-vllm-integration.md](gemma4-vllm-integration.md) | **Gemma 4** — `google/gemma-4-E4B-it`, profile `gemma4`, port 8104, vision-tier OCR |
 | [qwen3-vl-vllm-integration.md](qwen3-vl-vllm-integration.md) | **Qwen3-VL** — `Qwen/Qwen3-VL-*-Instruct`, profile `qwen3vl`, port 8105, vision-tier OCR |
@@ -26,6 +27,7 @@ Write-ups for non-trivial bugs and integration problems. Format and when to add 
 | [paddleocr-vl-vllm-integration.md](paddleocr-vl-vllm-integration.md) | **PaddleOCR-VL** — `PaddlePaddle/PaddleOCR-VL`, profile `paddleocr-vl`, port 8107, vLLM (not Ollama) |
 | [paddleocr-vl-15-vllm-integration.md](paddleocr-vl-15-vllm-integration.md) | **PaddleOCR-VL-1.5** — `PaddlePaddle/PaddleOCR-VL-1.5`, profile `paddleocr-vl-15`, port 8115, optional second Paddle VLM container |
 | [dots-mocr-vllm-integration.md](dots-mocr-vllm-integration.md) | **Dots.MOCR** — `rednote-hilab/dots.mocr`, profile `dotsmocr`, port 8108, layout OCR VLM (vLLM ≥ 0.11) |
+| [dots-mocr-token-limit-fix.md](dots-mocr-token-limit-fix.md) | **Dots.MOCR 400 error** — Fixed token limit overflow (8192 output tokens requested on 8192 context) |
 | [phi4-multimodal-vllm-integration.md](phi4-multimodal-vllm-integration.md) | **Phi-4-multimodal** — `microsoft/Phi-4-multimodal-instruct`, profile `phi4mm`, port 8109, MS multimodal VLM |
 | [rolmocr-vllm-integration.md](rolmocr-vllm-integration.md) | **RolmOCR** — `reducto/RolmOCR`, profile `rolmocr`, port 8110, Qwen2.5-VL doc OCR (Apache 2.0) |
 | [numarkdown-vllm-integration.md](numarkdown-vllm-integration.md) | **NuMarkdown** — `numind/NuMarkdown-8B-Thinking`, profile `numarkdown`, port 8111, reasoning doc → markdown (MIT) |

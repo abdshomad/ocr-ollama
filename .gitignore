@@ -13,3 +13,6 @@ backend/config/gpu_device_assignments.json
 .DS_Store
 
 .secrets
+*/node_modules/*
+playwright-tests/screenshots/*
+playwright-tests/test-results/*

@@ -96,36 +96,40 @@ def _deepseek_extra_body(model: str) -> dict[str, Any] | None:
 
 
 def _max_tokens_for_model(model: str) -> int:
+    res = VLLM_MAX_TOKENS
     if _CHANDRA_RE.search(model):
-        return int(os.getenv("VLLM_CHANDRA_MAX_TOKENS", "4096"))
-    if _GEMMA4_RE.search(model):
-        return int(os.getenv("VLLM_GEMMA4_MAX_TOKENS", "4096"))
-    if _QWEN3_VL_RE.search(model):
-        return int(os.getenv("VLLM_QWEN3_VL_MAX_TOKENS", "4096"))
-    if _HUNYUAN_OCR_RE.search(model):
-        return int(os.getenv("VLLM_HUNYUAN_OCR_MAX_TOKENS", "2048"))
-    if re.search(r"paddleocr-vl-1\.5", model, re.IGNORECASE):
-        return int(
+        res = int(os.getenv("VLLM_CHANDRA_MAX_TOKENS", "4096"))
+    elif _GEMMA4_RE.search(model):
+        res = int(os.getenv("VLLM_GEMMA4_MAX_TOKENS", "4096"))
+    elif _QWEN3_VL_RE.search(model):
+        res = int(os.getenv("VLLM_QWEN3_VL_MAX_TOKENS", "4096"))
+    elif _HUNYUAN_OCR_RE.search(model):
+        res = int(os.getenv("VLLM_HUNYUAN_OCR_MAX_TOKENS", "2048"))
+    elif re.search(r"paddleocr-vl-1\.5", model, re.IGNORECASE):
+        res = int(
             os.getenv(
                 "VLLM_PADDLEOCR_VL_15_MAX_TOKENS",
                 os.getenv("VLLM_PADDLEOCR_VL_MAX_TOKENS", "4096"),
             )
         )
-    if _PADDLEOCR_VL_RE.search(model):
-        return int(os.getenv("VLLM_PADDLEOCR_VL_MAX_TOKENS", "4096"))
-    if _DOTS_MOCR_RE.search(model):
-        return int(os.getenv("VLLM_DOTS_MOCR_MAX_TOKENS", "8192"))
-    if _PHI4_MM_RE.search(model):
-        return int(os.getenv("VLLM_PHI4_MM_MAX_TOKENS", "4096"))
-    if _ROLMOCR_RE.search(model):
-        return int(os.getenv("VLLM_ROLMOCR_MAX_TOKENS", "4096"))
-    if _NUMARKDOWN_RE.search(model):
-        return int(os.getenv("VLLM_NUMARKDOWN_MAX_TOKENS", "8192"))
-    if _QWEN3_OMNI_RE.search(model):
-        return int(os.getenv("VLLM_QWEN3_OMNI_MAX_TOKENS", "4096"))
-    if _SMOLDOCLING_RE.search(model):
-        return int(os.getenv("VLLM_SMOLDOCLING_MAX_TOKENS", "4096"))
-    return VLLM_MAX_TOKENS
+    elif _PADDLEOCR_VL_RE.search(model):
+        res = int(os.getenv("VLLM_PADDLEOCR_VL_MAX_TOKENS", "4096"))
+    elif _DOTS_MOCR_RE.search(model):
+        # Context is capped at ~8192; image consumes input budget — max_tokens cannot equal ctx len.
+        res = int(os.getenv("VLLM_DOTS_MOCR_MAX_TOKENS", "2048"))
+    elif _PHI4_MM_RE.search(model):
+        res = int(os.getenv("VLLM_PHI4_MM_MAX_TOKENS", "4096"))
+    elif _ROLMOCR_RE.search(model):
+        res = int(os.getenv("VLLM_ROLMOCR_MAX_TOKENS", "4096"))
+    elif _NUMARKDOWN_RE.search(model):
+        res = int(os.getenv("VLLM_NUMARKDOWN_MAX_TOKENS", "8192"))
+    elif _QWEN3_OMNI_RE.search(model):
+        res = int(os.getenv("VLLM_QWEN3_OMNI_MAX_TOKENS", "4096"))
+    elif _SMOLDOCLING_RE.search(model):
+        res = int(os.getenv("VLLM_SMOLDOCLING_MAX_TOKENS", "4096"))
+    
+    # print(f"DEBUG: _max_tokens_for_model({model}) -> {res}")
+    return res
 
 
 def _sampling_for_model(model: str) -> dict[str, float]:
