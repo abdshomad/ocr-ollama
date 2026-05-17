@@ -10,7 +10,7 @@ import time
 from pathlib import Path
 from typing import Any
 
-from app.engine_registry import all_litparse_models, model_entry
+from app.engine_registry import all_litparse_models, feature_tags_from_ocr_engine, model_entry
 
 
 def liteparse_bin() -> str:
@@ -163,6 +163,7 @@ async def list_models_with_classification() -> list[dict[str, Any]]:
                 engine_type=str(ep.get("type", "litparse")),
                 speed_tier=str(ep["speed_tier"]) if ep.get("speed_tier") else None,
                 input_modes=imodes,
+                feature_tags=feature_tags_from_ocr_engine(ep),
             )
         )
     return out

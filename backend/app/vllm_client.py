@@ -12,6 +12,7 @@ import httpx
 from app.config import MODEL_LIST_HTTP_TIMEOUT, VLLM_MAX_TOKENS, VLLM_TIMEOUT, VLLM_XARGS
 from app.vllm_registry import (
     all_configured_models,
+    feature_tags_from_vllm_endpoint,
     host_for_endpoint,
     load_endpoints,
     model_entry,
@@ -220,6 +221,7 @@ async def list_models_with_classification() -> list[dict[str, Any]]:
         else:
             available = bool(host) and model_id in live
         speed = ep.get("speed_tier")
+        ft = feature_tags_from_vllm_endpoint(ep)
         result.append(
             model_entry(
                 model_id,
@@ -227,6 +229,7 @@ async def list_models_with_classification() -> list[dict[str, Any]]:
                 endpoint_id=str(ep.get("id", "")),
                 endpoint_label=str(ep.get("label") or ep.get("id") or ""),
                 speed_tier=str(speed) if speed else None,
+                feature_tags=ft,
             )
         )
     return result

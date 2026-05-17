@@ -75,7 +75,7 @@ def _to_summary(data: dict[str, Any]) -> dict[str, Any]:
         preview = (data.get("text") or "")[:120]
     image_path = data.get("image_path", "")
     filename = Path(image_path).name if image_path else ""
-    return {
+    summary: dict[str, Any] = {
         "id": data.get("id"),
         "kind": kind,
         "timestamp": data.get("timestamp"),
@@ -83,6 +83,9 @@ def _to_summary(data: dict[str, Any]) -> dict[str, Any]:
         "image_filename": filename,
         "preview": preview,
     }
+    if kind == "arena":
+        summary["extraction_mode"] = data.get("extraction_mode")
+    return summary
 
 
 def new_timestamp() -> str:

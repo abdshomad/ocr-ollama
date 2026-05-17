@@ -15,6 +15,7 @@ from app.inference.classify import (
     classify_ollama_model,
     is_ocr_capable,
 )
+from app.feature_tags import ollama_feature_tags_for_name
 from app.settings_store import get_ollama_host
 
 _DEBUG_LOG = Path(__file__).resolve().parents[2] / ".cursor" / "debug-cebe92.log"
@@ -118,6 +119,7 @@ async def list_models_with_classification() -> list[dict[str, Any]]:
                 "has_parent_blob": has_parent_blob(show),
                 "capabilities": show.get("capabilities", []),
                 "families": (show.get("details") or {}).get("families", []),
+                "feature_tags": ollama_feature_tags_for_name(name),
             }
 
         result = await asyncio.gather(*[one_entry(m) for m in tags])

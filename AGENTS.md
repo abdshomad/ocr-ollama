@@ -4,68 +4,36 @@ Guidance for AI agents working in this repository.
 
 ## Karpathy / Cursor rules (submodule)
 
-**Always** read and follow the rules in [andrej-karpathy-skills/CURSOR.md](andrej-karpathy-skills/CURSOR.md). That file is maintained in the [`andrej-karpathy-skills`](andrej-karpathy-skills/) submodule and **updated periodically**—treat the latest version in the working tree as binding general guidance alongside this document. For OCR Ollama–specific requirements (plans, architecture, `next` / `test` workflows, issues), this `AGENTS.md` and linked `plan/` / `issues/` docs take precedence when they conflict with generic rules there.
+**Always** read and follow the rules in [andrej-karpathy-skills/CURSOR.md](andrej-karpathy-skills/CURSOR.md). That file is maintained in the [`andrej-karpathy-skills`](andrej-karpathy-skills/) submodule and **updated periodically**—treat the latest version in the working tree as binding general guidance alongside this document. - If the user inputs 'enhance' or 'e', run the 'enhance' subtask to generate 3 enhancement ideas for each of the key pages (Run, Arena, History) and save them to plan/next-enhancements.md.
+
+## Project summary
 
 ## Project summary
 
 Monorepo: **Vite + React** frontend and **FastAPI** backend for OCR via **vLLM + DeepSeek-OCR** (default) or **Ollama**. Docker Compose runs `vllm`, `backend`, and `nginx` on one host port. Users upload or capture images, run OCR or **arena** compare, optional **browser scan**, and browse **history**. Inference backend and host URL are configurable in **Settings**.
 
+**Enhancement/Idea Generation (`enhance` / `e`)**
+* If the user inputs 'enhance' or 'e', run the 'enhance' subtask to generate 3 structured enhancement ideas for the key pages (Run, Arena, History). These ideas must be saved to `plan/next-enhancements.md` structured as: `Idea`, `Description`, and `Status` (pending/draft).
+
 Spec: [plan/ocr-ollama-app.md](plan/ocr-ollama-app.md), [plan/vllm-deepseek-ocr-migration.md](plan/vllm-deepseek-ocr-migration.md), [plan/browser-ocr-pipeline.md](plan/browser-ocr-pipeline.md), [plan/ocr-engine-expansion-backlog.md](plan/ocr-engine-expansion-backlog.md) (**primary `next` queue**), [plan/ocr-engines.md](plan/ocr-engines.md) (speed ranking + in-repo ladder), [plan/medium-four-ocr-models.md](plan/medium-four-ocr-models.md) (registry / adapter patterns). **Working vLLM setup:** [issues/vllm-deepseek-ocr-integration.md](issues/vllm-deepseek-ocr-integration.md).
 
-## Plan documentation (`plan/`)
+## Next Enhancement (`next` / `n`)
+When the user sends **`next`** or **`n`** alone (or clearly means “ship the next enhancement”), implement **one** structured enhancement — the next active item from `plan/next-enhancements.md` — end to end. Do not only plan or scaffold; finish the implementation, testing, and documentation for the enhancement.
 
-**Always** create a plan in **`plan/`** before starting non-trivial work — do not leave design and approach only in chat.
+**How to pick the enhancement**
 
-**When to write a file**
-
-- New features, refactors, integrations, or any change touching multiple areas (backend, frontend, Docker, config)
-- When the user asks for a plan (or says “plan this”)
-- Before implementing; update the same file as scope or approach changes
-
-**When to skip**
-
-- One-line fixes, typos, or trivial single-file tweaks
-- When the user explicitly says to skip planning
-
-**Filename:** `plan/<short-kebab-slug>.md` (e.g. `plan/vllm-glm-ocr.md`).
-
-**Each plan should include**
-
-1. **Status** — Draft | In progress | Implemented
-2. **Goals** — what to build and why
-3. **Approach** — architecture, key paths, API or config changes
-4. **Tasks** — ordered checklist (mark done during implementation)
-5. **Related** — links to other `plan/`, `issues/`, or spec docs
-
-Update the plan as work progresses; add a short **Date** or changelog line at the top when revisiting.
-
-## Next engine (`next` / `n`)
-
-When the user sends **`next`** or **`n`** alone (or clearly means “ship the next OCR engine”), implement **one** engine — the **next eligible item from the expansion backlog** — end to end. Do not only plan or scaffold; finish Run/Arena/History (and browser path if the engine is browser-tier) for that engine.
-
-**How to pick the engine**
-
-1. Open [plan/ocr-engine-expansion-backlog.md](plan/ocr-engine-expansion-backlog.md) — this is the **canonical queue** for `next` / `n`.
-2. Choose the **next unimplemented** candidate by **Suggested waves** (Wave 1 → 6), unless the user’s context clearly targets one workload (then see step 4). Within a wave, prefer rows that are **not** listed under **Already in repo** in that doc.
-3. Skip engines **already in the repo** (backlog § “Already in repo”, plus **In repo** / **Yes** in [plan/ocr-engines.md](plan/ocr-engines.md) ladders). Skip **GPL-3.0** engines ([plan/ocr-engine-expansion-backlog.md](plan/ocr-engine-expansion-backlog.md) § Excluded engines (GPL)). Skip backlog rows still in **Research** or **Blocked** (license, no weights, API-only with no adapter) until triaged to a concrete **Ship** path — if the next wave is all blocked, run a **spike** documented in `issues/` and update the backlog row.
-4. Use [plan/ocr-engines.md](plan/ocr-engines.md) **workload ladders** to disambiguate when several backlog candidates are ready:
-   - **Default:** workload **B** (scanned page, server `/api/ocr` / Arena).
-   - **PDF / digital text focus:** workload **A** (pick the next backlog engine that fits **digital PDF / extraction**, e.g. parser-class tools).
-   - **Browser `/scan` only:** workload **C** (pick the next backlog engine tagged **Browser** / WebGPU in the backlog table).
-5. If a candidate was historically **out of scope** in [plan/medium-four-ocr-models.md](plan/medium-four-ocr-models.md) but is **in scope** in the backlog (e.g. AGPL-gated optional stack with explicit profile), follow the **backlog** license/mitigation notes. **GPL-3.0 OCR engines** are **excluded** from the backlog — [plan/ocr-engine-expansion-backlog.md](plan/ocr-engine-expansion-backlog.md) § Excluded engines (GPL).
+1. Open [plan/next-enhancements.md](plan/next-enhancements.md) — this is the **canonical queue for requested enhancements**.
+2. Check the **Status** column: Select the next item that is marked `pending` or `Draft` and is structurally ready for implementation.
+3. If the list is empty or only contains `completed` items, reply stating that the enhancement queue is empty and point the user to [plan/next-enhancements.md](plan/next-enhancements.md).
 
 **How to implement**
 
-1. Follow [plan/medium-four-ocr-models.md](plan/medium-four-ocr-models.md) for **registry / adapter / compose** patterns (Phase 0 if `ocr_engines.json` or adapters need extending for the new `engine.type`).
-2. Obey [Architecture rules](#architecture-rules) (FastAPI gateway, no browser → vLLM, sequential arena, uv-only backend).
-3. Smoke-test: `/api/health`, `/api/models`, one OCR run (e.g. `curl` or Python client), update GPU/compose docs if a new service was added.
-4. **Browser verification (required):** Use the **Cursor IDE browser** MCP — navigate to the running app (`http://localhost:${PORT}` from `.env`, default **3036**), open **Run** (`/`), pick the **new model** in the picker, upload **at least one sample** with readable content (add tiny tracked fixtures under `fixtures/ocr/` if the repo has none), run OCR / extraction, and confirm **non-empty plausible output** in the UI (fresh **snapshot**; screenshot optional). For **Arena**, include the new model in a compare if that is the primary workflow. For **browser-tier** engines (`/scan`), repeat on **Scan** with the same samples. If the stack is not running locally, start `docker compose up` (or dev frontend + backend) first; if browser automation is blocked (login, GPU unavailable), say so and attach API/smoke evidence instead.
+1. Follow the general implementation steps applicable to the type of enhancement (e.g., UI changes need frontend work, API changes need backend work). Always aim for a minimal, complete, feature-ready slice of work.
+2. Smoke-test the new functionality: Check relevant endpoints or run UI paths to confirm the new behavior is present.
+3. On completion: Update [plan/next-enhancements.md](plan/next-enhancements.md) and set the status to `completed`.
 
-   **LiteParse (`litparse`) — VERY IMPORTANT:** When this `next` cycle ships **LiteParse**, treating browser proof as optional is **not allowed**. After coding, you **must** use Cursor IDE browser tools on **Run** with **`litparse`** selected and verify extraction using **all applicable samples** under `fixtures/ocr/` — at minimum a small **digital PDF** with embedded text (LiteParse’s primary workload A path), **plus any PNG/JPEG samples** the app accepts for LiteParse in that build. Expected text must appear in the result panel (snapshot). Add or extend fixtures if none exist; do not close the task without this check.
-
-5. On completion: update [plan/ocr-engine-expansion-backlog.md](plan/ocr-engine-expansion-backlog.md) (master checklist / wave notes if present); set **In repo** / ladder notes in [plan/ocr-engines.md](plan/ocr-engines.md) and phase checkboxes in [plan/medium-four-ocr-models.md](plan/medium-four-ocr-models.md) where applicable; add `issues/<engine>-integration.md` if setup was non-trivial.
-
-**When the backlog has no further Ship-ready engines**, reply briefly that the queue is empty (or only Research/Blocked items remain) and point at [plan/ocr-engine-expansion-backlog.md](plan/ocr-engine-expansion-backlog.md) and [plan/ocr-engines.md](plan/ocr-engines.md).
+## Verify enhancement (`test` / `t`)
+When the user sends **`test`** or **`t`** alone, verify the enhancement currently in scope by ensuring it meets its specified goals and is functional in the UI (similar to the OCR verification workflow).
 
 ## Verify engine (`test` / `t`)
 

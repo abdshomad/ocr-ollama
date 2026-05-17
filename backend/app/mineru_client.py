@@ -7,7 +7,7 @@ from typing import Any
 import httpx
 
 from app.config import MODEL_LIST_HTTP_TIMEOUT, VLLM_TIMEOUT
-from app.engine_registry import all_mineru_models, host_for_engine, model_entry
+from app.engine_registry import all_mineru_models, feature_tags_from_ocr_engine, host_for_engine, model_entry
 
 
 def format_mineru_error(status_code: int, detail: Any, model: str) -> str:
@@ -58,6 +58,7 @@ async def list_models_with_classification() -> list[dict[str, Any]]:
                 endpoint_label=str(ep.get("label") or ep.get("id") or ""),
                 engine_type=str(ep.get("type", "nano_dvlm")),
                 speed_tier=str(speed) if speed else None,
+                feature_tags=feature_tags_from_ocr_engine(ep),
             )
         )
     return result

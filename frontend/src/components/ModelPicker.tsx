@@ -1,6 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import type { OllamaModel } from "../types";
+
+function formatFeatureTagLabel(slug: string): string {
+  return slug.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function uniqSortedTags(tags: Iterable<string>): string[] {
+  return [...new Set(tags)].sort((a, b) => a.localeCompare(b));
+}
 
 function TierBadge({ tier }: { tier: OllamaModel["tier"] }) {
   if (tier === "dedicated_ocr") return <span className="badge badge-ocr">OCR</span>;
@@ -125,6 +133,10 @@ function ModelDetailPanel({ m }: { m: OllamaModel }) {
         {detailLine("Inputs", m.input_modes?.join(", "))}
         {detailLine("Capabilities", m.capabilities?.length ? m.capabilities.join(", ") : null)}
         {detailLine("Families", m.families?.length ? m.families.join(", ") : null)}
+        {detailLine(
+          "Tags",
+          m.feature_tags?.length ? m.feature_tags.map(formatFeatureTagLabel).join(", ") : null,
+        )}
         {detailLine("Size", sizeStr)}
         {detailLine("Modified", m.modified_at)}
         {m.has_parent_blob ? (
@@ -191,6 +203,16 @@ function ModelCard({
         ) : !up ? (
           <span className="badge badge-offline">Offline</span>
         ) : null}
+        {(m.feature_tags ?? []).slice(0, 2).map((t) => (
+          <span key={t} className="badge badge-tag" title={formatFeatureTagLabel(t)}>
+            {formatFeatureTagLabel(t)}
+          </span>
+        ))}
+        {(m.feature_tags ?? []).length > 2 ? (
+          <span className="badge badge-text" title={(m.feature_tags ?? []).slice(2).join(", ")}>
+            +{(m.feature_tags ?? []).length - 2}
+          </span>
+        ) : null}
         {m.has_parent_blob ? (
           <span
             className="badge badge-text"
@@ -217,8 +239,28 @@ export function ModelPicker({
   ocrOnly = false,
 }: ModelPickerProps) {
   const [detailFor, setDetailFor] = useState<string | null>(null);
+  const [activeTagFilters, setActiveTagFilters] = useState<string[]>([]);
 
-  const list = (ocrOnly ? models.filter((m) => m.ocr_capable) : models).sort(sortModels);
+  const baseList = useMemo(() => {
+    return ocrOnly ? models.filter((m) => m.ocr_capable) : models;
+  }, [models, ocrOnly]);
+
+  const allFeatureTags = useMemo(() => uniqSortedTags(baseList.flatMap((m) => m.feature_tags ?? [])), [baseList]);
+
+  const list = useMemo(() => {
+    let rows = baseList;
+    if (activeTagFilters.length > 0) {
+      rows = rows.filter((m) => {
+        const tags = new Set(m.feature_tags ?? []);
+        return activeTagFilters.every((t) => tags.has(t));
+      });
+    }
+    return rows.sort(sortModels);
+  }, [baseList, activeTagFilters]);
+
+  const toggleTagFilter = (tag: string) => {
+    setActiveTagFilters((prev) => (prev.includes(tag) ? prev.filter((x) => x !== tag) : [...prev, tag]));
+  };
   const ready = list.filter(isModelAvailable);
   const probing = list.filter(isModelProbing);
   const offline = list.filter((m) => !isModelAvailable(m) && !isModelProbing(m));
@@ -226,6 +268,11 @@ export function ModelPicker({
   useEffect(() => {
     if (!multiple && selected[0]) setDetailFor(selected[0]);
   }, [multiple, selected]);
+
+  useEffect(() => {
+    if (!detailFor) return;
+    if (!list.some((m) => m.name === detailFor)) setDetailFor(null);
+  }, [detailFor, list]);
 
   const toggle = (name: string, available: boolean) => {
     if (!available) return;
@@ -252,6 +299,46 @@ export function ModelPicker({
 
   return (
     <div className="model-picker">
+      {allFeatureTags.length > 0 ? (
+        <div
+          className="model-picker-tag-filters"
+          role="group"
+          aria-label="Filter models by feature tag"
+        >
+          <span className="model-picker-tag-label muted">Filter by tag</span>
+          <div className="model-tag-filter-chips">
+            {allFeatureTags.map((tag) => {
+              const on = activeTagFilters.includes(tag);
+              const label = formatFeatureTagLabel(tag);
+              return (
+                <button
+                  key={tag}
+                  type="button"
+                  className={[
+                    "model-tag-filter-chip",
+                    on ? "model-tag-filter-chip-active" : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                  aria-pressed={on}
+                  onClick={() => toggleTagFilter(tag)}
+                >
+                  {label}
+                </button>
+              );
+            })}
+            {activeTagFilters.length > 0 ? (
+              <button
+                type="button"
+                className="model-tag-filter-clear muted"
+                onClick={() => setActiveTagFilters([])}
+              >
+                Clear
+              </button>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
       {ready.length > 0 && (
         <div className="model-picker-group">
           <p className="model-picker-heading">Ready ({ready.length})</p>

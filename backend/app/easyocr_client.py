@@ -7,7 +7,7 @@ from typing import Any
 import httpx
 
 from app.config import MODEL_LIST_HTTP_TIMEOUT, VLLM_TIMEOUT
-from app.engine_registry import all_easyocr_models, host_for_engine, model_entry
+from app.engine_registry import all_easyocr_models, feature_tags_from_ocr_engine, host_for_engine, model_entry
 
 
 def format_easyocr_error(status_code: int, detail: Any, model: str) -> str:
@@ -60,6 +60,7 @@ async def list_models_with_classification() -> list[dict[str, Any]]:
             engine_type=str(ep.get("type", "easyocr")),
             speed_tier=str(speed) if speed else None,
             input_modes=im,
+            feature_tags=feature_tags_from_ocr_engine(ep),
         )
         result.append(entry)
     return result

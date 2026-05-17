@@ -16,10 +16,15 @@ from app.engine_registry import (
     all_paddleocr_models,
     all_rapidocr_models,
     all_tesseract_models,
+    feature_tags_from_ocr_engine,
     model_entry,
 )
 from app.settings_store import get_inference_backend
-from app.vllm_registry import all_configured_models, model_entry as vllm_model_entry
+from app.vllm_registry import (
+    all_configured_models,
+    feature_tags_from_vllm_endpoint,
+    model_entry as vllm_model_entry,
+)
 
 
 def _catalog_from_pairs(
@@ -41,6 +46,7 @@ def _catalog_from_pairs(
                 engine_type=engine_type,
                 speed_tier=str(speed) if speed else None,
                 input_modes=im,
+                feature_tags=feature_tags_from_ocr_engine(ep),
             )
         )
     return out
@@ -57,6 +63,7 @@ def _vllm_catalog() -> list[dict[str, Any]]:
                 endpoint_id=str(ep.get("id", "")),
                 endpoint_label=str(ep.get("label") or ep.get("id") or ""),
                 speed_tier=str(speed) if speed else None,
+                feature_tags=feature_tags_from_vllm_endpoint(ep),
             )
         )
     return out

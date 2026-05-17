@@ -1,0 +1,40 @@
+{
+  "patterns": [
+    {
+      "substring": "deepseek-ocr",
+      "tags": ["gpu", "vision_llm", "document_ocr"]
+    },
+    {
+      "substring": "glm-ocr",
+      "tags": ["gpu", "vision_llm", "document_ocr"]
+    },
+    {
+      "substring": "chandra",
+      "tags": ["gpu", "vision_llm"]
+    },
+    {
+      "substring": "paddleocr-vl",
+      "tags": ["gpu", "vision_llm", "tables"]
+    },
+    {
+      "substring": "lightonocr",
+      "tags": ["gpu", "vision_llm", "document_ocr"]
+    },
+    {
+      "substring": "qwen3-vl",
+      "tags": ["gpu", "vision_llm"]
+    },
+    {
+      "substring": "smoldocling",
+      "tags": ["gpu", "layout", "doctags"]
+    },
+    {
+      "substring": "docling",
+      "tags": ["layout", "cpu_sidecar"]
+    },
+    {
+      "substring": "tesseract",
+      "tags": ["classic_ocr", "cpu_native"]
+    }
+  ]
+}

@@ -6,7 +6,8 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
-from app.inference.classify import ModelTier, classify_model_by_name, is_ocr_capable
+from app.feature_tags import normalized_feature_tags
+from app.inference.classify import classify_model_by_name, is_ocr_capable
 
 _ENDPOINTS_PATH = Path(__file__).resolve().parents[1] / "config" / "vllm_endpoints.json"
 
@@ -63,6 +64,7 @@ def model_entry(
     endpoint_id: str,
     endpoint_label: str,
     speed_tier: str | None = None,
+    feature_tags: list[str] | None = None,
 ) -> dict[str, Any]:
     tier = classify_model_by_name(name)
     entry: dict[str, Any] = {
@@ -74,6 +76,7 @@ def model_entry(
         "has_parent_blob": False,
         "capabilities": [],
         "families": [],
+        "feature_tags": [] if feature_tags is None else list(feature_tags),
         "available": available,
         "vllm_endpoint": endpoint_id,
         "vllm_endpoint_label": endpoint_label,
@@ -81,3 +84,7 @@ def model_entry(
     if speed_tier:
         entry["speed_tier"] = speed_tier
     return entry
+
+
+def feature_tags_from_vllm_endpoint(ep: dict[str, Any]) -> list[str]:
+    return normalized_feature_tags(ep)

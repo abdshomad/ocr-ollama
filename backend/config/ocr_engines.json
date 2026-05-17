@@ -12,7 +12,8 @@
       "compose_profile": "rapidocr",
       "gpu_device": -1,
       "port": 8220,
-      "speed_tier": "fast"
+      "speed_tier": "fast",
+      "feature_tags": ["cpu_sidecar", "onnx", "low_latency"]
     },
     {
       "id": "onnxtr",
@@ -26,7 +27,8 @@
       "compose_profile": "onnxtr",
       "gpu_device": -1,
       "port": 8230,
-      "speed_tier": "fast"
+      "speed_tier": "fast",
+      "feature_tags": ["cpu_sidecar", "onnx", "low_latency", "dense_text"]
     },
     {
       "id": "easyocr",
@@ -40,7 +42,8 @@
       "compose_profile": "easyocr",
       "gpu_device": -1,
       "port": 8240,
-      "speed_tier": "medium"
+      "speed_tier": "medium",
+      "feature_tags": ["cpu_sidecar", "pytorch_cpu", "handwriting_optional"]
     },
     {
       "id": "doctr",
@@ -54,7 +57,8 @@
       "compose_profile": "doctr",
       "gpu_device": -1,
       "port": 8250,
-      "speed_tier": "fast"
+      "speed_tier": "fast",
+      "feature_tags": ["cpu_sidecar", "pytorch_cpu", "dense_text"]
     },
     {
       "id": "paddleocr",
@@ -68,7 +72,8 @@
       "compose_profile": "paddleocr",
       "gpu_device": -1,
       "port": 8260,
-      "speed_tier": "medium"
+      "speed_tier": "medium",
+      "feature_tags": ["cpu_sidecar", "tables"]
     },
     {
       "id": "docling",
@@ -82,7 +87,8 @@
       "compose_profile": "docling",
       "gpu_device": -1,
       "port": 8270,
-      "speed_tier": "slow"
+      "speed_tier": "slow",
+      "feature_tags": ["cpu_sidecar", "layout", "tables", "markdown"]
     },
     {
       "id": "lanyocr",
@@ -96,7 +102,8 @@
       "compose_profile": "lanyocr",
       "gpu_device": -1,
       "port": 8280,
-      "speed_tier": "medium"
+      "speed_tier": "medium",
+      "feature_tags": ["cpu_sidecar", "onnx", "line_merge"]
     },
     {
       "id": "tesseract",
@@ -105,7 +112,8 @@
       "models": ["tesseract"],
       "input_modes": ["image"],
       "gpu_device": -1,
-      "speed_tier": "fast"
+      "speed_tier": "fast",
+      "feature_tags": ["cpu_native", "classic_ocr", "low_latency"]
     },
     {
       "id": "litparse",
@@ -114,7 +122,8 @@
       "models": ["litparse"],
       "input_modes": ["pdf", "image"],
       "gpu_device": -1,
-      "speed_tier": "instant"
+      "speed_tier": "instant",
+      "feature_tags": ["embedded_text_pdf", "instant"]
     },
     {
       "id": "mineru-diffusion",
@@ -127,7 +136,8 @@
       "compose_profile": "mineru",
       "gpu_device": 0,
       "port": 8200,
-      "speed_tier": "medium"
+      "speed_tier": "medium",
+      "feature_tags": ["gpu_sidecar", "layout", "pdf_image"]
     },
     {
       "id": "nemotron-ocr-v2",
@@ -140,7 +150,8 @@
       "compose_profile": "nemotron",
       "gpu_device": 0,
       "port": 8210,
-      "speed_tier": "fast"
+      "speed_tier": "fast",
+      "feature_tags": ["gpu_sidecar", "vision_llm", "document_ocr", "low_latency"]
     }
   ]
 }

@@ -10,6 +10,8 @@ export interface OllamaModel {
   has_parent_blob?: boolean;
   capabilities: string[];
   families: string[];
+  /** Optional catalog tags for UI filtering (e.g. gpu, tables, cpu_sidecar). */
+  feature_tags?: string[];
   /** true = online, false = offline, null = not probed yet */
   available?: boolean | null;
   vllm_endpoint?: string;
@@ -82,15 +84,32 @@ export interface BrowserScanResult {
   duration_ms: number;
 }
 
-export type RunResult = SingleResult | ArenaResult | BrowserScanResult;
+export interface ProductScanResult {
+  id: string;
+  kind: "product_scan";
+  timestamp: string;
+  image_path: string;
+  model: string;
+  pipeline: "vision" | "ocr_then_text";
+  duration_ms: number;
+  ocr_model?: string | null;
+  raw_text?: string | null;
+  inference_backend?: string;
+  sku: string;
+  expiry_date: string | null;
+}
+
+export type RunResult = SingleResult | ArenaResult | BrowserScanResult | ProductScanResult;
 
 export interface HistorySummary {
   id: string;
-  kind: "single" | "arena" | "browser_scan";
+  kind: "single" | "arena" | "browser_scan" | "product_scan";
   timestamp: string;
   models: string[];
   image_filename: string;
   preview: string;
+  /** Present when kind === "arena". */
+  extraction_mode?: ArenaResult["extraction_mode"];
 }
 
 export interface HealthResponse {

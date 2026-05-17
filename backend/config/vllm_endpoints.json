@@ -8,7 +8,8 @@
       "default_host": "http://vllm-deepseek:8100",
       "compose_service": "vllm-deepseek",
       "gpu_device": 0,
-      "port": 8100
+      "port": 8100,
+      "feature_tags": ["gpu", "vision_llm", "document_ocr"]
     },
     {
       "id": "deepseek-ocr2",
@@ -20,7 +21,8 @@
       "compose_profile": "deepseek-ocr2",
       "gpu_device": 1,
       "port": 8114,
-      "speed_tier": "medium"
+      "speed_tier": "medium",
+      "feature_tags": ["gpu", "vision_llm", "document_ocr"]
     },
     {
       "id": "glm",
@@ -30,7 +32,8 @@
       "default_host": "http://vllm-glm:8101",
       "compose_service": "vllm-glm",
       "gpu_device": 1,
-      "port": 8101
+      "port": 8101,
+      "feature_tags": ["gpu", "vision_llm", "document_ocr", "tables"]
     },
     {
       "id": "lighton",
@@ -42,7 +45,8 @@
       "compose_profile": "lighton",
       "gpu_device": 1,
       "port": 8102,
-      "speed_tier": "fast"
+      "speed_tier": "fast",
+      "feature_tags": ["gpu", "vision_llm", "document_ocr", "low_latency"]
     },
     {
       "id": "chandra",
@@ -54,7 +58,8 @@
       "compose_profile": "chandra",
       "gpu_device": 1,
       "port": 8103,
-      "speed_tier": "slow"
+      "speed_tier": "slow",
+      "feature_tags": ["gpu", "vision_llm", "dense_text"]
     },
     {
       "id": "gemma4",
@@ -66,7 +71,8 @@
       "compose_profile": "gemma4",
       "gpu_device": 1,
       "port": 8104,
-      "speed_tier": "very_slow"
+      "speed_tier": "very_slow",
+      "feature_tags": ["gpu", "vision_llm", "dense_text"]
     },
     {
       "id": "qwen3vl",
@@ -82,7 +88,8 @@
       "compose_profile": "qwen3vl",
       "gpu_device": 1,
       "port": 8105,
-      "speed_tier": "very_slow"
+      "speed_tier": "very_slow",
+      "feature_tags": ["gpu", "vision_llm", "tables"]
     },
     {
       "id": "hunyuanocr",
@@ -94,7 +101,8 @@
       "compose_profile": "hunyuanocr",
       "gpu_device": 1,
       "port": 8106,
-      "speed_tier": "fast"
+      "speed_tier": "fast",
+      "feature_tags": ["gpu", "vision_llm", "document_ocr", "low_latency"]
     },
     {
       "id": "paddleocr-vl",
@@ -106,7 +114,8 @@
       "compose_profile": "paddleocr-vl",
       "gpu_device": 1,
       "port": 8107,
-      "speed_tier": "fast"
+      "speed_tier": "fast",
+      "feature_tags": ["gpu", "vision_llm", "tables", "handwriting_optional"]
     },
     {
       "id": "paddleocr-vl-15",
@@ -118,7 +127,8 @@
       "compose_profile": "paddleocr-vl-15",
       "gpu_device": 1,
       "port": 8115,
-      "speed_tier": "fast"
+      "speed_tier": "fast",
+      "feature_tags": ["gpu", "vision_llm", "tables", "handwriting_optional"]
     },
     {
       "id": "dotsmocr",
@@ -130,7 +140,8 @@
       "compose_profile": "dotsmocr",
       "gpu_device": 1,
       "port": 8108,
-      "speed_tier": "medium"
+      "speed_tier": "medium",
+      "feature_tags": ["gpu", "vision_llm", "dense_text"]
     },
     {
       "id": "phi4multimodal",
@@ -142,7 +153,8 @@
       "compose_profile": "phi4mm",
       "gpu_device": 1,
       "port": 8109,
-      "speed_tier": "very_slow"
+      "speed_tier": "very_slow",
+      "feature_tags": ["gpu", "vision_llm", "dense_text"]
     },
     {
       "id": "rolmocr",
@@ -154,7 +166,8 @@
       "compose_profile": "rolmocr",
       "gpu_device": 1,
       "port": 8110,
-      "speed_tier": "slow"
+      "speed_tier": "slow",
+      "feature_tags": ["gpu", "vision_llm", "dense_text"]
     },
     {
       "id": "numarkdown",
@@ -181,7 +194,8 @@
       "compose_profile": "qwen3omni",
       "gpu_device": 1,
       "port": 8112,
-      "speed_tier": "very_slow"
+      "speed_tier": "very_slow",
+      "feature_tags": ["gpu", "vision_llm", "dense_text"]
     },
     {
       "id": "smoldocling",
@@ -193,7 +207,8 @@
       "compose_profile": "smoldocling",
       "gpu_device": 1,
       "port": 8113,
-      "speed_tier": "fast"
+      "speed_tier": "fast",
+      "feature_tags": ["gpu", "vision_llm", "layout", "doctags", "low_latency"]
     }
   ]
 }
